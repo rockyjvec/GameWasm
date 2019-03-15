@@ -10,9 +10,15 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-            var a = new WebAssembly.WebAssembly();
+            var store = new WebAssembly.Store();
 
-            a.LoadModule("c:/users/rocky/desktop/main.wasm");
+            var lua = store.LoadModule("lua", "c:/users/rocky/desktop/main.wasm");
+
+            lua.DumpExports();
+            lua.Execute("_run_lua", new WebAssembly.Value(WebAssembly.Type.i32, false, 0));
+
+
+            Console.WriteLine("Press any key to continue...");
 
             Console.ReadKey();
         }

@@ -44,9 +44,18 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebAssembly\Module.cs" />
+    <Compile Include="WebAssembly\Frame.cs" />
+    <Compile Include="WebAssembly\Module\Asm2Wasm.cs" />
+    <Compile Include="WebAssembly\Module\Env.cs" />
+    <Compile Include="WebAssembly\Module\Global\Global.cs" />
+    <Compile Include="WebAssembly\Value.cs" />
+    <Compile Include="WebAssembly\Table.cs" />
+    <Compile Include="WebAssembly\Module\Global\Math.cs" />
+    <Compile Include="WebAssembly\Type.cs" />
+    <Compile Include="WebAssembly\Function.cs" />
+    <Compile Include="WebAssembly\Memory.cs" />
+    <Compile Include="WebAssembly\Module\Module.cs" />
     <Compile Include="WebAssembly\Store.cs" />
-    <Compile Include="WebAssembly\WebAssembly.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
