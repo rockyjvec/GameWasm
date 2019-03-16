@@ -13,9 +13,9 @@ namespace WebAssembly
         Func<object[], object[]> action;
         public Type Type;
 
-        byte[] code;
+        Instruction.Instruction instruction;
+
         List<byte> localTypes = new List<byte>();
-        public UInt32 ModuleOffset;
 
         public Function(UInt32 index, Type type)
         {
@@ -49,17 +49,14 @@ namespace WebAssembly
             this.localTypes.Add(type);
         }
 
-        public void SetCode(byte[] source, UInt32 offset, UInt32 length)
+        public void SetInstruction(Instruction.Instruction instruction)
         {
-            this.code = new byte[length];
-            this.ModuleOffset = offset;
+            this.instruction = instruction;
+        }
 
-            if(offset + length >= source.Length)
-            {
-                throw new Exception("Code segment out of bounds");
-            }
-
-            Array.Copy(source, offset, this.code, 0, length);
+        public Instruction.Instruction GetInstruction()
+        {
+            return this.instruction;
         }
     }
 }

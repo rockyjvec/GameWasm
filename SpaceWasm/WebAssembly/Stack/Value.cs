@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebAssembly
+namespace WebAssembly.Stack
 {
     public class Value
     {
         public byte Type;
         bool mutable = true;
+        bool trap = false;
         public object Val;
 
         public Value(byte type, bool mutable, object value = null)

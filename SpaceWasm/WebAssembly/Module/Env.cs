@@ -48,11 +48,11 @@ namespace WebAssembly.Module
             this.AddExportFunc("___syscall145", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
             this.AddExportFunc("___syscall146", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
 
-            this.AddExportGlob("DYNAMICTOP_PTR", new Value(Type.i32, false, 0));
-            this.AddExportGlob("STACKTOP", new Value(Type.i32, false, 0));
-            this.AddExportGlob("STACK_MAX", new Value(Type.i32, false, 255));
-            this.AddExportGlob("memoryBase", new Value(Type.i32, false, 0));
-            this.AddExportGlob("tableBase", new Value(Type.i32, false, 0));
+            this.AddExportGlob("DYNAMICTOP_PTR", new Stack.Value(Type.i32, false, 0));
+            this.AddExportGlob("STACKTOP", new Stack.Value(Type.i32, false, 0));
+            this.AddExportGlob("STACK_MAX", new Stack.Value(Type.i32, false, 255));
+            this.AddExportGlob("memoryBase", new Stack.Value(Type.i32, false, 0));
+            this.AddExportGlob("tableBase", new Stack.Value(Type.i32, false, 0));
 
             this.AddExportMemory("memory", new Memory(256, 256));
 

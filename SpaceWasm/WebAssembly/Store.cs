@@ -7,29 +7,12 @@ namespace WebAssembly
     public class Store
     {
         public Dictionary<string, Module.Module> Modules = new Dictionary<string, Module.Module>();
-
-        Stack<object> stack = new Stack<object>();
+        public Stack.Stack Stack = new Stack.Stack();
+        public Stack.Frame CurrentFrame = null;
 
         public Store()
         {
             this.init();
-        }
-
-        public void PushValue(Value v)
-        {
-            this.stack.Push(v);
-        }
-
-        public Value PopValue()
-        {
-            Value v = this.stack.Pop() as Value;
-
-            if(v == null)
-            {
-                throw new Exception("Invalid expected value on stack");
-            }
-
-            return v;
         }
 
         public Module.Module LoadModule(string name, string fileName)

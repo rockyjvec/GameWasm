@@ -14,8 +14,9 @@ namespace ConsoleApp1
 
             var lua = store.LoadModule("lua", "c:/users/rocky/desktop/main.wasm");
 
-            lua.DumpExports();
-            lua.Execute("_run_lua", new WebAssembly.Value(WebAssembly.Type.i32, false, 0));
+            Console.WriteLine("Module loaded.");
+
+            lua.Execute("_run_lua", new WebAssembly.Stack.Value(WebAssembly.Type.i32, false, 0));
 
 
             Console.WriteLine("Press any key to continue...");

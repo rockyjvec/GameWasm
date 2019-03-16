@@ -4,17 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebAssembly
+namespace WebAssembly.Stack
 {
-    class Frame
+    public class Label
     {
-        Module.Module module;
-
         public UInt32 IP;
-
-        public Frame(Module.Module module, UInt32 startIP)
+        public Label(UInt32 IP)
         {
-            this.IP = startIP;
+            this.IP = IP;
         }
     }
 }
