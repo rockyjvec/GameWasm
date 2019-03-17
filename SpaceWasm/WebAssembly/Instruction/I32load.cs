@@ -10,6 +10,12 @@ namespace WebAssembly.Instruction
     {
         int align, offset;
 
+        public override Instruction Run(Store store)
+        {
+            store.Stack.Push(BitConverter.ToUInt32(store.CurrentFrame.Module.Memory[0].Buffer, offset));
+            return this.Next;
+        }
+
         public I32load(Parser parser) : base(parser, true)
         {
             this.align = (int)parser.GetUInt32();

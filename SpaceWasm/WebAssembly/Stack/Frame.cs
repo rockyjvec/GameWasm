@@ -12,9 +12,8 @@ namespace WebAssembly.Stack
         public Module.Module Module;
 
         public Instruction.Instruction Instruction;
-        public List<Value> Locals = new List<Value>();
+        public List<object> Locals = new List<object>();
         public Stack<Instruction.Instruction> Labels = new Stack<Instruction.Instruction>();
-        public WebAssembly.Stack.Stack Stack = new WebAssembly.Stack.Stack();
 
         public Frame(Store store, Module.Module module, Instruction.Instruction instruction)
         {
@@ -23,8 +22,10 @@ namespace WebAssembly.Stack
             this.Instruction = instruction;
         }
 
-        public bool Step()
+        public bool Step(bool debug = false)
         {
+            if(debug)
+                Console.WriteLine(this.Instruction);
             this.Instruction = this.Instruction.Run(this.Store);
 
             return !(this.Instruction == null);

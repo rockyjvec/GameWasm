@@ -12,7 +12,7 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
-            store.Stack.PushValue(new Stack.Value(Type.i32, false, this.value));
+            store.Stack.Push(this.value);
             return this.Next;
         }
 

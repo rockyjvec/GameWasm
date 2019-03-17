@@ -10,6 +10,12 @@ namespace WebAssembly.Instruction
     {
         int localidx;
 
+        public override Instruction Run(Store store)
+        {
+            store.CurrentFrame.Locals[localidx] = store.Stack.Pop();
+            return this.Next;
+        }
+
         public LocalSet(Parser parser) : base(parser, true)
         {
             this.localidx = (int)parser.GetUInt32();

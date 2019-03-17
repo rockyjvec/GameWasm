@@ -9,28 +9,30 @@ namespace WebAssembly.Module
     public class Module
     {
         public string Name;
-        Store store;
+        public Store Store;
 
         Parser parser;
 
         List<Type> types = new List<Type>();
-        List<Function> functions = new List<Function>();
-        List<Memory> memories = new List<Memory>();
+        public List<Function> Functions = new List<Function>();
+        public List<Memory> Memory = new List<Memory>();
         List<Table> tables = new List<Table>();
-        public List<WebAssembly.Stack.Value> Globals = new List<WebAssembly.Stack.Value>();
+        public List<object> Globals = new List<object>();
+
+        int funcOffset = 0;
 
         public Dictionary<string, object> Exports = new Dictionary<string, object>();
 
         public Module(string name, Store store)
         {
             this.Name = name;
-            this.store = store;
+            this.Store = store;
         }
 
         public Module(string name, Store store, byte[] bytes)
         {
             this.Name = name;
-            this.store = store;
+            this.Store = store;
             this.parser = new Parser(bytes);
 
             if (parser.GetByte() != 0x00 || parser.GetByte() != 0x61 || parser.GetByte() != 0x73 || parser.GetByte() != 0x6D)
@@ -132,11 +134,11 @@ namespace WebAssembly.Module
 
                 var type = this.parser.GetByte();
 
-                if (!this.store.Modules.ContainsKey(mod))
+                if (!this.Store.Modules.ContainsKey(mod))
                 {
                     throw new Exception("Import module not found: " + mod + "@" + nm);
                 }
-                else if (!this.store.Modules[mod].Exports.ContainsKey(nm))
+                else if (!this.Store.Modules[mod].Exports.ContainsKey(nm))
                 {
                     string typeString = "unknown";
                     switch (type)
@@ -165,38 +167,42 @@ namespace WebAssembly.Module
                             {
                                 throw new Exception("Import function type does not exist: " + mod + "@" + nm + " " + this.types[funcTypeIdx]);
                             }
-                            else if (!this.types[funcTypeIdx].SameAs(((Function)this.store.Modules[mod].Exports[nm]).Type))
+                            else if (!this.types[funcTypeIdx].SameAs(((Function)this.Store.Modules[mod].Exports[nm]).Type))
                             {
-                                throw new Exception("Import function type mismatch: " + mod + "@" + nm + " - " + this.types[funcTypeIdx] + " != " + ((Function)this.store.Modules[mod].Exports[nm]).Type);
+                                throw new Exception("Import function type mismatch: " + mod + "@" + nm + " - " + this.types[funcTypeIdx] + " != " + ((Function)this.Store.Modules[mod].Exports[nm]).Type);
                             }
                             else
                             {
-                                this.functions.Add((Function)this.store.Modules[mod].Exports[nm]);
+                                this.Functions.Add((Function)this.Store.Modules[mod].Exports[nm]);
                             }
                             break;
                         case 0x01: // tt:tabletype => table tt
                             Table t = this.parser.GetTableType();
-                            if (!t.CompatibleWith((Table)this.store.Modules[mod].Exports[nm]))
+                            if (!t.CompatibleWith((Table)this.Store.Modules[mod].Exports[nm]))
                             {
-                                throw new Exception("Import table type mismatch: " + mod + "@" + nm + " " + t + " != " + (Table)this.store.Modules[mod].Exports[nm]);
+                                throw new Exception("Import table type mismatch: " + mod + "@" + nm + " " + t + " != " + (Table)this.Store.Modules[mod].Exports[nm]);
                             }
-                            this.tables.Add((Table)this.store.Modules[mod].Exports[nm]);
+                            this.tables.Add((Table)this.Store.Modules[mod].Exports[nm]);
                             break;
                         case 0x02: // mt:memtype => mem mt
                             Memory m = this.parser.GetMemType();
-                            if (!m.CompatibleWith((Memory)this.store.Modules[mod].Exports[nm]))
+                            if (!m.CompatibleWith((Memory)this.Store.Modules[mod].Exports[nm]))
                             {
-                                throw new Exception("Import memory type mismatch: " + mod + "@" + nm + " " + m + " != " + (Memory)this.store.Modules[mod].Exports[nm]);
+                                throw new Exception("Import memory type mismatch: " + mod + "@" + nm + " " + m + " != " + (Memory)this.Store.Modules[mod].Exports[nm]);
                             }
-                            this.memories.Add((Memory)this.store.Modules[mod].Exports[nm]);
+                            this.Memory.Add((Memory)this.Store.Modules[mod].Exports[nm]);
                             break;
                         case 0x03: // gt:globaltype => global gt
-                            Stack.Value v = this.parser.GetGlobalType();
-                            if(!v.CompatibleWith((Stack.Value)this.store.Modules[mod].Exports[nm]))
+                            byte gType;
+                            bool mutable;
+                            this.parser.GetGlobalType(out gType, out mutable);
+                            /*
+                            if(this.Store.Modules[mod].Exports[nm].GetType() != gType)
                             {
-                                throw new Exception("Import global type mismatch: " + mod + "@" + nm + " - 0x" + v.Type.ToString("X") + " != 0x" + ((Stack.Value)this.store.Modules[mod].Exports[nm]).Type.ToString("X"));
-                            }                            
-                            this.Globals.Add((Stack.Value)this.store.Modules[mod].Exports[nm]);
+                                throw new Exception("Import global type mismatch: " + mod + "@" + nm + " - 0x" + v.Type.ToString("X") + " != 0x" + ((Stack.Value)this.Store.Modules[mod].Exports[nm]).Type.ToString("X"));
+                            } */
+                            Console.WriteLine("WANRING: Global type not validated");
+                            this.Globals.Add(this.Store.Modules[mod].Exports[nm]);
                             break;
                         default:
                             throw new Exception("Invalid import type: 0x" + type.ToString("X"));
@@ -210,12 +216,14 @@ namespace WebAssembly.Module
             UInt32 sectionSize = this.parser.GetUInt32();
             UInt32 vectorSize = this.parser.GetUInt32();
 
+            this.funcOffset = this.Functions.Count();
+
             for (uint function = 0; function < vectorSize; function++)
             {
                 int index = (int)this.parser.GetIndex();
                 if(index < this.types.Count())
                 {
-                    this.functions.Add(new Function(function, this.types[index]));
+                    this.Functions.Add(new Function(this, (uint)(1 + this.Functions.Count()), this.types[index]));
                 }
                 else
                 {
@@ -243,7 +251,7 @@ namespace WebAssembly.Module
 
             for (uint import = 0; import < vectorSize; import++)
             {
-                this.memories.Add(this.parser.GetMemType());
+                this.Memory.Add(this.parser.GetMemType());
             }
         }
 
@@ -254,19 +262,19 @@ namespace WebAssembly.Module
 
             for (uint import = 0; import < vectorSize; import++)
             {
-                var global = this.parser.GetGlobalType();
+                byte type;
+                bool mutable;
+                this.parser.GetGlobalType(out type, out mutable);
 
                 var expr = this.parser.GetExpr();
-                this.store.CurrentFrame = new WebAssembly.Stack.Frame(this.store, this, expr);
+                this.Store.CurrentFrame = new WebAssembly.Stack.Frame(this.Store, this, expr);
                 do
                 {
                 }
-                while (this.store.CurrentFrame.Step());
-                this.store.CurrentFrame = null;
+                while (this.Store.CurrentFrame.Step());
+                this.Store.CurrentFrame = null;
 
-                global.Set(this.store.Stack.PopValue());
-
-                this.Globals.Add(global);
+                this.Globals.Add(this.Store.Stack.Pop());
             }
         }
 
@@ -284,13 +292,14 @@ namespace WebAssembly.Module
                 switch (type)
                 {
                     case 0x00: // x:typeidx => func x
-                        if (index < this.functions.Count())
+                        if (index < this.Functions.Count())
                         {
-                            this.Exports.Add(nm, this.functions[index]);
+                            this.Functions[index].SetName(this.Name + "@" + nm);
+                            this.Exports.Add(nm, this.Functions[index]);
                         }
                         else
                         {
-                            throw new Exception("Function export \"" + nm + "\" index " + index + "/" + this.functions.Count() + " does not exist.");
+                            throw new Exception("Function export \"" + nm + "\" index " + index + "/" + this.Functions.Count() + " does not exist.");
                         }
                         break;
                     case 0x01: // tt:tabletype => table tt
@@ -304,13 +313,13 @@ namespace WebAssembly.Module
                         }
                         break;
                     case 0x02: // mt:memtype => mem mt
-                        if(index < this.memories.Count())
+                        if(index < this.Memory.Count())
                         {
-                            this.Exports.Add(nm, this.memories[index]);
+                            this.Exports.Add(nm, this.Memory[index]);
                         }
                         else
                         {
-                            throw new Exception("Memory export \" + nm + \" index " + index + "/" + this.memories.Count() + " does not exist.");
+                            throw new Exception("Memory export \" + nm + \" index " + index + "/" + this.Memory.Count() + " does not exist.");
                         }
                         break;
                     case 0x03: // gt:globaltype => global gt
@@ -334,9 +343,11 @@ namespace WebAssembly.Module
             UInt32 sectionSize = this.parser.GetUInt32();
             int index = (int)this.parser.GetIndex();
 
-            if (index < this.functions.Count())
+            if (index < this.Functions.Count())
             {
-                this.functions[index].Execute();
+                this.Functions[index].Call(new object[] { });
+
+                while (this.Store.Step()) { }
             }
             else
             {
@@ -358,14 +369,14 @@ namespace WebAssembly.Module
                 }
 
                 var expr = this.parser.GetExpr();
-                this.store.CurrentFrame = new WebAssembly.Stack.Frame(this.store, this, expr);
+                this.Store.CurrentFrame = new WebAssembly.Stack.Frame(this.Store, this, expr);
                 do
                 {
                 }
-                while (this.store.CurrentFrame.Step());
-                this.store.CurrentFrame = null;
+                while (this.Store.CurrentFrame.Step());
+                this.Store.CurrentFrame = null;
 
-                UInt32 offset = this.store.Stack.PopValue().GetI32();
+                UInt32 offset = this.Store.Stack.PopI32();
 
                 UInt32 funcVecSize = this.parser.GetUInt32();
                 for (uint func = 0; func < funcVecSize; func++)
@@ -384,7 +395,7 @@ namespace WebAssembly.Module
 
             for (uint funcidx = 0; funcidx < vectorSize; funcidx++)
             {
-                if(funcidx >= this.functions.Count())
+                if(funcidx >= this.Functions.Count())
                 {
                     throw new Exception("Missing function in code segment.");
                 }
@@ -397,10 +408,10 @@ namespace WebAssembly.Module
                     UInt32 count = this.parser.GetUInt32();
                     byte type = this.parser.GetValType();
                     for(uint n = 0; n < count; n++)
-                        this.functions[(int)funcidx].AddLocal(type);
+                        this.Functions[(int)funcidx].AddLocal(type);
                 }
 
-                this.functions[(int)funcidx].SetInstruction(this.parser.GetExpr());
+                this.Functions[(int)funcidx + this.funcOffset].SetInstruction(this.parser.GetExpr());
 
                 if(this.parser.GetPointer() != end)
                 {
@@ -417,7 +428,7 @@ namespace WebAssembly.Module
             for (uint data = 0; data < vectorSize; data++)
             {
                 int memidx = (int)this.parser.GetUInt32();
-                if (memidx >= this.memories.Count())
+                if (memidx >= this.Memory.Count())
                 {
                     throw new Exception("Data memory index does not exist");
                 }
@@ -425,18 +436,18 @@ namespace WebAssembly.Module
                 var expr = this.parser.GetExpr();
                 do
                 {
-                    expr = expr.Run(this.store);
+                    expr = expr.Run(this.Store);
                 }
                 while (expr != null);
 
-                UInt32 offset = this.store.Stack.PopValue().GetI32();
+                UInt32 offset = this.Store.Stack.PopI32();
 
                 UInt32 memVecSize = this.parser.GetUInt32();
                 for (uint mem = 0; mem < memVecSize; mem++)
                 {
                     byte b = this.parser.GetByte();
 
-                    this.memories[memidx].Set(offset + mem, b);
+                    this.Memory[memidx].Set(offset + mem, b);
                 }
             }
         }
@@ -455,10 +466,14 @@ namespace WebAssembly.Module
             if (results == null)
                 results = new byte[] { };
 
-            this.Exports.Add(name, new Function(action, new Type(parameters, results)));
+            var func = new Function(this, action, new Type(parameters, results));
+
+            func.SetName(this.Name + "@" + name);
+
+            this.Exports.Add(name, func);
         }
 
-        public void AddExportGlob(string name, Stack.Value v)
+        public void AddExportGlob(string name, object v)
         {
             this.Exports.Add(name, v);
         }
@@ -481,28 +496,27 @@ namespace WebAssembly.Module
                 var f = export.Value as Function;
                 var t = export.Value as Table;
                 var m = export.Value as Memory;
-                var g = export.Value as Stack.Value;
 
                 if (f != null)
                 {
                     Console.WriteLine("Function " + export.Key + " " + f.Type);
                 }
-                if (t != null)
+                else if (t != null)
                 {
                     Console.WriteLine("Table " + export.Key);
                 }
-                if (m != null)
+                else if (m != null)
                 {
                     Console.WriteLine("Memory " + export.Key);
                 }
-                if (g != null)
+                else
                 {
                     Console.WriteLine("Global " + export.Key);
                 }
             }
         }
 
-        public Stack.Value[] Execute(string function, params Stack.Value[] parameters)
+        public void Execute(string function, params object[] parameters)
         {
             if(!this.Exports.ContainsKey(function) || (this.Exports[function] as Function) == null)
             {
@@ -510,17 +524,7 @@ namespace WebAssembly.Module
             }
 
             Function f = this.Exports[function] as Function;
-
-            var instruction = f.GetInstruction();
-
-            this.store.CurrentFrame = new WebAssembly.Stack.Frame(this.store, this, instruction);
-            do
-            {
-            }
-            while (this.store.CurrentFrame.Step());
-            this.store.CurrentFrame = null;
-
-            return new Stack.Value[f.Type.Results.Length];
+            f.Call(parameters);
         }
 
     }

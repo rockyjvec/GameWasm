@@ -16,7 +16,12 @@ namespace ConsoleApp1
 
             Console.WriteLine("Module loaded.");
 
-            lua.Execute("_run_lua", new WebAssembly.Stack.Value(WebAssembly.Type.i32, false, 0));
+            lua.Execute("_run_lua", (UInt32)0);
+
+            while(store.Step(true))
+            {
+
+            }
 
 
             Console.WriteLine("Press any key to continue...");

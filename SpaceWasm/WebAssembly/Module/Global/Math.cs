@@ -10,7 +10,7 @@ namespace WebAssembly.Module.Global
     {
         public Math(Store store) : base("global.Math", store)
         {
-            this.Exports.Add("pow", new Function(this.Pow, new Type(new byte[] { Type.f64, Type.f64 }, new byte[] { Type.f64 })));
+            this.Exports.Add("pow", new Function(this, this.Pow, new Type(new byte[] { Type.f64, Type.f64 }, new byte[] { Type.f64 })));
         }
 
         private object[] Pow(object[] parameters)

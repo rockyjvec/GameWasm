@@ -12,7 +12,7 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
-            store.CurrentFrame.Module.Globals[globalidx].Set(store.Stack.PopValue());
+            store.CurrentFrame.Module.Globals[globalidx] = store.Stack.Pop();
 
             return this.Next;
         }

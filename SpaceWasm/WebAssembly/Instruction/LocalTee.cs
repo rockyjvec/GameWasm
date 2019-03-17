@@ -8,7 +8,14 @@ namespace WebAssembly.Instruction
 {
     class LocalTee : Instruction
     {
-        int localidx;
+        public int localidx;
+
+        public override Instruction Run(Store store)
+        {
+            store.CurrentFrame.Locals[localidx] = store.Stack.Peek();
+
+            return this.Next;
+        }
 
         public LocalTee(Parser parser) : base(parser, true)
         {

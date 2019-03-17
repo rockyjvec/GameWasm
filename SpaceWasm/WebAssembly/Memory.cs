@@ -8,7 +8,7 @@ namespace WebAssembly
 {
     public class Memory
     {
-        byte[] bytes;
+        public byte[] Buffer;
         public UInt32 MinPages = 0, MaxPages = 0, CurrentPages = 0;
 
 
@@ -18,7 +18,7 @@ namespace WebAssembly
             this.MaxPages = maxPages;
             this.CurrentPages = this.MinPages;
 
-            this.bytes = new byte[65535 * this.CurrentPages];
+            this.Buffer = new byte[65535 * this.CurrentPages];
         }
 
         public bool CompatibleWith(Memory m)
@@ -33,12 +33,12 @@ namespace WebAssembly
 
         public void Set(UInt32 offset, byte b)
         {
-            if (offset >= this.bytes.Length)
+            if (offset >= this.Buffer.Length)
             {
                 throw new Exception("Invalid memory offset");
             }
 
-            this.bytes[offset] = b;
+            this.Buffer[offset] = b;
         }
     }
 }

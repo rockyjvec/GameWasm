@@ -43,14 +43,9 @@ namespace WebAssembly
             return this.bytes[this.index];
         }
 
-        public Instruction.Instruction GetExpr()
+        public Instruction.Instruction GetExpr(bool debug = false)
         {
-            return Instruction.Instruction.Consume(this, true);
-        }
-
-        public Instruction.Instruction GetFunction()
-        {
-            return Instruction.Instruction.Consume(this, false);
+            return Instruction.Instruction.Consume(this, debug);
         }
 
         public UInt32 GetIndex()
@@ -166,12 +161,10 @@ namespace WebAssembly
             }
         }
 
-        public WebAssembly.Stack.Value GetGlobalType()
+        public void GetGlobalType(out byte type, out bool mutable)
         {
-            var t = this.GetValType();
-            var mut = this.GetBoolean();
-
-            return new WebAssembly.Stack.Value(t, mut);
+            type = this.GetValType();
+            mutable = this.GetBoolean();
         }
 
         public byte GetBlockType()

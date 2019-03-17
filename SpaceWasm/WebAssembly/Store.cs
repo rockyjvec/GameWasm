@@ -7,11 +7,12 @@ namespace WebAssembly
     public class Store
     {
         public Dictionary<string, Module.Module> Modules = new Dictionary<string, Module.Module>();
-        public Stack.Stack Stack = new Stack.Stack();
+        public Stack.Stack Stack; 
         public Stack.Frame CurrentFrame = null;
 
         public Store()
         {
+            this.Stack = new Stack.Stack(this);
             this.init();
         }
 
@@ -37,6 +38,27 @@ namespace WebAssembly
             this.LoadModule(new Module.Global.Math(this));
             this.LoadModule(new Module.Env(this));
             this.LoadModule(new Module.Asm2Wasm(this));
+        }
+
+        public bool Step(bool debug = false)
+        {
+            if (this.CurrentFrame == null)
+            {
+                return false;
+            }
+            else
+            {
+                bool ret = this.CurrentFrame.Step(debug);
+
+                if(ret)
+                {
+                    return true;
+                }
+                else
+                {
+                    return this.Stack.PopFrame();
+                }
+            }
         }
     }
 }

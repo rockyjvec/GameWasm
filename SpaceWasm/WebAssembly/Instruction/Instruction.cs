@@ -31,7 +31,7 @@ namespace WebAssembly.Instruction
             throw new Exception("Run not implemented in " + this);
         }
 
-        public static Instruction Consume(Parser parser, bool isExpr)
+        public static Instruction Consume(Parser parser, bool debug)
         {
             Stack<Instruction> controlFlowStack = new Stack<Instruction>();
             Instruction start = null;
@@ -449,6 +449,11 @@ namespace WebAssembly.Instruction
                 if (start == null) start = current;
                 if (current != null)
                 {
+                    if(debug)
+                    {
+                        Console.WriteLine(current);
+                    }
+
                     if (last != null && !done && last.Next == null)
                     {
                         last.Next = current;

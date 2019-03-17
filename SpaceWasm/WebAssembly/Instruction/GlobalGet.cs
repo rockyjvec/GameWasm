@@ -12,7 +12,7 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
-            store.Stack.PushValue(store.CurrentFrame.Module.Globals[globalidx]);
+            store.Stack.Push(store.CurrentFrame.Module.Globals[globalidx]);
 
             return this.Next;
         }

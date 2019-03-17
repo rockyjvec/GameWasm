@@ -9,39 +9,94 @@ namespace WebAssembly.Stack
     public class Stack
     {
         Stack<object> stack = new Stack<object>();
+        Stack<Frame> frames = new Stack<Frame>();
+        Store store;
 
-        public void PushValue(Value v)
+        public Stack(Store store)
+        {
+            this.store = store;
+        }
+
+        public void Push(object v)
         {
             this.stack.Push(v);
         }
 
-        public Value PopValue()
+        public object Pop()
         {
-            Value v = this.stack.Pop() as Value;
-
-            if (v == null)
-            {
-                throw new Exception("Invalid expected value on stack");
-            }
-
-            return v;
+            return this.stack.Pop();
         }
 
-        public void PushLabel(UInt32 IP)
+        public object Peek()
         {
-            this.stack.Push(new Label(IP));
+            return this.stack.Peek();
         }
 
-        public Label PopLabel(UInt32 IP)
+        public UInt32 PopI32()
         {
-            Label l = this.stack.Pop() as Label;
+            return (UInt32)this.stack.Pop();
+        }
 
-            if (l == null)
+        public UInt32 PeekI32()
+        {
+            return (UInt32)this.stack.Peek();
+        }
+
+        public UInt64 PopI64()
+        {
+            return (UInt64)this.stack.Pop();
+        }
+
+        public UInt64 PeekI64()
+        {
+            return (UInt64)this.stack.Peek();
+        }
+
+        public float PopF32()
+        {
+            return (float)this.stack.Pop();
+        }
+
+        public float PeekF32()
+        {
+            return (float)this.stack.Peek();
+        }
+
+        public double PopF64()
+        {
+            return (double)this.stack.Pop();
+        }
+
+        public double PeekF64()
+        {
+            return (double)this.stack.Peek();
+        }
+
+        public void PushFrame(Frame frame)
+        {
+            if(this.store.CurrentFrame == null)
             {
-                throw new Exception("Invalid expected label on stack");
+                this.store.CurrentFrame = frame;
+            }
+            else
+            {
+                this.frames.Push(this.store.CurrentFrame);
+                this.store.CurrentFrame = frame;
+            }
+        }
+
+        public bool PopFrame()
+        {
+            if (this.frames.Count() > 0)
+            {
+                this.store.CurrentFrame = this.frames.Pop();
+            }
+            else
+            {
+                this.store.CurrentFrame = null;
             }
 
-            return l;
+            return this.store.CurrentFrame != null;
         }
     }
 }

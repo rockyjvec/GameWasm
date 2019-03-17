@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,6 +42,7 @@ namespace WebAssembly.Stack
 
         public void Set(Value value)
         {
+            UInt
             if (!this.CompatibleWith(value))
             {
                 throw new Exception("Cannot set an incompatible value");
@@ -96,3 +98,4 @@ namespace WebAssembly.Stack
         }
     }
 }
+*/

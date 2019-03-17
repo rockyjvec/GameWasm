@@ -10,6 +10,12 @@ namespace WebAssembly.Instruction
     {
         int index;
 
+        public override Instruction Run(Store store)
+        {
+            store.Stack.Push(store.CurrentFrame.Locals[index]);
+            return this.Next;
+        }
+
         public LocalGet(Parser parser) : base(parser, true)
         {
             this.index = (int)parser.GetUInt32();

@@ -10,8 +10,8 @@ namespace WebAssembly.Module.Global
     {
         public Global(Store store) : base("global", store)
         {
-            this.AddExportGlob("NaN", new Stack.Value(Type.f64, false, 0));
-            this.AddExportGlob("Infinity", new Stack.Value(Type.f64, false, 1));
+            this.AddExportGlob("NaN", double.NaN);
+            this.AddExportGlob("Infinity", double.PositiveInfinity);
         }
     }
 }
