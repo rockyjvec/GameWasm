@@ -18,7 +18,12 @@ namespace WebAssembly.Instruction
 
         public I64const(Parser parser) : base(parser, true)
         {
-            this.value = parser.GetUInt64();
+            this.value = (UInt64)parser.GetInt64();
+        }
+
+        public override string ToString()
+        {
+            return "i64.const " + (Int64)this.value;
         }
     }
 }

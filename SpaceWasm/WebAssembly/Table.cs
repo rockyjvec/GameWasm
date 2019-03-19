@@ -37,5 +37,15 @@ namespace WebAssembly
 
             this.table[offset] = funcidz;
         }
+
+        public UInt32 Get(UInt32 offset)
+        {
+            if (offset >= this.table.Length)
+            {
+                throw new Exception("Invalid table offset");
+            }
+
+            return this.table[offset];
+        }
     }
 }

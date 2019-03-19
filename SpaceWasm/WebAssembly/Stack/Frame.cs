@@ -10,23 +10,49 @@ namespace WebAssembly.Stack
     {
         public Store Store;
         public Module.Module Module;
+        public Function Function;
 
         public Instruction.Instruction Instruction;
         public List<object> Locals = new List<object>();
         public Stack<Instruction.Instruction> Labels = new Stack<Instruction.Instruction>();
 
-        public Frame(Store store, Module.Module module, Instruction.Instruction instruction)
+        public Stack<object> Results = new Stack<object>();
+
+        public Frame(Store store, Module.Module module, Function function, Instruction.Instruction instruction)
         {
             this.Store = store;
             this.Module = module;
+            this.Function = function;
             this.Instruction = instruction;
         }
 
         public bool Step(bool debug = false)
         {
             if(debug)
-                Console.WriteLine(this.Instruction);
+            {
+                int num = 0;
+                foreach (var v in Locals)
+                {
+                    Console.WriteLine("$var" + num + ": " + Type.Pretify(v));
+                    num++;
+                }
+                
+                Console.Write(this.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + this.Module.Name + "@" + this.Store.CurrentFrame.Function.GetName() + " => " + new string(' ', this.Labels.Count() * 2) + this.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
+            }
+
             this.Instruction = this.Instruction.Run(this.Store);
+            if(debug)
+            {
+                if (this.Store.Stack.Size == 0)
+                {
+                }
+                else
+                {
+                    Console.Write(" $ret: " + Type.Pretify(this.Store.Stack.Peek()));
+                }
+                Console.Write("\n");
+//                Console.ReadKey();
+            }
 
             return !(this.Instruction == null);
         }

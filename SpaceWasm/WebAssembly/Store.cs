@@ -42,21 +42,35 @@ namespace WebAssembly
 
         public bool Step(bool debug = false)
         {
-            if (this.CurrentFrame == null)
+            bool exception = true;
+            try
             {
-                return false;
-            }
-            else
-            {
-                bool ret = this.CurrentFrame.Step(debug);
-
-                if(ret)
+                if (this.CurrentFrame == null)
                 {
-                    return true;
+                    return false;
                 }
                 else
                 {
-                    return this.Stack.PopFrame();
+                    bool ret = this.CurrentFrame.Step(debug);
+                    exception = false;
+
+                    if (ret)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        this.CurrentFrame.Function.HandleReturn(this);
+                        return this.Stack.PopFrame();
+                    }
+                }
+            }
+            finally
+            {
+                if(exception)
+                {
+                    this.CurrentFrame = null;
+                    this.Stack = new Stack.Stack(this);
                 }
             }
         }

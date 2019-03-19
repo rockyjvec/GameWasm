@@ -18,7 +18,13 @@ namespace WebAssembly.Instruction
 
         public I32const(Parser parser) : base(parser, true)
         {
-            this.value = parser.GetUInt32();
+            UInt32 pointer = parser.GetPointer();
+            this.value = (UInt32)parser.GetInt32();
+        }
+
+        public override string ToString()
+        {
+            return "i32.const " + (Int32)this.value;
         }
     }
 }

@@ -20,5 +20,10 @@ namespace WebAssembly.Instruction
         {
             this.value = parser.GetF64();
         }
+
+        public override string ToString()
+        {
+            return "f64.const " + this.value;
+        }
     }
 }

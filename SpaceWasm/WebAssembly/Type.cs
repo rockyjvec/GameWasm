@@ -24,6 +24,22 @@ namespace WebAssembly
             return this.Parameters.SequenceEqual(item.Parameters) && this.Results.SequenceEqual(item.Results);
         }
 
+        public static string Pretify(object v)
+        {
+            switch (v.GetType().ToString())
+            {
+                case "System.UInt32":
+                    return ((Int32)(UInt32)v).ToString();
+                case "System.UInt64":
+                    return ((Int64)(UInt64)v).ToString();
+                case "System.float":
+                case "System.double":
+                    return (v).ToString();
+                default:
+                    return "unknown";
+            }
+        }
+
         public override string ToString()
         {
             string result = "(";

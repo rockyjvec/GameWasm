@@ -12,7 +12,12 @@ namespace WebAssembly.Instruction
 
         public override void End(Instruction end)
         {
-            end.Next = this;
+        }
+
+        public override Instruction Run(Store store)
+        {
+            store.CurrentFrame.Labels.Push(this);
+            return this.Next;
         }
 
         public Loop(Parser parser) : base(parser, true)

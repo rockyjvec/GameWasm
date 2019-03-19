@@ -8,6 +8,15 @@ namespace WebAssembly.Instruction
 {
     class MemoryGrow : Instruction
     {
+        public override Instruction Run(Store store)
+        {
+            var size = store.Stack.PopI32();
+
+            store.Stack.Push((UInt32)store.CurrentFrame.Module.Memory[0].Grow(size));
+
+            return this.Next;
+        }
+
         public MemoryGrow(Parser parser) : base(parser, true)
         {
             UInt32 zero = parser.GetUInt32(); // May be used in future version of WebAssembly to address additional memories

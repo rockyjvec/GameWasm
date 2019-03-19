@@ -8,18 +8,26 @@ namespace WebAssembly.Instruction
 {
     class GlobalSet : Instruction
     {
-        int globalidx;
+        Global global;
 
         public override Instruction Run(Store store)
         {
-            store.CurrentFrame.Module.Globals[globalidx] = store.Stack.Pop();
+            global.Set(store.Stack.Pop());
 
             return this.Next;
         }
 
         public GlobalSet(Parser parser) : base(parser, true)
         {
-            globalidx = (int)parser.GetUInt32();
+            var index = (int)parser.GetUInt32();
+            if (index >= parser.Module.Globals.Count())
+                throw new Exception("Invalid global variable");
+            this.global = parser.Module.Globals[index];
+        }
+
+        public override string ToString()
+        {
+            return "set_global " + this.global.Name + " (" + Type.Pretify(this.global.GetValue()) + ")";
         }
     }
 }

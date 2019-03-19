@@ -12,11 +12,11 @@ namespace WebAssembly.Instruction
         {
             if (store.Stack.PopI32() == store.Stack.PopI32())
             {
-                store.Stack.Push(true);
+                store.Stack.Push((UInt32)1);
             }
             else
             {
-                store.Stack.Push(false);
+                store.Stack.Push((UInt32)0);
             }
 
             return this.Next;

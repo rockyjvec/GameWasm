@@ -8,20 +8,33 @@ namespace WebAssembly.Instruction
 {
     class If : Instruction
     {
-        Instruction elseLabel;
         Instruction endLabel;
 
         byte type;
 
         public override void End(Instruction end)
         {
-            if (end as Else == null)
+            this.endLabel = end;
+        }
+
+        public override Instruction Run(Store store)
+        {
+            var v = store.Stack.PopI32();
+
+            store.CurrentFrame.Labels.Push(this.endLabel);
+
+            if (v > 0)
             {
-                this.endLabel = end;
+                return this.Next;
             }
             else
             {
-                this.elseLabel = end;
+                if(this.endLabel as Else == null)
+                {
+                    store.CurrentFrame.Labels.Pop();
+                }
+
+                return this.endLabel.Next;
             }
         }
 

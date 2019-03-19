@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebAssembly\Global.cs" />
     <Compile Include="WebAssembly\Instruction\Else.cs" />
     <Compile Include="WebAssembly\Instruction\End.cs" />
     <Compile Include="WebAssembly\Instruction\F32abs.cs" />
@@ -227,6 +228,8 @@
     <Compile Include="WebAssembly\Stack\Value.cs" />
     <Compile Include="WebAssembly\Table.cs" />
     <Compile Include="WebAssembly\Module\Global\Math.cs" />
+    <Compile Include="WebAssembly\Test.cs" />
+    <Compile Include="WebAssembly\Trap.cs" />
     <Compile Include="WebAssembly\Type.cs" />
     <Compile Include="WebAssembly\Function.cs" />
     <Compile Include="WebAssembly\Memory.cs" />

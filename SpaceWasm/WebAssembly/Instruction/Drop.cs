@@ -8,8 +8,17 @@ namespace WebAssembly.Instruction
 {
     class Drop : Instruction
     {
+        public override Instruction Run(Store store)
+        {
+            store.Stack.PopValue();
+
+            Console.WriteLine(this.Next);
+            return this.Next;
+        }
+
         public Drop(Parser parser) : base(parser, true)
         {
+            
         }
     }
 }

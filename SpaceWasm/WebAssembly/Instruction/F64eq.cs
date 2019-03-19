@@ -1,4 +1,6 @@
-﻿namespace WebAssembly.Instruction
+﻿using System;
+
+namespace WebAssembly.Instruction
 {
     internal class F64eq : Instruction
     {
@@ -6,11 +8,11 @@
         {
             if (store.Stack.PopF64() == store.Stack.PopF64())
             {
-                store.Stack.Push(true);
+                store.Stack.Push((UInt32)1);
             }
             else
             {
-                store.Stack.Push(false);
+                store.Stack.Push((UInt32)0);
             }
 
             return this.Next;

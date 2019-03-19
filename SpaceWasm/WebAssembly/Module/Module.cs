@@ -16,10 +16,14 @@ namespace WebAssembly.Module
         List<Type> types = new List<Type>();
         public List<Function> Functions = new List<Function>();
         public List<Memory> Memory = new List<Memory>();
-        List<Table> tables = new List<Table>();
-        public List<object> Globals = new List<object>();
+        public List<Table> Tables = new List<Table>();
+        public List<WebAssembly.Global> Globals = new List<WebAssembly.Global>();
 
-        int funcOffset = 0;
+        Function startFunction = null;
+
+        public bool Debug = false;
+
+        int functionIndex = 0;
 
         public Dictionary<string, object> Exports = new Dictionary<string, object>();
 
@@ -33,7 +37,7 @@ namespace WebAssembly.Module
         {
             this.Name = name;
             this.Store = store;
-            this.parser = new Parser(bytes);
+            this.parser = new Parser(bytes, this);
 
             if (parser.GetByte() != 0x00 || parser.GetByte() != 0x61 || parser.GetByte() != 0x73 || parser.GetByte() != 0x6D)
             {
@@ -87,6 +91,13 @@ namespace WebAssembly.Module
                     default:
                         throw new Exception("Invalid module section ID: 0x" + section.ToString("X"));
                 }
+            }
+
+            if(this.startFunction != null)
+            {
+                this.startFunction.NativeCall();
+
+                while (this.Store.Step(this.Debug)) { }
             }
         }
 
@@ -174,6 +185,7 @@ namespace WebAssembly.Module
                             else
                             {
                                 this.Functions.Add((Function)this.Store.Modules[mod].Exports[nm]);
+                                this.functionIndex++;
                             }
                             break;
                         case 0x01: // tt:tabletype => table tt
@@ -182,7 +194,7 @@ namespace WebAssembly.Module
                             {
                                 throw new Exception("Import table type mismatch: " + mod + "@" + nm + " " + t + " != " + (Table)this.Store.Modules[mod].Exports[nm]);
                             }
-                            this.tables.Add((Table)this.Store.Modules[mod].Exports[nm]);
+                            this.Tables.Add((Table)this.Store.Modules[mod].Exports[nm]);
                             break;
                         case 0x02: // mt:memtype => mem mt
                             Memory m = this.parser.GetMemType();
@@ -196,13 +208,15 @@ namespace WebAssembly.Module
                             byte gType;
                             bool mutable;
                             this.parser.GetGlobalType(out gType, out mutable);
-                            /*
-                            if(this.Store.Modules[mod].Exports[nm].GetType() != gType)
+
+                            if(((WebAssembly.Global)this.Store.Modules[mod].Exports[nm]).Type != gType)
                             {
-                                throw new Exception("Import global type mismatch: " + mod + "@" + nm + " - 0x" + v.Type.ToString("X") + " != 0x" + ((Stack.Value)this.Store.Modules[mod].Exports[nm]).Type.ToString("X"));
-                            } */
-                            Console.WriteLine("WANRING: Global type not validated");
-                            this.Globals.Add(this.Store.Modules[mod].Exports[nm]);
+                                throw new Exception("Import global type mismatch: " + mod + "@" + nm);
+                            }
+
+                            var global = (WebAssembly.Global)this.Store.Modules[mod].Exports[nm];
+                            global.SetName(mod + "." + nm);
+                            this.Globals.Add(global);
                             break;
                         default:
                             throw new Exception("Invalid import type: 0x" + type.ToString("X"));
@@ -216,14 +230,12 @@ namespace WebAssembly.Module
             UInt32 sectionSize = this.parser.GetUInt32();
             UInt32 vectorSize = this.parser.GetUInt32();
 
-            this.funcOffset = this.Functions.Count();
-
             for (uint function = 0; function < vectorSize; function++)
             {
                 int index = (int)this.parser.GetIndex();
                 if(index < this.types.Count())
                 {
-                    this.Functions.Add(new Function(this, (uint)(1 + this.Functions.Count()), this.types[index]));
+                    this.Functions.Add(new Function(this, (uint)(this.Functions.Count()), this.types[index]));
                 }
                 else
                 {
@@ -240,7 +252,7 @@ namespace WebAssembly.Module
 
             for (uint table = 0; table < vectorSize; table++)
             {
-                this.tables.Add(this.parser.GetTableType());
+                this.Tables.Add(this.parser.GetTableType());
             }
         }
 
@@ -267,14 +279,14 @@ namespace WebAssembly.Module
                 this.parser.GetGlobalType(out type, out mutable);
 
                 var expr = this.parser.GetExpr();
-                this.Store.CurrentFrame = new WebAssembly.Stack.Frame(this.Store, this, expr);
+                this.Store.CurrentFrame = new WebAssembly.Stack.Frame(this.Store, this, null, expr);
                 do
                 {
                 }
-                while (this.Store.CurrentFrame.Step());
+                while (this.Store.CurrentFrame.Step(this.Debug));
                 this.Store.CurrentFrame = null;
 
-                this.Globals.Add(this.Store.Stack.Pop());
+                this.Globals.Add(new WebAssembly.Global(type, mutable, this.Store.Stack.Pop(), (UInt32)this.Globals.Count()));
             }
         }
 
@@ -294,7 +306,7 @@ namespace WebAssembly.Module
                     case 0x00: // x:typeidx => func x
                         if (index < this.Functions.Count())
                         {
-                            this.Functions[index].SetName(this.Name + "@" + nm);
+                            this.Functions[index].SetName(nm);
                             this.Exports.Add(nm, this.Functions[index]);
                         }
                         else
@@ -303,13 +315,13 @@ namespace WebAssembly.Module
                         }
                         break;
                     case 0x01: // tt:tabletype => table tt
-                        if (index < this.tables.Count())
+                        if (index < this.Tables.Count())
                         {
-                            this.Exports.Add(nm, this.tables[index]);
+                            this.Exports.Add(nm, this.Tables[index]);
                         }
                         else
                         {
-                            throw new Exception("Table export \"" + nm + "\" index " + index + "/" + this.tables.Count() + " does not exist.");
+                            throw new Exception("Table export \"" + nm + "\" index " + index + "/" + this.Tables.Count() + " does not exist.");
                         }
                         break;
                     case 0x02: // mt:memtype => mem mt
@@ -325,6 +337,7 @@ namespace WebAssembly.Module
                     case 0x03: // gt:globaltype => global gt
                         if (index < this.Globals.Count())
                         {
+                            this.Globals[index].SetName(this.Name + "." + nm);
                             this.Exports.Add(nm, this.Globals[index]);
                         }
                         else
@@ -345,9 +358,7 @@ namespace WebAssembly.Module
 
             if (index < this.Functions.Count())
             {
-                this.Functions[index].Call(new object[] { });
-
-                while (this.Store.Step()) { }
+                this.startFunction = this.Functions[index];
             }
             else
             {
@@ -363,17 +374,17 @@ namespace WebAssembly.Module
             for (uint element = 0; element < vectorSize; element++)
             {
                 int tableidx = (int)this.parser.GetUInt32();
-                if(tableidx >= this.tables.Count())
+                if(tableidx >= this.Tables.Count())
                 {
                     throw new Exception("Element table index does not exist");
                 }
 
                 var expr = this.parser.GetExpr();
-                this.Store.CurrentFrame = new WebAssembly.Stack.Frame(this.Store, this, expr);
+                this.Store.CurrentFrame = new WebAssembly.Stack.Frame(this.Store, this, null, expr);
                 do
                 {
                 }
-                while (this.Store.CurrentFrame.Step());
+                while (this.Store.CurrentFrame.Step(this.Debug));
                 this.Store.CurrentFrame = null;
 
                 UInt32 offset = this.Store.Stack.PopI32();
@@ -383,7 +394,7 @@ namespace WebAssembly.Module
                 {
                     UInt32 funcidz = this.parser.GetUInt32();
 
-                    this.tables[tableidx].Set(offset + func, funcidz);
+                    this.Tables[tableidx].Set(offset + func, funcidz);
                 }
             }
         }
@@ -408,10 +419,11 @@ namespace WebAssembly.Module
                     UInt32 count = this.parser.GetUInt32();
                     byte type = this.parser.GetValType();
                     for(uint n = 0; n < count; n++)
-                        this.Functions[(int)funcidx].AddLocal(type);
+                        this.Functions[(int)this.functionIndex].AddLocal(type);
                 }
 
-                this.Functions[(int)funcidx + this.funcOffset].SetInstruction(this.parser.GetExpr());
+                this.Functions[(int)this.functionIndex].SetInstruction(this.parser.GetExpr());
+                this.functionIndex++;
 
                 if(this.parser.GetPointer() != end)
                 {
@@ -452,30 +464,29 @@ namespace WebAssembly.Module
             }
         }
 
-        protected object[] NotImplemented(object[] parameters)
-        {
-            throw new Exception("Function not implemented");
-        }
 
         public void AddExportFunc(string name, byte[] parameters = null, byte[] results = null, Func<object[], object[]> action = null)
         {
-            if (action == null)
-                action = this.NotImplemented;
             if (parameters == null)
                 parameters = new byte[] { };
             if (results == null)
                 results = new byte[] { };
 
-            var func = new Function(this, action, new Type(parameters, results));
+            Function func;
+
+            if (action == null)
+                func = new Function(this, new Type(parameters, results));
+            else
+                func = new Function(this, action, new Type(parameters, results));
 
             func.SetName(this.Name + "@" + name);
 
             this.Exports.Add(name, func);
         }
 
-        public void AddExportGlob(string name, object v)
+        public void AddExportGlob(string name, byte type, bool mutable, object v)
         {
-            this.Exports.Add(name, v);
+            this.Exports.Add(name, new WebAssembly.Global(type, mutable, v, (UInt32)this.Exports.Count()));
         }
 
         public void AddExportMemory(string name, Memory m)
@@ -523,9 +534,30 @@ namespace WebAssembly.Module
                 throw new Exception("Function \"" + function + "\" does not exist in " + this.Name + ".");
             }
 
+            foreach(var p in parameters)
+            {
+                this.Store.Stack.Push(p);
+            }
+
             Function f = this.Exports[function] as Function;
-            f.Call(parameters);
+            f.NativeCall();
         }
 
+        public object Call(string function, params object[] parameters)
+        {
+            this.CallVoid(function, parameters);
+
+            return this.Store.Stack.Pop();
+        }
+
+        public void CallVoid(string function, params object[] parameters)
+        {
+            this.Execute(function, parameters);
+
+            while (this.Store.Step(this.Debug))
+            {
+
+            }
+        }
     }
 }

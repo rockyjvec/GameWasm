@@ -12,6 +12,8 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
+            if (index >= store.CurrentFrame.Locals.Count())
+                throw new Exception("Invalid local variable");
             store.Stack.Push(store.CurrentFrame.Locals[index]);
             return this.Next;
         }
@@ -19,6 +21,11 @@ namespace WebAssembly.Instruction
         public LocalGet(Parser parser) : base(parser, true)
         {
             this.index = (int)parser.GetUInt32();
+        }
+
+        public override string ToString()
+        {
+            return "get_local $var" + this.index;
         }
     }
 }

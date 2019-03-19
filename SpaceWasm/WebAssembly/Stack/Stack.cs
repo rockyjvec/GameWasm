@@ -9,7 +9,7 @@ namespace WebAssembly.Stack
     public class Stack
     {
         Stack<object> stack = new Stack<object>();
-        Stack<Frame> frames = new Stack<Frame>();
+        public UInt32 Size = 0;
         Store store;
 
         public Stack(Store store)
@@ -20,21 +20,40 @@ namespace WebAssembly.Stack
         public void Push(object v)
         {
             this.stack.Push(v);
+            this.Size++;
         }
 
         public object Pop()
         {
-            return this.stack.Pop();
+            var v = this.stack.Pop();
+            this.Size--;
+            return v;
         }
 
         public object Peek()
         {
-            return this.stack.Peek();
+            var v = this.stack.Peek();
+            return v;
+        }
+
+        public object PopValue()
+        {
+            var value = this.Peek();
+            switch(value.GetType().ToString())
+            {
+
+                case "System.UInt32":
+                case "System.UInt64":
+                case "System.float":
+                case "System.double":
+                    return this.Pop();
+            }
+            throw new Exception("Could not pop value from stack.");
         }
 
         public UInt32 PopI32()
         {
-            return (UInt32)this.stack.Pop();
+            return (UInt32)this.Pop();
         }
 
         public UInt32 PeekI32()
@@ -44,7 +63,7 @@ namespace WebAssembly.Stack
 
         public UInt64 PopI64()
         {
-            return (UInt64)this.stack.Pop();
+            return (UInt64)this.Pop();
         }
 
         public UInt64 PeekI64()
@@ -54,7 +73,7 @@ namespace WebAssembly.Stack
 
         public float PopF32()
         {
-            return (float)this.stack.Pop();
+            return (float)this.Pop();
         }
 
         public float PeekF32()
@@ -64,7 +83,7 @@ namespace WebAssembly.Stack
 
         public double PopF64()
         {
-            return (double)this.stack.Pop();
+            return (double)this.Pop();
         }
 
         public double PeekF64()
@@ -80,20 +99,27 @@ namespace WebAssembly.Stack
             }
             else
             {
-                this.frames.Push(this.store.CurrentFrame);
+                this.stack.Push(this.store.CurrentFrame);
                 this.store.CurrentFrame = frame;
             }
         }
 
         public bool PopFrame()
         {
-            if (this.frames.Count() > 0)
+            var results = this.store.CurrentFrame.Results;
+
+            if (this.stack.Count() > 0)
             {
-                this.store.CurrentFrame = this.frames.Pop();
+                this.store.CurrentFrame = (Frame)this.stack.Pop();
             }
             else
             {
                 this.store.CurrentFrame = null;
+            }
+
+            foreach(var r in results)
+            {
+                this.Push(r);
             }
 
             return this.store.CurrentFrame != null;

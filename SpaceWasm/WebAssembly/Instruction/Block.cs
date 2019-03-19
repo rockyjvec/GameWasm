@@ -26,5 +26,10 @@ namespace WebAssembly.Instruction
         {
             this.type = parser.GetBlockType();
         }
+
+        public override string ToString()
+        {
+            return "block";
+        }
     }
 }

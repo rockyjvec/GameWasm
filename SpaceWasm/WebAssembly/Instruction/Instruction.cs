@@ -8,6 +8,7 @@ namespace WebAssembly.Instruction
 {
     public class Instruction
     {
+        public UInt32 Pointer;
         public Instruction Next = null;
         Parser parser;
 
@@ -42,6 +43,7 @@ namespace WebAssembly.Instruction
             while (!done)
             {
                 Instruction current = null;
+                UInt32 pointer = parser.GetPointer();
                 byte code = parser.GetByte();
 
                 switch (code)
@@ -74,7 +76,7 @@ namespace WebAssembly.Instruction
                             current = new Else(parser);
                             var match = controlFlowStack.Pop();
                             match.End(current); // notify of else
-                            controlFlowStack.Push(match); // add back to find end
+                            controlFlowStack.Push(current); // add back to find end
                             break;
                         }
                     case 0x0B: // end
@@ -449,6 +451,7 @@ namespace WebAssembly.Instruction
                 if (start == null) start = current;
                 if (current != null)
                 {
+                    current.Pointer = pointer;
                     if(debug)
                     {
                         Console.WriteLine(current);

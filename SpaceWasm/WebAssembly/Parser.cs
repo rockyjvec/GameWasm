@@ -11,11 +11,13 @@ namespace WebAssembly
     {
         private byte[] bytes;
         private UInt32 index;
+        public Module.Module Module;
 
-        public Parser(byte[] bytes)
+        public Parser(byte[] bytes, Module.Module module)
         {
             this.bytes = bytes;
             this.index = 0;
+            this.Module = module;
         }
 
         public UInt32 GetPointer()
@@ -36,6 +38,13 @@ namespace WebAssembly
         public byte GetByte()
         {
             return this.bytes[this.index++];
+        }
+
+        public byte[] GetBytes(int offset, int length)
+        {
+            byte[] output = new byte[length];
+            Buffer.BlockCopy(this.bytes, offset, output, 0, length);
+            return output;
         }
 
         public byte PeekByte()
@@ -67,6 +76,16 @@ namespace WebAssembly
             }
 
             return result;
+        }
+
+        public Int32 GetInt32()
+        {
+            return this.GetSignedLEB128(32);
+        }
+
+        public Int32 GetInt64()
+        {
+            return this.GetSignedLEB128(64);
         }
 
         public UInt64 GetUInt64()
@@ -219,6 +238,27 @@ namespace WebAssembly
         {
             this.index += size;
         }
+
+        private Int32 GetSignedLEB128(byte size)
+        {
+            Int32 result = 0;
+            byte shift = 0;
+            byte b;
+            do
+            {
+                b = this.bytes[this.index++];
+                result |= ((0x7F & b) << shift);
+                shift += 7;
+            } while ((b & 0x80) != 0);
+
+            /* sign bit of byte is second high order bit (0x40) */
+            if ((shift < size) && ((b & 0x40) != 0))
+                /* sign extend */
+                result |= (~0 << shift);
+
+            return result;
+        }
+
 
     }
 }

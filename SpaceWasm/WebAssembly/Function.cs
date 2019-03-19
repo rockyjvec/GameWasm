@@ -17,13 +17,22 @@ namespace WebAssembly
 
         Instruction.Instruction instruction;
 
-        List<byte> localTypes = new List<byte>();
+        public List<byte> LocalTypes = new List<byte>();
 
         public Function(Module.Module module, UInt32 index, Type type)
         {
             this.module = module;
             this.Index = index;
-            this.name = "f" + (index - 1);
+            this.name = "f" + (index);
+            this.Type = type;
+        }
+
+        public Function(Module.Module module, Type type)
+        {
+            this.module = module;
+            this.native = true;
+            this.name = "fnative";
+            this.action = this.NotImplemented;
             this.Type = type;
         }
 
@@ -36,9 +45,14 @@ namespace WebAssembly
             this.Type = type;
         }
 
+        protected object[] NotImplemented(object[] parameters)
+        {
+            throw new Exception("Function not implemented: " + this.module.Name + "@" + this.name);
+        }
+
         public void AddLocal(byte type)
         {
-            this.localTypes.Add(type);
+            this.LocalTypes.Add(type);
         }
 
         public void SetInstruction(Instruction.Instruction instruction)
@@ -53,13 +67,14 @@ namespace WebAssembly
 
         public Stack.Frame CreateFrame(Store store, Module.Module module, object[] parameters)
         {
-            var frame = new Stack.Frame(store, module, this.instruction);
-            foreach (var p in parameters)
+            var frame = new Stack.Frame(store, module, this, this.instruction);
+
+            foreach (var p in parameters.Reverse())
             {
                 frame.Locals.Add(p);
             }
 
-            foreach (var t in this.localTypes)
+            foreach (var t in this.LocalTypes)
             {
                 object local;
                 switch(t)
@@ -79,65 +94,15 @@ namespace WebAssembly
                     default:
                         throw new Exception("Invalid local type: 0x" + t.ToString("X"));
                 }
+
                 frame.Locals.Add(local);
             }
 
-            Console.WriteLine("locals: " + frame.Locals.Count());
             return frame;
-        }
-
-        public void Call(object[] parameters)
-        {
-            Console.WriteLine("Executing " + this.GetName());
-
-            if (parameters.Length != this.Type.Parameters.Length)
-            {
-                throw new Exception("Invalid number of parameters in function call.");
-            }
-
-            for(int i = 0; i < parameters.Length; i++)
-            {
-                bool valid = false;
-                switch (this.Type.Parameters[0])
-                {
-                    case Type.i32:
-                        if(parameters[i].GetType().ToString() == "System.UInt32")
-                            valid = true;
-                        break;
-                    case Type.i64:
-                        if (parameters[i].GetType().ToString() == "System.UInt64")
-                            valid = true;
-                        break;
-                    case Type.f32:
-                        if (parameters[i].GetType().ToString() == "System.UInt32")
-                            valid = true;
-                        break;
-                    case Type.f64:
-                        if (parameters[i].GetType().ToString() == "System.Double")
-                            valid = true;
-                        break;
-                }
-
-                if (!valid)
-                {
-                    throw new Exception("Parameter type mismatch");
-                }
-            }
-
-            if (this.module.Store.CurrentFrame == null)
-            {
-                this.module.Store.CurrentFrame = this.CreateFrame(this.module.Store, this.module, parameters);
-            }
-            else
-            {
-                this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
-            }
         }
 
         public void NativeCall()
         {
-            Console.WriteLine("Executing " + this.GetName());
-
             object[] parameters = new object[this.Type.Parameters.Length];
             for (int i = 0; i < this.Type.Parameters.Length; i++)
             {
@@ -169,24 +134,66 @@ namespace WebAssembly
                 }
             }
 
-            if (this.module.Store.CurrentFrame == null)
+            if (this.native)
             {
-                this.module.Store.CurrentFrame = this.CreateFrame(this.module.Store, this.module, parameters);
+                object[] ret = this.action(parameters);
+
+                foreach (var v in ret)
+                {
+                    this.module.Store.Stack.Push(v);
+                }
             }
             else
             {
-                this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
+                if (this.module.Store.CurrentFrame == null)
+                {
+                    this.module.Store.CurrentFrame = this.CreateFrame(this.module.Store, this.module, parameters);
+                }
+                else
+                {
+                    this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
+                }
             }
         }
 
         public void SetName(string name)
         {
-            this.name = name;
+            this.name =  this.name + "(" + name + ")";
         }
 
         public string GetName()
         {
             return this.name;
+        }
+
+        public void HandleReturn(Store store)
+        {
+            foreach (var r in store.CurrentFrame.Function.Type.Results)
+            {
+                switch (r)
+                {
+                    case Type.i32:
+                        store.CurrentFrame.Results.Push(store.Stack.PopI32());
+                        break;
+                    case Type.i64:
+                        store.CurrentFrame.Results.Push(store.Stack.PopI64());
+                        break;
+                    case Type.f32:
+                        store.CurrentFrame.Results.Push(store.Stack.PopF32());
+                        break;
+                    case Type.f64:
+                        store.CurrentFrame.Results.Push(store.Stack.PopF64());
+                        break;
+                    default:
+                        throw new Exception("Invalid return type");
+                }
+            }
+
+            while (store.Stack.Size > 0 && (store.Stack.Peek() as Stack.Frame) == null)
+            {
+                store.Stack.Pop();
+            }
+
         }
     }
 }
