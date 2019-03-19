@@ -14,7 +14,6 @@ namespace WebAssembly.Instruction
         {
             var a = store.Stack.PopValue();
             store.Stack.Push(a);
-            store.Stack.Push(a);
             if (index >= store.CurrentFrame.Locals.Count())
                 throw new Exception("Invalid local variable");
             store.CurrentFrame.Locals[index] = a;

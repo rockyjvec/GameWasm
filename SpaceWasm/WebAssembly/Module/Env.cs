@@ -11,7 +11,7 @@ namespace WebAssembly.Module
         public Env(Store store) : base("env", store)
         {
             this.AddExportFunc("abort", new byte[] { Type.i32 }, new byte[] { }, this.abort);
-            this.AddExportFunc("enlargeMemory", new byte[] { }, new byte[] { Type.i32 });
+            this.AddExportFunc("enlargeMemory", new byte[] { }, new byte[] { Type.i32 }, this.enlargeMemory);
             this.AddExportFunc("getTotalMemory", new byte[] { }, new byte[] { Type.i32 }, this.getTotalMemory);
             this.AddExportFunc("abortOnCannotGrowMemory", new byte[] { }, new byte[] { Type.i32 });
             this.AddExportFunc("invoke_vii", new byte[] { Type.i32, Type.i32, Type.i32 });
@@ -48,15 +48,16 @@ namespace WebAssembly.Module
             this.AddExportFunc("___syscall145", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
             this.AddExportFunc("___syscall146", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
 
-            var special = 21216+16;//2672
+            var special = 21216;//2672
 
             this.AddExportGlob("DYNAMICTOP_PTR", Type.i32, true, (UInt32)special);
-            this.AddExportGlob("STACKTOP", Type.i32, true, (UInt32)special);
+            this.AddExportGlob("STACKTOP", Type.i32, true, (UInt32)21200);
             this.AddExportGlob("STACK_MAX", Type.i32, true, (UInt32)(1024 * 1024 * 5));
             this.AddExportGlob("memoryBase", Type.i32, true, (UInt32)0);
             this.AddExportGlob("tableBase", Type.i32, true, (UInt32)0);
 
             var memory = new Memory(256, 256);
+            this.Memory.Add(memory);
             this.AddExportMemory("memory", memory);
 
             memory.SetBytes((UInt64)(special >> 2), BitConverter.GetBytes((UInt32)(1024*1024*5)));
@@ -81,8 +82,13 @@ namespace WebAssembly.Module
 
         public object[] getTotalMemory(object[] parameters)
         {
-            UInt32 result = 10000000;
+            UInt32 result = 1024*1024*5;
             return new object[] { result };
+        }
+
+        public object[] enlargeMemory(object[] parameters)
+        {
+            return new object[] { Memory[0].Grow((UInt32)Memory[0].CurrentPages + 1) };
         }
     }
 }

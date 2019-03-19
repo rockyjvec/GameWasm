@@ -13,25 +13,7 @@ namespace WebAssembly.Instruction
         public override Instruction Run(Store store)
         {
             var v = store.Stack.Pop();
-
-            bool result = false;
-            switch (v.GetType().ToString())
-            {
-                case "System.UInt32":
-                    result = (UInt32)v > 0;
-                    break;
-                case "System.UInt64":
-                    result = (UInt64)v > 0;
-                    break;
-                case "System.float":
-                    result = (float)v > 0;
-                    break;
-                case "System.double":
-                    result = (double)v > 0;
-                    break;
-            }
-
-            if (result)
+            if ((UInt32)v > 0 )
             {
                 Instruction i = store.CurrentFrame.Labels.Pop();
                 for(int j = 0; j < labelidx - 1; j++)

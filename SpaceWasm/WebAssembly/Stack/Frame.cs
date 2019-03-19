@@ -12,6 +12,8 @@ namespace WebAssembly.Stack
         public Module.Module Module;
         public Function Function;
 
+        public static Dictionary<string, string> UsedInstructions = new Dictionary<string, string>();
+
         public Instruction.Instruction Instruction;
         public List<object> Locals = new List<object>();
         public Stack<Instruction.Instruction> Labels = new Stack<Instruction.Instruction>();
@@ -39,7 +41,7 @@ namespace WebAssembly.Stack
                 
                 Console.Write(this.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + this.Module.Name + "@" + this.Store.CurrentFrame.Function.GetName() + " => " + new string(' ', this.Labels.Count() * 2) + this.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
             }
-
+            if (!UsedInstructions.ContainsKey(this.Instruction.ToString())) UsedInstructions[this.Instruction.ToString()] = this.Instruction.ToString();
             this.Instruction = this.Instruction.Run(this.Store);
             if(debug)
             {
