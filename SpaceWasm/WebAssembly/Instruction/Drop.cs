@@ -12,7 +12,6 @@ namespace WebAssembly.Instruction
         {
             store.Stack.PopValue();
 
-            Console.WriteLine(this.Next);
             return this.Next;
         }
 

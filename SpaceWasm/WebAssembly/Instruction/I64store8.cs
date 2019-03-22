@@ -12,11 +12,10 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
-            var index = store.Stack.PopI32();
             var v = store.Stack.PopI64();
+            var index = store.Stack.PopI32();
             byte[] bytes = BitConverter.GetBytes((byte)v);
             store.CurrentFrame.Module.Memory[0].SetBytes((UInt64)offset + (UInt64)index, bytes);
-
             return this.Next;
         }
 

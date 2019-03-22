@@ -4,11 +4,11 @@ namespace WebAssembly.Instruction
 {
     internal class End : Instruction
     {
+        public byte Type = 0;
+
         public override Instruction Run(Store store)
         {
-            if(this.Next != null)
-                store.CurrentFrame.Labels.Pop();
-
+            store.Stack.PopLabel();
             return this.Next;
         }
 

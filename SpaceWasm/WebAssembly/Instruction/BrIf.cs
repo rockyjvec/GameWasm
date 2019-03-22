@@ -8,30 +8,27 @@ namespace WebAssembly.Instruction
 {
     class BrIf : Instruction
     {
-        int labelidx;
+        UInt32 labelidx;
 
         public override Instruction Run(Store store)
         {
             var v = store.Stack.Pop();
-            if ((UInt32)v > 0 )
+            if ((UInt32)v > 0)
             {
-                Instruction i = store.CurrentFrame.Labels.Pop();
-                for(int j = 0; j < labelidx - 1; j++)
-                {
-                    i = store.CurrentFrame.Labels.Pop();
-                }
-                return i;
+                Stack.Label l = store.Stack.PopLabel(labelidx + 1);
+
+                if(l.Instruction as Loop != null) return l.Instruction.Next;
+                return l.Instruction.Next;
             }
             else
             {
-                Instruction i = store.CurrentFrame.Labels.Pop();
-                return this.Next.Next;
+                return this.Next;
             }
         }
 
         public BrIf(Parser parser) : base(parser, true)
         {
-            this.labelidx = (int)parser.GetIndex();
+            this.labelidx = parser.GetIndex();
         }
 
         public override string ToString()

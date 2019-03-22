@@ -145,7 +145,8 @@ namespace WebAssembly
             }
             else
             {
-                min = max = this.GetUInt32();
+                min = this.GetUInt32();
+                max = 0;
                 return false;
             }
         }

@@ -10,6 +10,14 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
+            WebAssembly.Test.Test.Run("test");
+
+            Console.WriteLine("Press any key to continue...");
+
+            Console.ReadKey();
+            return;
+            
+            /*
             var store = new WebAssembly.Store();
             
             var lua = store.LoadModule("lua", "c:/users/rocky/desktop/main.wasm");
@@ -20,13 +28,14 @@ namespace ConsoleApp1
 
             string luaScript = "function hello_lua()\n    print \"Hello Lua!\"\nend\n\nhello_lua()";
             byte[] bytes = Encoding.ASCII.GetBytes(luaScript);
-//            Buffer.BlockCopy(bytes, 0, lua.Memory[0].Buffer, 21216, bytes.Length);
-            Console.WriteLine("Attempting malloc of: " + bytes.Length + 1);
+            Console.WriteLine("Attempting malloc of: " + (bytes.Length));
             UInt32 result = 0;
             try
             {
-                result = (UInt32)lua.Call("_malloc", (UInt32) bytes.Length);
+                //lua.Debug = true;
+                result = (UInt32)lua.Call("_malloc", (UInt32)1);// bytes.Length);
                 Console.WriteLine("Memory allocated: " + result);
+                Console.ReadKey();
                 (store.Modules["env"].Exports["memory"] as WebAssembly.Memory).SetBytes(result, bytes);
                 lua.Debug = true;
                 lua.Call("_run_lua", (UInt32)result);

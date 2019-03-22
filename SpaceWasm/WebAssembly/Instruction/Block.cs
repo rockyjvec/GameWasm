@@ -18,7 +18,7 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
-            store.CurrentFrame.Labels.Push(this.label);
+            store.Stack.Push(new Stack.Label(this.label, new byte[] { type }));
             return this.Next;
         }
 

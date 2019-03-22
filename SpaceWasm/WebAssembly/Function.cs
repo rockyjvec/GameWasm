@@ -108,7 +108,7 @@ namespace WebAssembly
             {
                 parameters[i] = this.module.Store.Stack.Pop();
                 bool valid = false;
-                switch (this.Type.Parameters[0])
+                switch (this.Type.Parameters[this.Type.Parameters.Length - i - 1])
                 {
                     case Type.i32:
                         if (parameters[i].GetType().ToString() == "System.UInt32")
@@ -119,7 +119,7 @@ namespace WebAssembly
                             valid = true;
                         break;
                     case Type.f32:
-                        if (parameters[i].GetType().ToString() == "System.UInt32")
+                        if (parameters[i].GetType().ToString() == "System.Single")
                             valid = true;
                         break;
                     case Type.f64:
@@ -130,7 +130,7 @@ namespace WebAssembly
 
                 if (!valid)
                 {
-                    throw new Exception("Parameter type mismatch");
+                    throw new Trap("indirect call type mismatch");
                 }
             }
 
@@ -148,10 +148,12 @@ namespace WebAssembly
                 if (this.module.Store.CurrentFrame == null)
                 {
                     this.module.Store.CurrentFrame = this.CreateFrame(this.module.Store, this.module, parameters);
+                    this.module.Store.Stack.Push(new Stack.Label(new Instruction.End(null), this.Type.Results));
                 }
                 else
                 {
                     this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
+                    this.module.Store.Stack.Push(new Stack.Label(new Instruction.End(null), this.Type.Results));
                 }
             }
         }
@@ -170,22 +172,29 @@ namespace WebAssembly
         {
             foreach (var r in store.CurrentFrame.Function.Type.Results)
             {
-                switch (r)
+                try
                 {
-                    case Type.i32:
-                        store.CurrentFrame.Results.Push(store.Stack.PopI32());
-                        break;
-                    case Type.i64:
-                        store.CurrentFrame.Results.Push(store.Stack.PopI64());
-                        break;
-                    case Type.f32:
-                        store.CurrentFrame.Results.Push(store.Stack.PopF32());
-                        break;
-                    case Type.f64:
-                        store.CurrentFrame.Results.Push(store.Stack.PopF64());
-                        break;
-                    default:
-                        throw new Exception("Invalid return type");
+                    switch (r)
+                    {
+                        case Type.i32:
+                            store.CurrentFrame.Results.Push(store.Stack.PopI32());
+                            break;
+                        case Type.i64:
+                            store.CurrentFrame.Results.Push(store.Stack.PopI64());
+                            break;
+                        case Type.f32:
+                            store.CurrentFrame.Results.Push(store.Stack.PopF32());
+                            break;
+                        case Type.f64:
+                            store.CurrentFrame.Results.Push(store.Stack.PopF64());
+                            break;
+                        default:
+                            throw new Exception("Invalid return type");
+                    }
+                }
+                catch (System.InvalidCastException e)
+                {
+                    throw new Trap("indirect call type mismatch");
                 }
             }
 

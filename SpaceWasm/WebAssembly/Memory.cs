@@ -20,7 +20,10 @@ namespace WebAssembly
 
             this.Buffer = new byte[this.MinPages][];
             for (int i = 0; i < (int)this.CurrentPages; i++)
+            {
                 this.Buffer[i] = new byte[65536];
+                Array.Clear(this.Buffer[i], 0, 65536);                
+            }
         }
 
         public bool CompatibleWith(Memory m)
@@ -107,7 +110,7 @@ namespace WebAssembly
 
         public UInt32 GetI328s(UInt64 offset)
         {
-            return (UInt32)((Int32)this.GetBytes(offset, 1)[0]);
+            return (UInt32)(Int32)(sbyte)this.GetBytes(offset, 1)[0];
         }
 
         public UInt32 GetI328u(UInt64 offset)
@@ -137,7 +140,7 @@ namespace WebAssembly
 
         public UInt64 GetI648s(UInt64 offset)
         {
-            return (UInt64)((Int64)this.GetBytes(offset, 1)[0]);
+            return (UInt64)(Int64)(sbyte)this.GetBytes(offset, 1)[0];
         }
 
         public UInt64 GetI648u(UInt64 offset)
@@ -148,27 +151,27 @@ namespace WebAssembly
         public UInt32 Grow(UInt32 size)
         {
 
-            if (this.MaxPages != 0 && size > this.MaxPages)
+            if (this.MaxPages != 0 && (this.CurrentPages + size) > this.MaxPages)
             {
-                return size - 1;
+                return 0xFFFFFFFF;
 
             }
-            else if (size < this.CurrentPages)
+            else if ((this.CurrentPages + size) < this.CurrentPages)
             {
-                return size - 1;
+                return 0xFFFFFFFF;
             }
-            else if (size == this.CurrentPages)
+            else if ((this.CurrentPages + size) == this.CurrentPages)
             {
-                return size;
+                return (UInt32)this.CurrentPages;
             }
             else
             {
-                byte[][] resized = new byte[size][];
+                byte[][] resized = new byte[size + this.CurrentPages][];
                 for(int i = 0; i < (int)this.CurrentPages; i++)
-                    Array.Copy(this.Buffer[i], 0, resized[i], 0, 65536);
+                    Array.Copy(this.Buffer[i], 0, resized[i] = new byte[65536], 0, 65536);
                 this.Buffer = resized;
-                this.CurrentPages = size;
-                return size;
+                this.CurrentPages += size;
+                return (UInt32)(this.CurrentPages - size);
             }
         }
     }

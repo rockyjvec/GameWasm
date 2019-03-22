@@ -8,37 +8,37 @@ namespace WebAssembly.Instruction
 {
     class BrTable : Instruction
     {
-        int defaultLabelidx;
-        int[] table;
+        UInt32 defaultLabelidx;
+        UInt32[] table;
 
         public override Instruction Run(Store store)
         {
-            int index = (int)store.Stack.PopI32();
+            UInt32 index = store.Stack.PopI32();
 
-            if(index >= store.CurrentFrame.Labels.Count())
+            if(index >= table.Length)
             {
                 index = defaultLabelidx;
             }
-
-            Instruction i = store.CurrentFrame.Labels.Pop();
-            for (int j = 0; j < index - 1; j++)
+            else
             {
-                i = store.CurrentFrame.Labels.Pop();
+                index = this.table[(int)index];
             }
 
-            return i;
+            Stack.Label l = store.Stack.PopLabel(index + 1);
+
+            return l.Instruction.Next;
         }
 
         public BrTable(Parser parser) : base(parser, true)
         {
             UInt32 vectorSize = parser.GetUInt32();
-            this.table = new int[vectorSize];
+            this.table = new UInt32[vectorSize];
             for(int i = 0; i < vectorSize; i++)
             {
-                this.table[i] = (int)parser.GetIndex();
+                this.table[i] = parser.GetIndex();
             }
 
-            this.defaultLabelidx = (int)parser.GetIndex();
+            this.defaultLabelidx = (UInt32)parser.GetIndex();
         }
     }
 }

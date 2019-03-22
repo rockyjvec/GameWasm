@@ -32,8 +32,8 @@ namespace WebAssembly
                     return ((Int32)(UInt32)v).ToString();
                 case "System.UInt64":
                     return ((Int64)(UInt64)v).ToString();
-                case "System.float":
-                case "System.double":
+                case "System.Single":
+                case "System.Double":
                     return (v).ToString();
                 default:
                     return "unknown";

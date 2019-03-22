@@ -16,7 +16,6 @@ namespace WebAssembly.Stack
 
         public Instruction.Instruction Instruction;
         public List<object> Locals = new List<object>();
-        public Stack<Instruction.Instruction> Labels = new Stack<Instruction.Instruction>();
 
         public Stack<object> Results = new Stack<object>();
 
@@ -30,33 +29,53 @@ namespace WebAssembly.Stack
 
         public bool Step(bool debug = false)
         {
-            if(debug)
+
+            if (this.Instruction != null)
             {
-                int num = 0;
-                foreach (var v in Locals)
+                if (this.Instruction.Pointer == 0x00036155) Module.Debug = true;
+                if (debug)
                 {
-                    Console.WriteLine("$var" + num + ": " + Type.Pretify(v));
-                    num++;
+                    int num = 0;
+                    foreach (var v in Locals)
+                    {
+                        Console.WriteLine("$var" + num + ": " + Type.Pretify(v));
+                        num++;
+                    }
+
+                    int numLabels = 0;
+
+                    foreach(var i in this.Store.Stack.ToArray().Reverse())
+                    {
+                        if(i as Label != null)
+                        {
+                            numLabels++;
+                        }
+
+                        if (i as Frame != null)
+                        {
+                            break;
+                        }
+                    }
+
+                    Console.Write(this.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + this.Module.Name + "@" + this.Store.CurrentFrame.Function.GetName() + " => " + new string(' ', numLabels * 2) + this.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
                 }
-                
-                Console.Write(this.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + this.Module.Name + "@" + this.Store.CurrentFrame.Function.GetName() + " => " + new string(' ', this.Labels.Count() * 2) + this.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
-            }
-            if (!UsedInstructions.ContainsKey(this.Instruction.ToString())) UsedInstructions[this.Instruction.ToString()] = this.Instruction.ToString();
-            this.Instruction = this.Instruction.Run(this.Store);
-            if(debug)
-            {
-                if (this.Store.Stack.Size == 0)
+                if (!UsedInstructions.ContainsKey(this.Instruction.ToString())) UsedInstructions[this.Instruction.ToString()] = this.Instruction.ToString();
+                this.Instruction = this.Instruction.Run(this.Store);
+                if (debug)
                 {
+                    if (this.Store.Stack.Size == 0)
+                    {
+                    }
+                    else
+                    {
+                        Console.Write(" $ret: " + Type.Pretify(this.Store.Stack.Peek()));
+                    }
+                    Console.Write("\n");
+                    //                Console.ReadKey();
                 }
-                else
-                {
-                    Console.Write(" $ret: " + Type.Pretify(this.Store.Stack.Peek()));
-                }
-                Console.Write("\n");
-//                Console.ReadKey();
             }
 
-            return !(this.Instruction == null);
+            return !(this.Store.CurrentFrame.Instruction == null);
         }
     }
 }

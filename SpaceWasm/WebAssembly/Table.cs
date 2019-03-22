@@ -42,7 +42,7 @@ namespace WebAssembly
         {
             if (offset >= this.table.Length)
             {
-                throw new Exception("Invalid table offset");
+                throw new Trap("undefined element");
             }
 
             return this.table[offset];

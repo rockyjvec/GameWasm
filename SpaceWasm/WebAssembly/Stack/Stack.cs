@@ -8,6 +8,7 @@ namespace WebAssembly.Stack
 {
     public class Stack
     {
+        public static UInt32 STACK_MAX = 1000;
         Stack<object> stack = new Stack<object>();
         public UInt32 Size = 0;
         Store store;
@@ -21,6 +22,11 @@ namespace WebAssembly.Stack
         {
             this.stack.Push(v);
             this.Size++;
+
+            if (Size > Stack.STACK_MAX)
+            {
+                throw new Trap("call stack exhausted");
+            }
         }
 
         public object Pop()
@@ -44,11 +50,60 @@ namespace WebAssembly.Stack
 
                 case "System.UInt32":
                 case "System.UInt64":
-                case "System.float":
-                case "System.double":
+                case "System.Single":
+                case "System.Double":
                     return this.Pop();
             }
             throw new Exception("Could not pop value from stack.");
+        }
+
+        public Label PopLabel(uint number = 1)
+        {
+            Queue<object> tmp = new Queue<object>();
+
+            object l;
+            do
+            {
+                l = this.Pop();
+
+                if (l as Label != null)
+                {
+                    number--;
+                    if (number == 0) break;
+                }
+                else
+                {
+                    tmp.Enqueue(l);
+                }
+            } while (true);
+
+            var label = l as Label; 
+            if (label.Type.Length > tmp.Count())
+            {
+                throw new Exception("Invalid label arity.");
+            }
+
+            for(int i = 0; i < label.Type.Length; i++)
+            {
+                switch(label.Type[i])
+                {
+                    case Type.i32:
+                        this.Push((UInt32)tmp.Dequeue());
+                        continue;
+                    case Type.i64:
+                        this.Push((UInt64)tmp.Dequeue());
+                        continue;
+                    case Type.f32:
+                        this.Push((float)tmp.Dequeue());
+                        continue;
+                    case Type.f64:
+                        this.Push((double)tmp.Dequeue());
+                        continue;
+                }
+                throw new Exception("Invalid label arity.");
+            }
+
+            return label;
         }
 
         public UInt32 PopI32()
@@ -123,6 +178,11 @@ namespace WebAssembly.Stack
             }
 
             return this.store.CurrentFrame != null;
+        }
+
+        public object[] ToArray()
+        {
+            return this.stack.ToArray();
         }
     }
 }

@@ -48,19 +48,20 @@ namespace WebAssembly.Module
             this.AddExportFunc("___syscall145", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
             this.AddExportFunc("___syscall146", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
 
-            var special = 21216;//2672
-
+            var memory = new Memory(256, 256);
+            var special = 16340;
+            //STATIC_BASE = 1024; STATICTOP = STATIC_BASE + 18704
             this.AddExportGlob("DYNAMICTOP_PTR", Type.i32, true, (UInt32)special);
-            this.AddExportGlob("STACKTOP", Type.i32, true, (UInt32)21200);
-            this.AddExportGlob("STACK_MAX", Type.i32, true, (UInt32)(1024 * 1024 * 5));
-            this.AddExportGlob("memoryBase", Type.i32, true, (UInt32)0);
+            this.AddExportGlob("STACKTOP", Type.i32, true, (UInt32)special);
+            this.AddExportGlob("STACK_MAX", Type.i32, true, (UInt32)5264096);
+            this.AddExportGlob("memoryBase", Type.i32, true, (UInt32)1024);
             this.AddExportGlob("tableBase", Type.i32, true, (UInt32)0);
 
-            var memory = new Memory(256, 256);
             this.Memory.Add(memory);
             this.AddExportMemory("memory", memory);
 
-            memory.SetBytes((UInt64)(special >> 2), BitConverter.GetBytes((UInt32)(1024*1024*5)));
+            memory.SetBytes((UInt64)(special -320), BitConverter.GetBytes((UInt32)(5264096)));
+  //          memory.SetBytes((UInt64)(special - 320), BitConverter.GetBytes((UInt32)(5264096)));
 
             this.AddExportTable("table", new Table(0x70, 294, 294));
         }
@@ -82,7 +83,7 @@ namespace WebAssembly.Module
 
         public object[] getTotalMemory(object[] parameters)
         {
-            UInt32 result = 1024*1024*5;
+            UInt32 result = 1024*1024*16;
             return new object[] { result };
         }
 

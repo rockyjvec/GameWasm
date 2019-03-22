@@ -452,8 +452,16 @@ namespace WebAssembly.Module
                 }
                 while (expr != null);
 
-                UInt32 offset = this.Store.Stack.PopI32();
-
+                UInt64 offset;
+                if (this.Store.Stack.Peek().GetType().ToString() == "System.UInt32")
+                {
+                    offset = (UInt64)this.Store.Stack.PopI32();
+                }
+                else
+                {
+                    offset = this.Store.Stack.PopI64();
+                }
+                
                 UInt32 memVecSize = this.parser.GetUInt32();
                 for (uint mem = 0; mem < memVecSize; mem++)
                 {

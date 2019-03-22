@@ -21,7 +21,7 @@ namespace WebAssembly.Instruction
         {
             var v = store.Stack.PopI32();
 
-            store.CurrentFrame.Labels.Push(this.endLabel);
+            store.Stack.Push(new Stack.Label(this.endLabel, new byte[] { this.type }));
 
             if (v > 0)
             {
@@ -31,7 +31,7 @@ namespace WebAssembly.Instruction
             {
                 if(this.endLabel as Else == null)
                 {
-                    store.CurrentFrame.Labels.Pop();
+                    store.Stack.PopLabel();
                 }
 
                 return this.endLabel.Next;

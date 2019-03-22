@@ -8,20 +8,17 @@ namespace WebAssembly.Instruction
 {
     class Br : Instruction
     {
-        int labelidx;
+        UInt32 labelidx;
         public override Instruction Run(Store store)
         {
-            Instruction i = store.CurrentFrame.Labels.Pop();
-            for (int j = 0; j < labelidx - 1; j++)
-            {
-                i = store.CurrentFrame.Labels.Pop();
-            }
-            return i;
+            Stack.Label l = store.Stack.PopLabel(labelidx + 1);
+            if (l.Instruction as Loop != null) return l.Instruction;
+            return l.Instruction.Next;
         }
 
         public Br(Parser parser) : base(parser, true)
         {
-            this.labelidx = (int)parser.GetIndex();
+            this.labelidx = parser.GetIndex();
         }
 
         public override string ToString()

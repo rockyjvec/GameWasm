@@ -90,6 +90,7 @@ namespace WebAssembly.Instruction
                         {
                             current = new End(parser);
                             var match = controlFlowStack.Pop();
+
                             match.End(current); // notify of end
                             break;
                         }
