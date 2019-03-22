@@ -61,131 +61,132 @@ namespace WebAssembly.Test
             assert(test.Call("i32.trunc_f32_s", (float) -1.9), (UInt32) 0xFFFFFFFF);
             assert(test.Call("i32.trunc_f32_s", (float) -2.0), (UInt32) 0xFFFFFFFE);
             assert(test.Call("i32.trunc_f32_s", (float) 2147483520.0), (UInt32) 2147483520);
-/*            assert(test.Call("i32.trunc_f32_s", (float) -2147483648.0), (UInt32) -2147483648);
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) 2147483648.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) -2147483904.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) -inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) nan:0x200000); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) -nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) -nan:0x200000); "invalid conversion to integer")
+            assert(test.Call("i32.trunc_f32_s", (float) 0x80000000), (UInt32) 0x80000000);
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float)2147483648.0); }, "integer overflow");
+ //           assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float)-2147483904.0); }, "integer overflow");
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) -inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) nan:0x200000); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) -nan); "invalid conversion to integer")
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f32_s", (float) -nan:0x200000); "invalid conversion to integer")
 
             assert(test.Call("i32.trunc_f32_u", (float) 0.0), (UInt32) 0);
             assert(test.Call("i32.trunc_f32_u", (float) -0.0), (UInt32) 0);
-            assert(test.Call("i32.trunc_f32_u", (float) 0x1p - 149), (UInt32) 0);
-            assert(test.Call("i32.trunc_f32_u", (float) -0x1p - 149), (UInt32) 0);
+//            assert(test.Call("i32.trunc_f32_u", (float) 0x1p - 149), (UInt32) 0);
+            //assert(test.Call("i32.trunc_f32_u", (float) -0x1p - 149), (UInt32) 0);
             assert(test.Call("i32.trunc_f32_u", (float) 1.0), (UInt32) 1);
-            assert(test.Call("i32.trunc_f32_u", (float) 0x1.19999ap + 0), (UInt32) 1);
+//            assert(test.Call("i32.trunc_f32_u", (float) 0x1.19999ap + 0), (UInt32) 1);
             assert(test.Call("i32.trunc_f32_u", (float) 1.5), (UInt32) 1);
             assert(test.Call("i32.trunc_f32_u", (float) 1.9), (UInt32) 1);
             assert(test.Call("i32.trunc_f32_u", (float) 2.0), (UInt32) 2);
-            assert(test.Call("i32.trunc_f32_u", (float) 2147483648), (UInt32) -2147483648); ; ; 0x1.00000p + 31-> 8000 0000
-            assert(test.Call("i32.trunc_f32_u", (float) 4294967040.0), (UInt32) -256);
-            assert(test.Call("i32.trunc_f32_u", (float) -0x1.ccccccp - 1), (UInt32) 0);
-            assert(test.Call("i32.trunc_f32_u", (float) -0x1.fffffep - 1), (UInt32) 0);
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) 4294967296.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) -1.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) -inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) nan:0x200000); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) -nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) -nan:0x200000); "invalid conversion to integer")
+            assert(test.Call("i32.trunc_f32_u", (float) 2147483648), (UInt32)0x80000000); //; ; 0x1.00000p + 31-> 8000 0000
+            assert(test.Call("i32.trunc_f32_u", (float) 4294967040.0), (UInt32) 0xFFFFFF00);
+            //            assert(test.Call("i32.trunc_f32_u", (float) -0x1.ccccccp - 1), (UInt32) 0);
+            //assert(test.Call("i32.trunc_f32_u", (float) -0x1.fffffep - 1), (UInt32) 0);
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float)4294967296.0); }, "integer overflow");
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float)-1.0); }, "integer overflow");
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) -inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) nan:0x200000); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) -nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f32_u", (float) -nan:0x200000); "invalid conversion to integer")
 
             assert(test.Call("i32.trunc_f64_s", (double) 0.0), (UInt32) 0);
             assert(test.Call("i32.trunc_f64_s", (double) -0.0), (UInt32) 0);
-            assert(test.Call("i32.trunc_f64_s", (double) 0x0.0000000000001p - 1022), (UInt32) 0);
-            assert(test.Call("i32.trunc_f64_s", (double) -0x0.0000000000001p - 1022), (UInt32) 0);
+            //assert(test.Call("i32.trunc_f64_s", (double) 0x0.0000000000001p - 1022), (UInt32) 0);
+            //assert(test.Call("i32.trunc_f64_s", (double) -0x0.0000000000001p - 1022), (UInt32) 0);
             assert(test.Call("i32.trunc_f64_s", (double) 1.0), (UInt32) 1);
-            assert(test.Call("i32.trunc_f64_s", (double) 0x1.199999999999ap + 0), (UInt32) 1);
+            //assert(test.Call("i32.trunc_f64_s", (double) 0x1.199999999999ap + 0), (UInt32) 1);
             assert(test.Call("i32.trunc_f64_s", (double) 1.5), (UInt32) 1);
             assert(test.Call("i32.trunc_f64_s", (double) -1.0), (UInt32) 0xFFFFFFFF);
-            assert(test.Call("i32.trunc_f64_s", (double) -0x1.199999999999ap + 0), (UInt32) 0xFFFFFFFF);
+            //assert(test.Call("i32.trunc_f64_s", (double) -0x1.199999999999ap + 0), (UInt32) 0xFFFFFFFF);
             assert(test.Call("i32.trunc_f64_s", (double) -1.5), (UInt32) 0xFFFFFFFF);
             assert(test.Call("i32.trunc_f64_s", (double) -1.9), (UInt32) 0xFFFFFFFF);
-            assert(test.Call("i32.trunc_f64_s", (double) -2.0), (UInt32) -2);
+            assert(test.Call("i32.trunc_f64_s", (double) -2.0), (UInt32) 0xFFFFFFFE);
             assert(test.Call("i32.trunc_f64_s", (double) 2147483647.0), (UInt32) 2147483647);
-            assert(test.Call("i32.trunc_f64_s", (double) -2147483648.0), (UInt32) -2147483648);
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) 2147483648.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) -2147483649.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) -inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) nan:0x4000000000000); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) -nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) -nan:0x4000000000000); "invalid conversion to integer")
+            assert(test.Call("i32.trunc_f64_s", (double) -2147483648.0), (UInt32) 0x80000000);
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double)2147483648.0); }, "integer overflow");
+  //          assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double)-2147483649.0); }, "integer overflow");
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) -inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) nan:0x4000000000000); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) -nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f64_s", (double) -nan:0x4000000000000); "invalid conversion to integer")
 
             assert(test.Call("i32.trunc_f64_u", (double) 0.0), (UInt32) 0);
             assert(test.Call("i32.trunc_f64_u", (double) -0.0), (UInt32) 0);
-            assert(test.Call("i32.trunc_f64_u", (double) 0x0.0000000000001p - 1022), (UInt32) 0);
-            assert(test.Call("i32.trunc_f64_u", (double) -0x0.0000000000001p - 1022), (UInt32) 0);
+//            assert(test.Call("i32.trunc_f64_u", (double) 0x0.0000000000001p - 1022), (UInt32) 0);
+            //assert(test.Call("i32.trunc_f64_u", (double) -0x0.0000000000001p - 1022), (UInt32) 0);
             assert(test.Call("i32.trunc_f64_u", (double) 1.0), (UInt32) 1);
-            assert(test.Call("i32.trunc_f64_u", (double) 0x1.199999999999ap + 0), (UInt32) 1);
+            //assert(test.Call("i32.trunc_f64_u", (double) 0x1.199999999999ap + 0), (UInt32) 1);
             assert(test.Call("i32.trunc_f64_u", (double) 1.5), (UInt32) 1);
             assert(test.Call("i32.trunc_f64_u", (double) 1.9), (UInt32) 1);
             assert(test.Call("i32.trunc_f64_u", (double) 2.0), (UInt32) 2);
-            assert(test.Call("i32.trunc_f64_u", (double) 2147483648), (UInt32) -2147483648); ; ; 0x1.00000p + 31-> 8000 0000
+            assert(test.Call("i32.trunc_f64_u", (double) 2147483648), (UInt32) 0x80000000); //; ; 0x1.00000p + 31-> 8000 0000
             assert(test.Call("i32.trunc_f64_u", (double) 4294967295.0), (UInt32) 0xFFFFFFFF);
-            assert(test.Call("i32.trunc_f64_u", (double) -0x1.ccccccccccccdp - 1), (UInt32) 0);
-            assert(test.Call("i32.trunc_f64_u", (double) -0x1.fffffffffffffp - 1), (UInt32) 0);
+//            assert(test.Call("i32.trunc_f64_u", (double) -0x1.ccccccccccccdp - 1), (UInt32) 0);
+//            assert(test.Call("i32.trunc_f64_u", (double) -0x1.fffffffffffffp - 1), (UInt32) 0);
             assert(test.Call("i32.trunc_f64_u", (double) 1e8), (UInt32) 100000000);
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) 4294967296.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) -1.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) 1e16); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) 1e30); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) 9223372036854775808); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) -inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) nan:0x4000000000000); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) -nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) -nan:0x4000000000000); "invalid conversion to integer")
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double)4294967296.0); }, "integer overflow");
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double)-1.0); }, "integer overflow");
+  //          assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double)1e16); }, "integer overflow");
+    //        assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double)1e30); }, "integer overflow");
+      //      assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double)9223372036854775808); }, "integer overflow");
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) inf); "integer overflow")
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) -inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) nan); "invalid conversion to integer")
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) nan:0x4000000000000); "invalid conversion to integer")
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) -nan); "invalid conversion to integer")
+//            assert_trap(delegate { test.CallVoid("i32.trunc_f64_u", (double) -nan:0x4000000000000); "invalid conversion to integer")
 
-            assert(test.Call("i64.trunc_f32_s", (float) 0.0), (UInt64) 0);
-            assert(test.Call("i64.trunc_f32_s", (float) -0.0), (UInt64) 0);
-            assert(test.Call("i64.trunc_f32_s", (float) 0x1p - 149), (UInt64) 0);
-            assert(test.Call("i64.trunc_f32_s", (float) -0x1p - 149), (UInt64) 0);
-            assert(test.Call("i64.trunc_f32_s", (float) 1.0), (UInt64) 1);
-            assert(test.Call("i64.trunc_f32_s", (float) 0x1.19999ap + 0), (UInt64) 1);
-            assert(test.Call("i64.trunc_f32_s", (float) 1.5), (UInt64) 1);
-            assert(test.Call("i64.trunc_f32_s", (float) -1.0), (UInt64) 0xFFFFFFFFFFFFFFFF);
-            assert(test.Call("i64.trunc_f32_s", (float) -0x1.19999ap + 0), (UInt64) 0xFFFFFFFFFFFFFFFF);
-            assert(test.Call("i64.trunc_f32_s", (float) -1.5), (UInt64) 0xFFFFFFFFFFFFFFFF);
-            assert(test.Call("i64.trunc_f32_s", (float) -1.9), (UInt64) 0xFFFFFFFFFFFFFFFF);
-            assert(test.Call("i64.trunc_f32_s", (float) -2.0), (UInt64) -2);
-            assert(test.Call("i64.trunc_f32_s", (float) 4294967296), (UInt64) 4294967296); ; ; 0x1.00000p + 32-> 1 0000 0000
-            assert(test.Call("i64.trunc_f32_s", (float) -4294967296), (UInt64) -4294967296); ; ; -0x1.00000p + 32->ffff ffff 0000 0000
-            assert(test.Call("i64.trunc_f32_s", (float) 9223371487098961920.0), (UInt64) 9223371487098961920);
+            assert64(test.Call("i64.trunc_f32_s", (float) 0.0), (UInt64) 0);
+            assert64(test.Call("i64.trunc_f32_s", (float) -0.0), (UInt64) 0);
+//            assert(test.Call("i64.trunc_f32_s", (float) 0x1p - 149), (UInt64) 0);
+            //assert(test.Call("i64.trunc_f32_s", (float) -0x1p - 149), (UInt64) 0);
+            assert64(test.Call("i64.trunc_f32_s", (float) 1.0), (UInt64) 1);
+//            assert(test.Call("i64.trunc_f32_s", (float) 0x1.19999ap + 0), (UInt64) 1);
+            assert64(test.Call("i64.trunc_f32_s", (float) 1.5), (UInt64) 1);
+            assert64(test.Call("i64.trunc_f32_s", (float) -1.0), (UInt64) 0xFFFFFFFFFFFFFFFF);
+//            assert(test.Call("i64.trunc_f32_s", (float) -0x1.19999ap + 0), (UInt64) 0xFFFFFFFFFFFFFFFF);
+            assert64(test.Call("i64.trunc_f32_s", (float) -1.5), (UInt64) 0xFFFFFFFFFFFFFFFF);
+            assert64(test.Call("i64.trunc_f32_s", (float) -1.9), (UInt64) 0xFFFFFFFFFFFFFFFF);
+            assert64(test.Call("i64.trunc_f32_s", (float) -2.0), (UInt64) 0xFFFFFFFFFFFFFFFE);
+            assert64(test.Call("i64.trunc_f32_s", (float) 4294967296), (UInt64) 4294967296);// ; ; 0x1.00000p + 32-> 1 0000 0000
+            assert64(test.Call("i64.trunc_f32_s", (float) -4294967296), (UInt64) 0xFFFFFFFF00000000); //; ; -0x1.00000p + 32->ffff ffff 0000 0000
+            assert64(test.Call("i64.trunc_f32_s", (float) 9223371487098961920.0), (UInt64) 9223371487098961920);
+            /*
             assert(test.Call("i64.trunc_f32_s", (float) -9223372036854775808.0), (UInt64) -9223372036854775808);
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) 9223372036854775808.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) -9223373136366403584.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) -inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) nan:0x200000); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) -nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) -nan:0x200000); "invalid conversion to integer")
+            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float)9223372036854775808.0); }, "integer overflow");
+            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float)-9223373136366403584.0); }, "integer overflow");
+//            assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) -inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) nan:0x200000); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) -nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_s", (float) -nan:0x200000); "invalid conversion to integer")
 
             assert(test.Call("i64.trunc_f32_u", (float) 0.0), (UInt64) 0);
             assert(test.Call("i64.trunc_f32_u", (float) -0.0), (UInt64) 0);
-            assert(test.Call("i64.trunc_f32_u", (float) 0x1p - 149), (UInt64) 0);
-            assert(test.Call("i64.trunc_f32_u", (float) -0x1p - 149), (UInt64) 0);
+            //assert(test.Call("i64.trunc_f32_u", (float) 0x1p - 149), (UInt64) 0);
+            //assert(test.Call("i64.trunc_f32_u", (float) -0x1p - 149), (UInt64) 0);
             assert(test.Call("i64.trunc_f32_u", (float) 1.0), (UInt64) 1);
-            assert(test.Call("i64.trunc_f32_u", (float) 0x1.19999ap + 0), (UInt64) 1);
+            //assert(test.Call("i64.trunc_f32_u", (float) 0x1.19999ap + 0), (UInt64) 1);
             assert(test.Call("i64.trunc_f32_u", (float) 1.5), (UInt64) 1);
             assert(test.Call("i64.trunc_f32_u", (float) 4294967296), (UInt64) 4294967296);
             assert(test.Call("i64.trunc_f32_u", (float) 18446742974197923840.0), (UInt64) -1099511627776);
-            assert(test.Call("i64.trunc_f32_u", (float) -0x1.ccccccp - 1), (UInt64) 0);
-            assert(test.Call("i64.trunc_f32_u", (float) -0x1.fffffep - 1), (UInt64) 0);
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) 18446744073709551616.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) -1.0); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) -inf); "integer overflow")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) nan:0x200000); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) -nan); "invalid conversion to integer")
-            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) -nan:0x200000); "invalid conversion to integer")
+            //assert(test.Call("i64.trunc_f32_u", (float) -0x1.ccccccp - 1), (UInt64) 0);
+            //assert(test.Call("i64.trunc_f32_u", (float) -0x1.fffffep - 1), (UInt64) 0);
+            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float)18446744073709551616.0); }, "integer overflow");
+            assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float)-1.0); }, "integer overflow");
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) -inf); "integer overflow")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) nan:0x200000); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) -nan); "invalid conversion to integer")
+            //assert_trap(delegate { test.CallVoid("i64.trunc_f32_u", (float) -nan:0x200000); "invalid conversion to integer")
 
             assert(test.Call("i64.trunc_f64_s", (double) 0.0), (UInt64) 0);
             assert(test.Call("i64.trunc_f64_s", (double) -0.0), (UInt64) 0);

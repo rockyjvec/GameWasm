@@ -89,7 +89,7 @@ namespace WebAssembly.Module
 
         public object[] enlargeMemory(object[] parameters)
         {
-            return new object[] { Memory[0].Grow((UInt32)Memory[0].CurrentPages + 1) };
+            return new object[] { Memory[0].Grow(1) };
         }
     }
 }

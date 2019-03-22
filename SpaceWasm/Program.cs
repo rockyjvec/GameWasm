@@ -10,14 +10,15 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
+            
             WebAssembly.Test.Test.Run("test");
 
-            Console.WriteLine("Press any key to continue...");
+            Console.WriteLine("Test Pass!\nPress any key to continue...");
 
             Console.ReadKey();
             return;
             
-            /*
+            
             var store = new WebAssembly.Store();
             
             var lua = store.LoadModule("lua", "c:/users/rocky/desktop/main.wasm");

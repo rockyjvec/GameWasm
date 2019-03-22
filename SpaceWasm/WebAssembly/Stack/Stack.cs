@@ -85,21 +85,22 @@ namespace WebAssembly.Stack
 
             for(int i = 0; i < label.Type.Length; i++)
             {
-                switch(label.Type[i])
-                {
-                    case Type.i32:
-                        this.Push((UInt32)tmp.Dequeue());
-                        continue;
-                    case Type.i64:
-                        this.Push((UInt64)tmp.Dequeue());
-                        continue;
-                    case Type.f32:
-                        this.Push((float)tmp.Dequeue());
-                        continue;
-                    case Type.f64:
-                        this.Push((double)tmp.Dequeue());
-                        continue;
-                }
+                if(tmp.Count() > 0)
+                    switch(label.Type[i])
+                    {
+                        case Type.i32:
+                            this.Push((UInt32)tmp.Dequeue());
+                            continue;
+                        case Type.i64:
+                            this.Push((UInt64)tmp.Dequeue());
+                            continue;
+                        case Type.f32:
+                            this.Push((float)tmp.Dequeue());
+                            continue;
+                        case Type.f64:
+                            this.Push((double)tmp.Dequeue());
+                            continue;
+                    }
                 throw new Exception("Invalid label arity.");
             }
 
