@@ -29,9 +29,9 @@ namespace WebAssembly
             switch (v.GetType().ToString())
             {
                 case "System.UInt32":
-                    return "0x" + ((UInt32)v).ToString("X");
+                    return "" + ((UInt32)v).ToString();
                 case "System.UInt64":
-                    return "0x" + ((UInt64)v).ToString("X");
+                    return "" + ((UInt64)v).ToString();
                 case "System.Single":
                 case "System.Double":
                     return (v).ToString();

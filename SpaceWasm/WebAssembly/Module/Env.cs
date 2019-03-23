@@ -113,9 +113,10 @@ namespace WebAssembly.Module
 
         public object[] invoke_vii(object[] parameters)
         {
+            this.Store.Modules["lua"].Execute("dynCall_vii", parameters);
             return new object[] { };
         }
-
+        
         public UInt32 dynamicAlloc(UInt32 size)
         {
             UInt32 ret = this.Memory[0].GetI32(this.DYNAMICTOP_PTR.GetI32());

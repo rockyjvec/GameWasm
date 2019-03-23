@@ -21,23 +21,22 @@ namespace ConsoleApp1
             var store = new WebAssembly.Store();
             
             var lua = store.LoadModule("lua", "c:/users/rocky/desktop/main.wasm");
-//            lua.DumpExports();
-           
-  //          Console.WriteLine("Module loaded.");
-    //        Console.ReadKey();
+            //            lua.DumpExports();
 
+            //          Console.WriteLine("Module loaded.");
+            //          Console.ReadKey();
+
+            UTF8Encoding utf8 = new UTF8Encoding();
             string luaScript = "function hello_lua()\n    print \"Hello Lua!\"\nend\n\nhello_lua()";
-            byte[] bytes = Encoding.UTF8.GetBytes(luaScript);
-            Console.WriteLine("Attempting malloc of: " + (bytes.Length));
+            byte[] bytes = utf8.GetBytes(luaScript);
             UInt32 result = 0;
             try
             {
                 //lua.Debug = true;
-                result = (store.Modules["env"] as WebAssembly.Module.Env).dynamicAlloc((UInt32)bytes.Length);
-                Console.WriteLine("Memory allocated: " + result);
-                Console.ReadKey();
-                (store.Modules["env"].Exports["memory"] as WebAssembly.Memory).SetBytes(result, bytes);
-                lua.Debug = true;
+                Console.WriteLine("Allocating " + bytes.Length + " bytes...");
+                result = (store.Modules["env"] as WebAssembly.Module.Env).dynamicAlloc((UInt32)bytes.Length + 1);
+                store.Modules["env"].Memory[0].SetBytes(result, bytes);
+//                lua.Debug = true;
                 lua.Call("_run_lua", (UInt32)result);
             }
             catch (WebAssembly.Trap e)
