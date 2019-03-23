@@ -492,9 +492,11 @@ namespace WebAssembly.Module
             this.Exports.Add(name, func);
         }
 
-        public void AddExportGlob(string name, byte type, bool mutable, object v)
+        public WebAssembly.Global AddExportGlob(string name, byte type, bool mutable, object v)
         {
-            this.Exports.Add(name, new WebAssembly.Global(type, mutable, v, (UInt32)this.Exports.Count()));
+            var global = new WebAssembly.Global(type, mutable, v, (UInt32)this.Exports.Count());
+            this.Exports.Add(name, global);
+            return global;
         }
 
         public void AddExportMemory(string name, Memory m)

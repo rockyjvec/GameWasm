@@ -17,7 +17,7 @@ namespace WebAssembly.Instruction
             {
                 Stack.Label l = store.Stack.PopLabel(labelidx + 1);
 
-                if(l.Instruction as Loop != null) return l.Instruction.Next;
+                if(l.Instruction as Loop != null) return l.Instruction;
                 return l.Instruction.Next;
             }
             else

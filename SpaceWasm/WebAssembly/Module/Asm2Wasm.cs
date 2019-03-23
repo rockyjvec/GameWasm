@@ -10,7 +10,9 @@ namespace WebAssembly.Module
     {
         public Asm2Wasm(Store store) : base("asm2wasm", store)
         {
-            this.AddExportFunc("f64-to-int", new byte[] { Type.f64 }, new byte[] { Type.i32 });
+            //   this.AddExportFunc("f64-to-int", new byte[] { Type.f64 }, new byte[] { Type.i32 });
+            this.AddExportFunc("f64-rem", new byte[] { Type.f64, Type.f64 }, new byte[] { Type.f64 });
+
         }
     }
 }

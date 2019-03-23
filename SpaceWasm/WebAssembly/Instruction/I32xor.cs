@@ -8,6 +8,7 @@ namespace WebAssembly.Instruction
         {
             var b = store.Stack.PopI32();
             var a = store.Stack.PopI32();
+
             store.Stack.Push(a ^ b);
             return this.Next;
         }

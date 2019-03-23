@@ -115,6 +115,13 @@ namespace WebAssembly.Test
             new If(path);
             new I32(path);
             new Globals(path);
+            new StoreTest(path);
+            new Load(path);
+            new Address(path);
+            new Unwind(path);
+            new Select(path);
+            new MemoryRedundancy(path);
+            new LocalTee(path);
 
             return true;
         }

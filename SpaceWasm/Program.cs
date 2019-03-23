@@ -27,13 +27,13 @@ namespace ConsoleApp1
     //        Console.ReadKey();
 
             string luaScript = "function hello_lua()\n    print \"Hello Lua!\"\nend\n\nhello_lua()";
-            byte[] bytes = Encoding.ASCII.GetBytes(luaScript);
+            byte[] bytes = Encoding.UTF8.GetBytes(luaScript);
             Console.WriteLine("Attempting malloc of: " + (bytes.Length));
             UInt32 result = 0;
             try
             {
                 //lua.Debug = true;
-                result = (UInt32)lua.Call("_malloc", (UInt32)1);// bytes.Length);
+                result = (store.Modules["env"] as WebAssembly.Module.Env).dynamicAlloc((UInt32)bytes.Length);
                 Console.WriteLine("Memory allocated: " + result);
                 Console.ReadKey();
                 (store.Modules["env"].Exports["memory"] as WebAssembly.Memory).SetBytes(result, bytes);

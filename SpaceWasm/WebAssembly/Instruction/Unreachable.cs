@@ -8,6 +8,11 @@ namespace WebAssembly.Instruction
 {
     class Unreachable : Instruction
     {
+        public override Instruction Run(Store store)
+        {
+            throw new Trap("unreachable");
+            return this.Next;
+        }
         public Unreachable(Parser parser) : base(parser, true)
         {
         }

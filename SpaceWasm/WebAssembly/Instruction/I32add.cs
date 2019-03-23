@@ -6,7 +6,10 @@ namespace WebAssembly.Instruction
     {
         public override Instruction Run(Store store)
         {
-            store.Stack.Push((UInt32)store.Stack.PopI32() + (UInt32)store.Stack.PopI32());
+            var b = store.Stack.PopI32();
+            var a = store.Stack.PopI32();
+
+            store.Stack.Push(a + b);
 
             return this.Next;
         }

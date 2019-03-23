@@ -93,6 +93,11 @@ namespace WebAssembly
             return BitConverter.ToUInt32(this.GetBytes(offset, 4), 0);
         }
 
+        public void SetI32(UInt64 offset, UInt32 value)
+        {
+            this.SetBytes(offset, BitConverter.GetBytes(value));
+        }
+
         public UInt64 GetI64(UInt64 offset)
         {
             return BitConverter.ToUInt64(this.GetBytes(offset, 8), 0);
@@ -167,8 +172,18 @@ namespace WebAssembly
             else
             {
                 byte[][] resized = new byte[size + this.CurrentPages][];
-                for(int i = 0; i < (int)this.CurrentPages; i++)
+
+                for (UInt64 i = 0; i < this.CurrentPages; i++)
+                {
                     Array.Copy(this.Buffer[i], 0, resized[i] = new byte[65536], 0, 65536);
+                }
+
+                for (UInt64 i = this.CurrentPages; i < size + this.CurrentPages; i++)
+                {
+                    resized[i] = new byte[65536];
+                    Array.Clear(resized[i], 0, 65536);
+                }
+
                 this.Buffer = resized;
                 this.CurrentPages += size;
                 return (UInt32)(this.CurrentPages - size);

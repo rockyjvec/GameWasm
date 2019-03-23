@@ -13,6 +13,7 @@ namespace WebAssembly.Instruction
         public override Instruction Run(Store store)
         {
             store.Stack.Push(store.CurrentFrame.Module.Memory[0].GetI32((UInt64)offset + (UInt64)store.Stack.PopI32()));
+
             return this.Next;
         }
 

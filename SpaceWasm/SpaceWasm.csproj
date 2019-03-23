@@ -225,9 +225,14 @@
     <Compile Include="WebAssembly\Module\Global\Global.cs" />
     <Compile Include="WebAssembly\Stack\Label.cs" />
     <Compile Include="WebAssembly\Stack\Stack.cs" />
-    <Compile Include="WebAssembly\Stack\Value.cs" />
     <Compile Include="WebAssembly\Table.cs" />
     <Compile Include="WebAssembly\Module\Global\Math.cs" />
+    <Compile Include="WebAssembly\Test\Load.cs" />
+    <Compile Include="WebAssembly\Test\LocalTee.cs" />
+    <Compile Include="WebAssembly\Test\MemoryRedundancy.cs" />
+    <Compile Include="WebAssembly\Test\Select.cs" />
+    <Compile Include="WebAssembly\Test\Unwind.cs" />
+    <Compile Include="WebAssembly\Test\StoreTest.cs" />
     <Compile Include="WebAssembly\Test\Globals.cs" />
     <Compile Include="WebAssembly\Test\I32.cs" />
     <Compile Include="WebAssembly\Test\If.cs" />
@@ -238,6 +243,7 @@
     <Compile Include="WebAssembly\Test\Block.cs" />
     <Compile Include="WebAssembly\Test\BrTable.cs" />
     <Compile Include="WebAssembly\Test\Br.cs" />
+    <Compile Include="WebAssembly\Test\Address.cs" />
     <Compile Include="WebAssembly\Test\Switch.cs" />
     <Compile Include="WebAssembly\Test\Labels.cs" />
     <Compile Include="WebAssembly\Test\Return.cs" />
