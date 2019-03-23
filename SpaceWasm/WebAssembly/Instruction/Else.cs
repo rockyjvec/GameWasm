@@ -2,16 +2,16 @@
 {
     internal class Else : Instruction
     {
-        Instruction endLabel;
+        public Instruction end;
 
         public override Instruction Run(Store store)
         {
-            return this.endLabel;
+            return this.end;
         }
 
         public override void End(Instruction end)
         {
-            this.endLabel = end;
+            this.end = end;
         }
 
         public Else(Parser parser) : base(parser, true)

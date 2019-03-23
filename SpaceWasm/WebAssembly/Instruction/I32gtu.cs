@@ -13,7 +13,7 @@ namespace WebAssembly.Instruction
             var b = (UInt32)store.Stack.PopI32();
             var a = (UInt32)store.Stack.PopI32();
 
-            if (a >= b)
+            if (a > b)
             {
                 store.Stack.Push((UInt32)1);
             }

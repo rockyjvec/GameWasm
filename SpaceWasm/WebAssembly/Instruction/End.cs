@@ -8,7 +8,7 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
-            store.Stack.PopLabel();
+            store.Stack.PopLabel(1, true);
             return this.Next;
         }
 

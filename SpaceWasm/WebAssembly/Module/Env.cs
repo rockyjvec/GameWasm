@@ -83,7 +83,7 @@ namespace WebAssembly.Module
 
         public object[] getTotalMemory(object[] parameters)
         {
-            UInt32 result = 1024*1024*16;
+            UInt32 result = (UInt32)this.Memory[0].CurrentPages;
             return new object[] { result };
         }
 

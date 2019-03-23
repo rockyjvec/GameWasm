@@ -6,7 +6,7 @@ namespace WebAssembly.Instruction
     {
         public override Instruction Run(Store store)
         {
-            store.Stack.Push((UInt64)(Int64)Math.Truncate((float)store.Stack.PopF32()));
+            store.Stack.Push((UInt64)Math.Truncate((float)store.Stack.PopF32()));
 
             return this.Next;
         }

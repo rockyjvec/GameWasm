@@ -57,7 +57,7 @@ namespace WebAssembly.Stack
             throw new Exception("Could not pop value from stack.");
         }
 
-        public Label PopLabel(uint number = 1)
+        public Label PopLabel(uint number = 1, bool end = false)
         {
             Queue<object> tmp = new Queue<object>();
 
@@ -65,7 +65,6 @@ namespace WebAssembly.Stack
             do
             {
                 l = this.Pop();
-
                 if (l as Label != null)
                 {
                     number--;
@@ -75,9 +74,13 @@ namespace WebAssembly.Stack
                 {
                     tmp.Enqueue(l);
                 }
-            } while (true);
+            }
+            while (true);
 
-            var label = l as Label; 
+            var label = l as Label;
+
+            if(!end && (label.Instruction as Instruction.Loop) != null) return label;
+
             if (label.Type.Length > tmp.Count())
             {
                 throw new Exception("Invalid label arity.");

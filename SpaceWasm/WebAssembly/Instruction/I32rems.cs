@@ -9,7 +9,24 @@ namespace WebAssembly.Instruction
             var b = (Int32)store.Stack.PopI32();
             var a = (Int32)store.Stack.PopI32();
 
-            store.Stack.Push(a % b);
+            if (b == 0) throw new Trap("integer divide by zero");
+
+            try
+            {
+                if((UInt32)a == 0x80000000 && (UInt32)b == 0xFFFFFFFF)
+                {
+                    store.Stack.Push((UInt32)0);
+                }
+                else
+                {
+                    store.Stack.Push((UInt32)(a % b));
+                }
+            }
+            catch (System.OverflowException e)
+            {
+                throw new Trap("integer overflow");
+            }
+
 
             return this.Next;
         }

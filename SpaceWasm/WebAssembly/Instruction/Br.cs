@@ -12,7 +12,9 @@ namespace WebAssembly.Instruction
         public override Instruction Run(Store store)
         {
             Stack.Label l = store.Stack.PopLabel(labelidx + 1);
+
             if (l.Instruction as Loop != null) return l.Instruction;
+
             return l.Instruction.Next;
         }
 

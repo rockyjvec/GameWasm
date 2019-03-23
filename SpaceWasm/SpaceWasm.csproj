@@ -228,6 +228,9 @@
     <Compile Include="WebAssembly\Stack\Value.cs" />
     <Compile Include="WebAssembly\Table.cs" />
     <Compile Include="WebAssembly\Module\Global\Math.cs" />
+    <Compile Include="WebAssembly\Test\Globals.cs" />
+    <Compile Include="WebAssembly\Test\I32.cs" />
+    <Compile Include="WebAssembly\Test\If.cs" />
     <Compile Include="WebAssembly\Test\Endianness.cs" />
     <Compile Include="WebAssembly\Test\CallIndirect.cs" />
     <Compile Include="WebAssembly\Test\Call.cs" />
@@ -235,6 +238,8 @@
     <Compile Include="WebAssembly\Test\Block.cs" />
     <Compile Include="WebAssembly\Test\BrTable.cs" />
     <Compile Include="WebAssembly\Test\Br.cs" />
+    <Compile Include="WebAssembly\Test\Switch.cs" />
+    <Compile Include="WebAssembly\Test\Labels.cs" />
     <Compile Include="WebAssembly\Test\Return.cs" />
     <Compile Include="WebAssembly\Test\Conversions.cs" />
     <Compile Include="WebAssembly\Test\Stack.cs" />

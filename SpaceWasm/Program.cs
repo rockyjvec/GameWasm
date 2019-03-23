@@ -10,7 +10,6 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-            
             WebAssembly.Test.Test.Run("test");
 
             Console.WriteLine("Test Pass!\nPress any key to continue...");

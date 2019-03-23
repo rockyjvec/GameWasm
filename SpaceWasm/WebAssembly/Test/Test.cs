@@ -110,6 +110,11 @@ namespace WebAssembly.Test
             new CallIndirect(path);
             new Conversions(path);
             new Endianness(path);
+            new Labels(path);
+            new Switch(path);
+            new If(path);
+            new I32(path);
+            new Globals(path);
 
             return true;
         }

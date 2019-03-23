@@ -7,7 +7,17 @@
             var b = store.Stack.PopI32();
             var a = store.Stack.PopI32();
 
-            store.Stack.Push(a % b);
+            if (b == 0) throw new Trap("integer divide by zero");
+
+            try
+            {
+                store.Stack.Push(a % b);
+            }
+            catch (System.OverflowException e)
+            {
+                throw new Trap("integer overflow");
+            }
+
 
             return this.Next;
         }
