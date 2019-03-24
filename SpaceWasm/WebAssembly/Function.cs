@@ -145,16 +145,8 @@ namespace WebAssembly
             }
             else
             {
-                if (this.module.Store.CurrentFrame == null)
-                {
-                    this.module.Store.CurrentFrame = this.CreateFrame(this.module.Store, this.module, parameters);
-                    this.module.Store.Stack.Push(new Stack.Label(new Instruction.End(null), this.Type.Results));
-                }
-                else
-                {
-                    this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
-                    this.module.Store.Stack.Push(new Stack.Label(new Instruction.End(null), this.Type.Results));
-                }
+                this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
+                this.module.Store.Stack.Push(new Stack.Label(new Instruction.End(null), this.Type.Results));
             }
         }
 

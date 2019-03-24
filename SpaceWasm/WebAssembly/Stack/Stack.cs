@@ -12,6 +12,7 @@ namespace WebAssembly.Stack
         Stack<object> stack = new Stack<object>();
         public UInt32 Size = 0;
         Store store;
+        UInt32 frames = 0;
 
         public Stack(Store store)
         {
@@ -152,24 +153,28 @@ namespace WebAssembly.Stack
 
         public void PushFrame(Frame frame)
         {
+            this.frames++;
+            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "CALL: " + frame.Function.GetName());
             if(this.store.CurrentFrame == null)
             {
                 this.store.CurrentFrame = frame;
             }
             else
             {
-                this.stack.Push(this.store.CurrentFrame);
+                this.Push(this.store.CurrentFrame);
                 this.store.CurrentFrame = frame;
             }
         }
 
         public bool PopFrame()
         {
+            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "RETN: " + this.store.CurrentFrame.Function.GetName());
+            this.frames--;
             var results = this.store.CurrentFrame.Results;
 
             if (this.stack.Count() > 0)
             {
-                this.store.CurrentFrame = (Frame)this.stack.Pop();
+                this.store.CurrentFrame = (Frame)this.Pop();
             }
             else
             {

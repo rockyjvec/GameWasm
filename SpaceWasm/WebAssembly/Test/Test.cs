@@ -90,6 +90,7 @@ namespace WebAssembly.Test
 
         public static bool Run(string path)
         {
+            new I64(path);
             new Func1(path);
             new Func2(path);
             new LoadI32(path);

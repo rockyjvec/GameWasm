@@ -14,7 +14,7 @@ namespace WebAssembly.Instruction
         {
             var v = store.Stack.PopI32();
             var index = store.Stack.PopI32();
-            byte[] bytes = BitConverter.GetBytes((byte)v);
+            byte[] bytes = new byte[] { (byte)v };
             store.CurrentFrame.Module.Memory[0].SetBytes((UInt64)offset + (UInt64)index, bytes);
             return this.Next;
         }

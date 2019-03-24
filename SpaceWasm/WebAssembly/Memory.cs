@@ -71,10 +71,7 @@ namespace WebAssembly
             for (UInt64 i = 0; i < (UInt64)bytes.Length; i++)
             {
                 UInt64 index = offset + i;
-                UInt32 page = (UInt32)(index / 65536);
-                UInt32 remainder = (UInt32)(index % 65536);
-
-                this.Buffer[page][remainder] = bytes[i];
+                this.Set(index, bytes[i]);
             }
         }
 

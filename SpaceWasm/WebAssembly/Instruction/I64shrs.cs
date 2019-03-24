@@ -9,7 +9,7 @@ namespace WebAssembly.Instruction
             var b = (byte)store.Stack.PopI64();
             var a = (Int64)store.Stack.PopI64();
 
-            store.Stack.Push(a >> b);
+            store.Stack.Push((UInt64)(a >> b));
             return this.Next;
         }
 

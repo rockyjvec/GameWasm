@@ -14,11 +14,11 @@ namespace WebAssembly.Instruction
             var a = (Int64)store.Stack.PopI64();
             if (a > b)
             {
-                store.Stack.Push((UInt64)1);
+                store.Stack.Push((UInt32)1);
             }
             else
             {
-                store.Stack.Push((UInt64)0);
+                store.Stack.Push((UInt32)0);
             }
 
             return this.Next;

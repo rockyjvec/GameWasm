@@ -10,13 +10,14 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
+            /*
             WebAssembly.Test.Test.Run("test");
 
             Console.WriteLine("Test Pass!\nPress any key to continue...");
 
             Console.ReadKey();
             return;
-            
+            */
             
             var store = new WebAssembly.Store();
             
@@ -36,8 +37,8 @@ namespace ConsoleApp1
                 Console.WriteLine("Allocating " + bytes.Length + " bytes...");
                 result = (store.Modules["env"] as WebAssembly.Module.Env).dynamicAlloc((UInt32)bytes.Length + 1);
                 store.Modules["env"].Memory[0].SetBytes(result, bytes);
-//                lua.Debug = true;
-                lua.Call("_run_lua", (UInt32)result);
+                //lua.Debug = true;
+                lua.Call("_run_lua", (UInt32)0);
             }
             catch (WebAssembly.Trap e)
             {

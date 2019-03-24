@@ -27,18 +27,34 @@ namespace WebAssembly.Stack
             this.Instruction = instruction;
         }
 
+        static uint inc = 0;
+
         public bool Step(bool debug = false)
         {
-
             if (this.Instruction != null)
             {
-                if (this.Instruction.Pointer == 0x00036155) Module.Debug = true;
+                bool did = false;
+                if(this.Instruction.Pointer == 0x0000583B && Module.Globals[10].GetI32() == 20512)
+                {
+                    inc++;
+                }
+                if(inc > 0 && this.Instruction.Pointer == 0x0000584C)
+                {
+//                    debug = true;
+  //                  Module.Debug = true;
+                }
                 if (debug)
                 {
                     int num = 0;
                     foreach (var v in Locals)
                     {
                         Console.WriteLine("$var" + num + ": " + Type.Pretify(v));
+                        num++;
+                    }
+                    num = 0;
+                    foreach (var v in Module.Globals)
+                    {
+                        Console.WriteLine("$global" + num + ": " + Type.Pretify(v.GetValue()));
                         num++;
                     }
 
@@ -59,6 +75,7 @@ namespace WebAssembly.Stack
 
                     Console.Write(this.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + this.Module.Name + "@" + this.Store.CurrentFrame.Function.GetName() + " => " + new string(' ', numLabels * 2) + this.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
                 }
+
                 if (!UsedInstructions.ContainsKey(this.Instruction.ToString())) UsedInstructions[this.Instruction.ToString()] = this.Instruction.ToString();
                 this.Instruction = this.Instruction.Run(this.Store);
                 if (debug)
@@ -71,7 +88,7 @@ namespace WebAssembly.Stack
                         Console.Write(" $ret: " + Type.Pretify(this.Store.Stack.Peek()));
                     }
                     Console.Write("\n");
-                    //                Console.ReadKey();
+                                    Console.ReadKey();
                 }
             }
 

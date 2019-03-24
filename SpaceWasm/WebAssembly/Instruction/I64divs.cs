@@ -9,7 +9,17 @@ namespace WebAssembly.Instruction
             var b = store.Stack.PopI64();
             var a = store.Stack.PopI64();
 
-            store.Stack.Push((UInt64)((Int64)a / (Int64)b));
+            if ((Int64)b == 0) throw new Trap("integer divide by zero");
+
+            try
+            {
+                store.Stack.Push((UInt64)((Int64)a / (Int64)b));
+            }
+            catch (System.OverflowException e)
+            {
+                throw new Trap("integer overflow");
+            }
+
             return this.Next;
         }
 

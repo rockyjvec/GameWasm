@@ -9,7 +9,7 @@ namespace WebAssembly.Instruction
             var a = store.Stack.PopI64();
 
             UInt64 bits = 0;
-            UInt64 compare = 0x80000000;
+            UInt64 compare = 0x8000000000000000;
             while (bits < 64)
             {
                 if ((compare & a) == 0)

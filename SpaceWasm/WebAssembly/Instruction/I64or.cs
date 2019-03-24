@@ -4,7 +4,7 @@
     {
         public override Instruction Run(Store store)
         {
-            store.Stack.Push(store.Stack.PopI64() ^ store.Stack.PopI64());
+            store.Stack.Push(store.Stack.PopI64() | store.Stack.PopI64());
             return this.Next;
         }
 

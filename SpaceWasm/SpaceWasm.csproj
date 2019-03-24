@@ -230,6 +230,7 @@
     <Compile Include="WebAssembly\Test\Load.cs" />
     <Compile Include="WebAssembly\Test\LocalTee.cs" />
     <Compile Include="WebAssembly\Test\MemoryRedundancy.cs" />
+    <Compile Include="WebAssembly\Test\I64.cs" />
     <Compile Include="WebAssembly\Test\Select.cs" />
     <Compile Include="WebAssembly\Test\Unwind.cs" />
     <Compile Include="WebAssembly\Test\StoreTest.cs" />
