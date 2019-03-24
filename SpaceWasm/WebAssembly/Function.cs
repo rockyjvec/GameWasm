@@ -136,7 +136,7 @@ namespace WebAssembly
 
             if (this.native)
             {
-                object[] ret = this.action(parameters);
+                object[] ret = this.action(parameters.Reverse().ToArray());
 
                 foreach (var v in ret)
                 {

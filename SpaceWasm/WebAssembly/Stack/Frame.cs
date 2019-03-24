@@ -33,16 +33,6 @@ namespace WebAssembly.Stack
         {
             if (this.Instruction != null)
             {
-                bool did = false;
-                if(this.Instruction.Pointer == 0x0000583B && Module.Globals[10].GetI32() == 20512)
-                {
-                    inc++;
-                }
-                if(inc > 0 && this.Instruction.Pointer == 0x0000584C)
-                {
-//                    debug = true;
-  //                  Module.Debug = true;
-                }
                 if (debug)
                 {
                     int num = 0;

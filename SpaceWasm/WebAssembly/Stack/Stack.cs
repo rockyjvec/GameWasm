@@ -154,7 +154,7 @@ namespace WebAssembly.Stack
         public void PushFrame(Frame frame)
         {
             this.frames++;
-            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "CALL: " + frame.Function.GetName());
+//            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "CALL: " + frame.Function.GetName());
             if(this.store.CurrentFrame == null)
             {
                 this.store.CurrentFrame = frame;
@@ -168,7 +168,7 @@ namespace WebAssembly.Stack
 
         public bool PopFrame()
         {
-            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "RETN: " + this.store.CurrentFrame.Function.GetName());
+//            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "RETN: " + this.store.CurrentFrame.Function.GetName());
             this.frames--;
             var results = this.store.CurrentFrame.Results;
 

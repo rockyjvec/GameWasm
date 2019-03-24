@@ -113,7 +113,7 @@ namespace WebAssembly.Module
 
         public object[] invoke_vii(object[] parameters)
         {
-            this.Store.Modules["lua"].Execute("dynCall_vii", parameters.Reverse().ToArray());
+            this.Store.Modules["lua"].Execute("dynCall_vii", parameters);
             return new object[] { };
         }
         
@@ -158,9 +158,20 @@ namespace WebAssembly.Module
 
         public object[] ___syscall146(object[] parameters)
         {
-            throw new Exception("Syscall 146 not implemented " + (UInt32)parameters[0] + ", " + (UInt32)parameters[1]);
-            Console.WriteLine(System.Text.Encoding.Default.GetString(this.Memory[0].GetBytes((UInt64)(UInt32)parameters[0], (int)(UInt32)parameters[1])));
-            return new object[] { (UInt32)parameters[1] };
+            UInt32 varargs = (UInt32)parameters[1];
+            UInt32 stream = this.Memory[0].GetI32(varargs); varargs += 4;
+            UInt32 iov = this.Memory[0].GetI32(varargs); varargs += 4;
+            UInt32 iovcnt = this.Memory[0].GetI32(varargs); varargs += 4;
+            UInt32 ret = 0;
+            for (UInt32 i = 0; i < iovcnt; i++)
+            {
+                var ptr = this.Memory[0].GetI32(iov + (i * 8));
+                var len = this.Memory[0].GetI32(iov + (i * 8) + 4);
+                Console.Write(System.Text.Encoding.Default.GetString(this.Memory[0].GetBytes((UInt64)(UInt32)ptr, (int)(UInt32)len)));
+                ret += len;
+            }
+
+            return new object[] { (UInt32) ret };
         }
 
         public object[] ___syscall196(object[] parameters)
@@ -201,8 +212,9 @@ namespace WebAssembly.Module
 
         public object[] ___syscall54(object[] parameters)
         {
-            throw new Exception("Syscall 54 not implemented");
-            return new object[] { this.ioctl((UInt32)parameters[0], (UInt32)parameters[1]) };
+            UInt32 varargs = (UInt32)parameters[1];
+
+            return new object[] { (UInt32) 0 };
         }
 
         public object[] ___syscall6(object[] parameters)
@@ -222,11 +234,5 @@ namespace WebAssembly.Module
             throw new Exception("Syscall 91 not implemented");
             return new object[] { (UInt32)0 };
         }
-
-        public UInt32 ioctl(UInt32 a, UInt32 b)
-        {
-            return 0;
-        }
-    
     }
 }
