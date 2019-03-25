@@ -6,14 +6,18 @@ using System.Threading.Tasks;
 
 namespace WebAssembly.Instruction
 {
-    class Unreachable : Instruction
+    class Custom : Instruction
     {
+        Action a;
         public override Instruction Run(Store store)
         {
-            throw new Trap("unreachable");
+            a();
+            return this.Next;
         }
-        public Unreachable(Parser parser) : base(parser, true)
+
+        public Custom(Action a) : base(null, true)
         {
+            this.a = a;
         }
     }
 }

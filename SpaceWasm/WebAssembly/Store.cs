@@ -40,39 +40,107 @@ namespace WebAssembly
             this.LoadModule(new Module.Asm2Wasm(this));
         }
 
-        public bool Step(bool debug = false)
+        public bool Step(int count = 1, bool debug = false)
         {
             bool exception = true;
+
             try
             {
-                if (this.CurrentFrame == null)
+                for (int step = 0; step < count; step++)
                 {
-                    return false;
-                }
-                else
-                {
-                    bool ret = this.CurrentFrame.Step(debug);
-                    exception = false;
 
-                    if (ret)
+                    var frame = this.CurrentFrame;
+
+                    if (frame == null)
                     {
-                        return true;
+                        exception = false;
+                        return false;
                     }
                     else
                     {
-                        this.CurrentFrame.Function.HandleReturn(this);
-                        return this.Stack.PopFrame();
+                        if (frame.Instruction == null)
+                        {
+                            if(frame.Function == null)
+                            {
+                                exception = false;
+                                return false;
+                            }
+                            else
+                            {
+                                frame.Function.HandleReturn(this);
+
+                                if (!this.Stack.PopFrame())
+                                {
+                                    exception = false;
+                                    return false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (debug)
+                            {
+                                int num = 0;
+                                foreach (var v in frame.Locals)
+                                {
+                                    Console.WriteLine("$var" + num + ": " + Type.Pretify(v));
+                                    num++;
+                                }
+                                num = 0;
+                                foreach (var v in frame.Module.Globals)
+                                {
+                                    Console.WriteLine("$global" + num + ": " + Type.Pretify(v.GetValue()));
+                                    num++;
+                                }
+
+                                int numLabels = 0;
+
+/*                                foreach (var i in this.Stack.ToArray()
+                                {
+                                    if (i as Stack.Label != null)
+                                    {
+                                        numLabels++;
+                                    }
+
+                                    if (i as Stack.Frame != null)
+                                    {
+                                        break;
+                                    }
+                                }
+                                */
+                                Console.Write(frame.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + frame.Module.Name + "@" + frame.Function.GetName() + " => " + new string(' ', numLabels * 2) + frame.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
+                            }
+
+                            frame.Instruction = frame.Instruction.Run(this);
+
+                            if (debug)
+                            {
+                                if (this.Stack.Size == 0)
+                                {
+                                }
+                                else
+                                {
+                                    Console.Write(" $ret: " + Type.Pretify(this.Stack.Peek()));
+                                }
+                                Console.Write("\n");
+                                Console.ReadKey();
+                            }
+                        }
                     }
                 }
+
+                exception = false;
             }
             finally
             {
-                if(exception)
+                if (exception)
                 {
                     this.CurrentFrame = null;
                     this.Stack = new Stack.Stack(this);
                 }
             }
+
+            return true;
         }
     }
 }

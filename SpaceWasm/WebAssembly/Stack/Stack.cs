@@ -8,54 +8,50 @@ namespace WebAssembly.Stack
 {
     public class Stack
     {
-        public static UInt32 STACK_MAX = 1000;
-        Stack<object> stack = new Stack<object>();
+        public static UInt32 STACK_MAX = 10000;
+        object[] stack;
+
         public UInt32 Size = 0;
         Store store;
         UInt32 frames = 0;
+        public object Thrown = null;
+        public bool Debug = false;
 
         public Stack(Store store)
         {
             this.store = store;
+            stack = new object[Stack.STACK_MAX];
         }
 
         public void Push(object v)
         {
-            this.stack.Push(v);
-            this.Size++;
-
-            if (Size > Stack.STACK_MAX)
+            if (Size + 1 >= Stack.STACK_MAX)
             {
                 throw new Trap("call stack exhausted");
             }
+
+            this.stack[this.Size++] = v;
         }
 
         public object Pop()
-        {
-            var v = this.stack.Pop();
-            this.Size--;
-            return v;
+        {            
+            return this.stack[--this.Size];
         }
 
         public object Peek()
-        {
-            var v = this.stack.Peek();
-            return v;
+        {            
+            return this.stack[this.Size - 1];
         }
 
         public object PopValue()
         {
-            var value = this.Peek();
-            switch(value.GetType().ToString())
+            object value = this.Pop();
+            if(value is UInt32 || value is UInt64 || value is float || value is double)
             {
-
-                case "System.UInt32":
-                case "System.UInt64":
-                case "System.Single":
-                case "System.Double":
-                    return this.Pop();
+                return value;
             }
-            throw new Exception("Could not pop value from stack.");
+
+            throw new Exception("Top of stack is not a value");
         }
 
         public Label PopLabel(uint number = 1, bool end = false)
@@ -89,8 +85,9 @@ namespace WebAssembly.Stack
 
             for(int i = 0; i < label.Type.Length; i++)
             {
-                if(tmp.Count() > 0)
-                    switch(label.Type[i])
+                if (tmp.Count() > 0)
+                {
+                    switch (label.Type[i])
                     {
                         case Type.i32:
                             this.Push((UInt32)tmp.Dequeue());
@@ -105,6 +102,7 @@ namespace WebAssembly.Stack
                             this.Push((double)tmp.Dequeue());
                             continue;
                     }
+                }
                 throw new Exception("Invalid label arity.");
             }
 
@@ -118,7 +116,7 @@ namespace WebAssembly.Stack
 
         public UInt32 PeekI32()
         {
-            return (UInt32)this.stack.Peek();
+            return (UInt32)this.Peek();
         }
 
         public UInt64 PopI64()
@@ -128,7 +126,7 @@ namespace WebAssembly.Stack
 
         public UInt64 PeekI64()
         {
-            return (UInt64)this.stack.Peek();
+            return (UInt64)this.Peek();
         }
 
         public float PopF32()
@@ -138,7 +136,7 @@ namespace WebAssembly.Stack
 
         public float PeekF32()
         {
-            return (float)this.stack.Peek();
+            return (float)this.Peek();
         }
 
         public double PopF64()
@@ -148,13 +146,14 @@ namespace WebAssembly.Stack
 
         public double PeekF64()
         {
-            return (double)this.stack.Peek();
+            return (double)this.Peek();
         }
 
         public void PushFrame(Frame frame)
         {
             this.frames++;
-//            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "CALL: " + frame.Function.GetName());
+            if(this.Debug)
+                Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "CALL: " + frame.Function.GetName());
             if(this.store.CurrentFrame == null)
             {
                 this.store.CurrentFrame = frame;
@@ -168,11 +167,12 @@ namespace WebAssembly.Stack
 
         public bool PopFrame()
         {
-//            Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "RETN: " + this.store.CurrentFrame.Function.GetName());
+            if (this.Debug)
+                Console.WriteLine(new string(' ', (int)(this.frames-1) * 2) + "RETN: " + this.store.CurrentFrame.Function.GetName());
             this.frames--;
             var results = this.store.CurrentFrame.Results;
 
-            if (this.stack.Count() > 0)
+            if (this.Size > 0)
             {
                 this.store.CurrentFrame = (Frame)this.Pop();
             }
@@ -189,9 +189,38 @@ namespace WebAssembly.Stack
             return this.store.CurrentFrame != null;
         }
 
-        public object[] ToArray()
+        public void Throw(object e)
         {
-            return this.stack.ToArray();
+//            Console.WriteLine("Throw: " + e);
+            this.Thrown = e;
+            bool first = true;
+            do
+            {
+                if (!first && this.store.CurrentFrame.Function.Catcher)
+                {
+//                    Console.WriteLine("Catch: " + e);
+                    return;
+                }
+
+                first = false; 
+                
+                if(this.Size > 0)
+                {
+                    if (this.Peek() as Frame != null)
+                    {
+                        this.PopFrame();
+                    }
+                    else
+                    {
+                        this.Pop();
+                    }
+                }
+                else
+                {
+                    throw new Exception("Unhandled exception: " + this.Thrown);
+                }
+            }
+            while (this.store.CurrentFrame != null);
         }
     }
 }

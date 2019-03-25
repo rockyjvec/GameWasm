@@ -8,16 +8,23 @@ namespace WebAssembly
 {
     public class Function
     {
-        bool native = false;
         string name = "";
         public UInt32 Index = 0;
-        Func<object[], object[]> action;
         public Type Type;
+        public bool Catcher = false;
+
         private Module.Module module;
 
         Instruction.Instruction instruction;
 
         public List<byte> LocalTypes = new List<byte>();
+
+        public Function(Module.Module module, byte[] parameters, byte[] results, Instruction.Instruction i)
+        {
+            this.module = module;
+            this.Type = new Type(parameters, results);
+            this.instruction = i;
+        }
 
         public Function(Module.Module module, UInt32 index, Type type)
         {
@@ -30,22 +37,28 @@ namespace WebAssembly
         public Function(Module.Module module, Type type)
         {
             this.module = module;
-            this.native = true;
             this.name = "fnative";
-            this.action = this.NotImplemented;
             this.Type = type;
+            this.instruction = new Instruction.Custom(this.NotImplemented);
         }
 
         public Function(Module.Module module, Func<object[], object[]> action, Type type)
         {
             this.module = module;
-            this.native = true;
             this.name = "fnative";
-            this.action = action;
             this.Type = type;
+            this.instruction = new Instruction.Custom(delegate
+            {
+                object[] ret = action(this.module.Store.CurrentFrame.Locals.ToArray());
+
+                foreach (var v in ret)
+                {
+                    this.module.Store.Stack.Push(v);
+                }
+            });
         }
 
-        protected object[] NotImplemented(object[] parameters)
+        protected void NotImplemented()
         {
             throw new Exception("Function not implemented: " + this.module.Name + "@" + this.name);
         }
@@ -69,9 +82,13 @@ namespace WebAssembly
         {
             var frame = new Stack.Frame(store, module, this, this.instruction);
 
+            frame.Locals = new object[parameters.Length + this.LocalTypes.Count()];
+            frame.Results = new object[this.Type.Results.Length];
+            int localIndex = 0;
+
             foreach (var p in parameters.Reverse())
             {
-                frame.Locals.Add(p);
+                frame.Locals[localIndex++] = p;
             }
 
             foreach (var t in this.LocalTypes)
@@ -86,16 +103,16 @@ namespace WebAssembly
                         local = (UInt64)0;
                         break;
                     case Type.f32:
-                        local = (float)0;
+                        local = (Single)0;
                         break;
                     case Type.f64:
-                        local = (double)0;
+                        local = (Double)0;
                         break;
                     default:
                         throw new Exception("Invalid local type: 0x" + t.ToString("X"));
                 }
 
-                frame.Locals.Add(local);
+                frame.Locals[localIndex++] = local;
             }
 
             return frame;
@@ -111,19 +128,19 @@ namespace WebAssembly
                 switch (this.Type.Parameters[this.Type.Parameters.Length - i - 1])
                 {
                     case Type.i32:
-                        if (parameters[i].GetType().ToString() == "System.UInt32")
+                        if (parameters[i] is UInt32)
                             valid = true;
                         break;
                     case Type.i64:
-                        if (parameters[i].GetType().ToString() == "System.UInt64")
+                        if (parameters[i] is UInt64)
                             valid = true;
                         break;
                     case Type.f32:
-                        if (parameters[i].GetType().ToString() == "System.Single")
+                        if (parameters[i] is Single)
                             valid = true;
                         break;
                     case Type.f64:
-                        if (parameters[i].GetType().ToString() == "System.Double")
+                        if (parameters[i] is Double)
                             valid = true;
                         break;
                 }
@@ -134,20 +151,8 @@ namespace WebAssembly
                 }
             }
 
-            if (this.native)
-            {
-                object[] ret = this.action(parameters.Reverse().ToArray());
-
-                foreach (var v in ret)
-                {
-                    this.module.Store.Stack.Push(v);
-                }
-            }
-            else
-            {
-                this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
-                this.module.Store.Stack.Push(new Stack.Label(new Instruction.End(null), this.Type.Results));
-            }
+            this.module.Store.Stack.PushFrame(this.CreateFrame(this.module.Store, this.module, parameters));
+            this.module.Store.Stack.Push(new Stack.Label(new Instruction.End(null), this.Type.Results));
         }
 
         public void SetName(string name)
@@ -162,6 +167,7 @@ namespace WebAssembly
 
         public void HandleReturn(Store store)
         {
+            int resultIndex = 0;
             foreach (var r in store.CurrentFrame.Function.Type.Results)
             {
                 try
@@ -169,16 +175,16 @@ namespace WebAssembly
                     switch (r)
                     {
                         case Type.i32:
-                            store.CurrentFrame.Results.Push(store.Stack.PopI32());
+                            store.CurrentFrame.Results[resultIndex++] = store.Stack.PopI32();
                             break;
                         case Type.i64:
-                            store.CurrentFrame.Results.Push(store.Stack.PopI64());
+                            store.CurrentFrame.Results[resultIndex++] = store.Stack.PopI64();
                             break;
                         case Type.f32:
-                            store.CurrentFrame.Results.Push(store.Stack.PopF32());
+                            store.CurrentFrame.Results[resultIndex++] = store.Stack.PopF32();
                             break;
                         case Type.f64:
-                            store.CurrentFrame.Results.Push(store.Stack.PopF64());
+                            store.CurrentFrame.Results[resultIndex++] = store.Stack.PopF64();
                             break;
                         default:
                             throw new Exception("Invalid return type");
@@ -194,7 +200,6 @@ namespace WebAssembly
             {
                 store.Stack.Pop();
             }
-
         }
     }
 }

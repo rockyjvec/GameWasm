@@ -26,17 +26,13 @@ namespace WebAssembly
 
         public static string Pretify(object v)
         {
-            switch (v.GetType().ToString())
+            if(v is UInt32 || v is UInt64 || v is Single || v is Double)
             {
-                case "System.UInt32":
-                    return "" + ((UInt32)v).ToString();
-                case "System.UInt64":
-                    return "" + ((UInt64)v).ToString();
-                case "System.Single":
-                case "System.Double":
-                    return (v).ToString();
-                default:
-                    return "unknown";
+                return v.ToString();
+            }
+            else
+            {
+                return "unknown";
             }
         }
 

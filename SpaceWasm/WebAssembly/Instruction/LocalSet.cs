@@ -12,14 +12,14 @@ namespace WebAssembly.Instruction
 
         public override Instruction Run(Store store)
         {
-            if (index >= store.CurrentFrame.Locals.Count())
-                throw new Exception("Invalid local variable");
             store.CurrentFrame.Locals[index] = store.Stack.Pop();
             return this.Next;
         }
 
         public LocalSet(Parser parser) : base(parser, true)
         {
+            /*if (index >= store.CurrentFrame.Locals.Count())
+                throw new Exception("Invalid local variable");*/
             this.index = (int)parser.GetUInt32();
         }
 

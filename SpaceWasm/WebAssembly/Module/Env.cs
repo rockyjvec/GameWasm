@@ -11,31 +11,33 @@ namespace WebAssembly.Module
         UInt32 tempRet0;
         WebAssembly.Global DYNAMICTOP_PTR;
 
+
+
         public Env(Store store) : base("env", store)
         {
             this.AddExportFunc("abort", new byte[] { Type.i32 }, new byte[] { }, this.abort);
             this.AddExportFunc("setTempRet0", new byte[] { Type.i32 }, new byte[] { }, this.setTempRet0);
             this.AddExportFunc("getTempRet0", new byte[] { }, new byte[] { Type.i32 }, this.getTempRet0);
-            this.AddExportFunc("invoke_vii", new byte[] { Type.i32, Type.i32, Type.i32 }, new byte[] { }, this.invoke_vii);
+            this.AddExportFunc("invoke_vii",this.invoke_vii());
             this.AddExportFunc("___buildEnvironment", new byte[] { Type.i32 }, new byte[] { });
             this.AddExportFunc("___clock_gettime", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
             this.AddExportFunc("___lock", new byte[] { Type.i32 });
             this.AddExportFunc("___map_file", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 });
             this.AddExportFunc("___setErrNo", new byte[] { Type.i32 }, new byte[] { });
-            this.AddExportFunc("___syscall10", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall10);
-            this.AddExportFunc("___syscall140", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall140);
-            this.AddExportFunc("___syscall145", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall145);
-            this.AddExportFunc("___syscall146", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall146);
-            this.AddExportFunc("___syscall196", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall196);
-            this.AddExportFunc("___syscall221", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall221);
-            this.AddExportFunc("___syscall330", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall330);
-            this.AddExportFunc("___syscall38", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall38);
-            this.AddExportFunc("___syscall40", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall40);
-            this.AddExportFunc("___syscall5", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall5);
-            this.AddExportFunc("___syscall54", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall54);
-            this.AddExportFunc("___syscall6", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall6);
-            this.AddExportFunc("___syscall63", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall63);
-            this.AddExportFunc("___syscall91", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.___syscall91);
+            this.AddExportFunc("___syscall10", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall140", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall145", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall146", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall196", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall221", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall330", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall38", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall40", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall5", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall54", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall6", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall63", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
+            this.AddExportFunc("___syscall91", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, this.syscall);
             this.AddExportFunc("___unlock", new byte[] { Type.i32 });
             this.AddExportFunc("_abort", new byte[] { }, new byte[] { }, this._abort);
             this.AddExportFunc("_clock", new byte[] { }, new byte[] { Type.i32 });
@@ -49,7 +51,7 @@ namespace WebAssembly.Module
             this.AddExportFunc("_llvm_log10_f64", new byte[] { Type.f64 }, new byte[] { Type.f64 });
             this.AddExportFunc("_llvm_log2_f64", new byte[] { Type.f64 }, new byte[] { Type.f64 });
             this.AddExportFunc("_localtime", new byte[] { Type.i32 }, new byte[] { Type.i32 });
-            this.AddExportFunc("_longjmp", new byte[] { Type.i32, Type.i32 }, new byte[] { });
+            this.AddExportFunc("_longjmp", this._longjmp());
             this.AddExportFunc("_mktime", new byte[] { Type.i32 }, new byte[] { Type.i32 });
             this.AddExportFunc("_strftime", new byte[] { Type.i32, Type.i32, Type.i32, Type.i32 }, new byte[] { Type.i32 });
             this.AddExportFunc("_system", new byte[] { Type.i32 }, new byte[] { Type.i32 });
@@ -111,12 +113,67 @@ namespace WebAssembly.Module
             return new object[] { (UInt32) this.tempRet0 };
         }
 
-        public object[] invoke_vii(object[] parameters)
+        public Function invoke_vii()
         {
-            this.Store.Modules["lua"].Execute("dynCall_vii", parameters);
-            return new object[] { };
+            UInt32 sp = 0;
+            var start = new Instruction.Custom(delegate
+            {
+                this.Store.Modules["lua"].Execute("stackSave");
+            });
+
+            start.Next = new Instruction.Custom(delegate
+            {
+                sp = this.Store.Stack.PopI32();
+                this.Store.Modules["lua"].Execute("dynCall_vii", this.Store.CurrentFrame.Locals.ToArray());
+            });
+
+            start.Next.Next = new Instruction.Custom(delegate
+            {
+                if(this.Store.Stack.Thrown != null)
+                {
+                    this.Store.Modules["lua"].Execute("stackRestore", new object[] { sp });                   
+                }
+            });
+
+            start.Next.Next.Next = new Instruction.Custom(delegate
+            {
+                if (this.Store.Stack.Thrown != null)
+                {
+                    this.Store.Stack.Thrown = null;
+                    this.Store.Modules["lua"].Execute("_setThrew", new object[] { (UInt32)1, (UInt32)0 });
+                }
+            });
+
+            var f = new Function(
+               this,
+               new byte[] { Type.i32, Type.i32, Type.i32 },
+               new byte[] { },
+               start
+            );
+            f.Catcher = true;
+            return f;
         }
-        
+
+        public Function _longjmp()
+        {
+            var start = new Instruction.Custom(delegate
+            {
+                this.Store.Modules["lua"].Execute("_setThrew", new object[] { (UInt32)this.Store.CurrentFrame.Locals[0], (UInt32)this.Store.CurrentFrame.Locals[1] });
+            });
+
+            start.Next = new Instruction.Custom(delegate
+            {
+                this.Store.Stack.Throw("longjmp");
+            });
+
+            return new Function(
+               this,
+               new byte[] { Type.i32, Type.i32 },
+               new byte[] { },
+               start
+           );
+        }
+
         public UInt32 dynamicAlloc(UInt32 size)
         {
             UInt32 ret = this.Memory[0].GetI32(this.DYNAMICTOP_PTR.GetI32());
@@ -138,27 +195,29 @@ namespace WebAssembly.Module
             return new object[] { (UInt32)0 };
         }
 
-        public object[] ___syscall10(object[] parameters)
+        public object[] syscall(object[] parameters)
         {
-            throw new Exception("Syscall 10 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall140(object[] parameters)
-        {
-            throw new Exception("Syscall 140 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall145(object[] parameters)
-        {
-            throw new Exception("Syscall 145 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall146(object[] parameters)
-        {
+            UInt32 num = (UInt32)parameters[0];
             UInt32 varargs = (UInt32)parameters[1];
+            UInt32 ret = 0;
+            switch (num)
+            {
+                case 54: // ioctl
+                    ret = 0;
+                    break;
+                case 146: // writev
+                    ret = this.writev(varargs);
+                    break;
+                default:
+                    throw new Exception("Syscall " + num + " not implemented");
+            }
+
+            return new object[] { ret };
+
+        }
+
+        public UInt32 writev(UInt32 varargs)
+        {
             UInt32 stream = this.Memory[0].GetI32(varargs); varargs += 4;
             UInt32 iov = this.Memory[0].GetI32(varargs); varargs += 4;
             UInt32 iovcnt = this.Memory[0].GetI32(varargs); varargs += 4;
@@ -167,72 +226,11 @@ namespace WebAssembly.Module
             {
                 var ptr = this.Memory[0].GetI32(iov + (i * 8));
                 var len = this.Memory[0].GetI32(iov + (i * 8) + 4);
-                Console.Write(System.Text.Encoding.Default.GetString(this.Memory[0].GetBytes((UInt64)(UInt32)ptr, (int)(UInt32)len)));
+                Console.Write(System.Text.Encoding.Default.GetString(this.Memory[0].GetBytes(ptr, len)));
                 ret += len;
             }
 
-            return new object[] { (UInt32) ret };
-        }
-
-        public object[] ___syscall196(object[] parameters)
-        {
-            throw new Exception("Syscall 196 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall221(object[] parameters)
-        {
-            throw new Exception("Syscall 221 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall330(object[] parameters)
-        {
-            throw new Exception("Syscall 330 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall38(object[] parameters)
-        {
-            throw new Exception("Syscall 38 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall40(object[] parameters)
-        {
-            throw new Exception("Syscall 40 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall5(object[] parameters)
-        {
-            throw new Exception("Syscall 5 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall54(object[] parameters)
-        {
-            UInt32 varargs = (UInt32)parameters[1];
-
-            return new object[] { (UInt32) 0 };
-        }
-
-        public object[] ___syscall6(object[] parameters)
-        {
-            throw new Exception("Syscall 6 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall63(object[] parameters)
-        {
-            throw new Exception("Syscall 63 not implemented");
-            return new object[] { (UInt32)0 };
-        }
-
-        public object[] ___syscall91(object[] parameters)
-        {
-            throw new Exception("Syscall 91 not implemented");
-            return new object[] { (UInt32)0 };
-        }
+            return ret;
+        }        
     }
 }

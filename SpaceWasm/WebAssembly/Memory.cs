@@ -40,24 +40,21 @@ namespace WebAssembly
 
         public void Set(UInt64 offset, byte b)
         {
-            UInt32 page = (UInt32)(offset / 65536);
-            UInt32 remainder = (UInt32)(offset % 65536);
-            if (offset > this.CurrentPages * 65536 - 1)
+            if (offset > (this.CurrentPages >> 16) - 1)
                 throw new Trap("out of bounds memory access");
-            this.Buffer[page][remainder] = b;
+
+            this.Buffer[offset >> 16][offset & 0xFFFF] = b;
         }
 
-        public byte[] GetBytes(UInt64 offset, int bytes)
+        public byte[] GetBytes(UInt64 offset, UInt64 bytes)
         {
-            if (offset > ((this.CurrentPages * 65536) - (UInt64)bytes))
+            if ((offset + bytes) > (this.CurrentPages << 16))
                 throw new Trap("out of bounds memory access", "" + offset + " > " + ((this.CurrentPages * 65536) - (UInt64)bytes));
 
             byte[] buffer = new byte[bytes];
-            for(UInt64 index = offset; index < offset + (UInt64)bytes; index++)
+            for(UInt64 i = offset; i < offset + (UInt64)bytes; i++)
             {
-                UInt32 page = (UInt32)(index / 65536);
-                UInt32 remainder = (UInt32)(index % 65536);
-                buffer[(int)(index - offset)] = this.Buffer[page][remainder];
+                buffer[i - offset] = this.Buffer[i >> 16][i & 0xFFFF];
             }
 
             return buffer;
@@ -65,13 +62,12 @@ namespace WebAssembly
 
         public void SetBytes(UInt64 offset, byte[] bytes)
         {
-            if (offset > ((this.CurrentPages * 65536) - (UInt64)bytes.Length))
+            if ((offset + (UInt64)bytes.Length) > (this.CurrentPages << 16))
                 throw new Trap("out of bounds memory access", "" + offset + " > " +((this.CurrentPages * 65536) - (UInt64)bytes.Length));
 
-            for (UInt64 i = 0; i < (UInt64)bytes.Length; i++)
+            for (UInt64 i = offset; i < offset + (UInt64)bytes.Length; i++)
             {
-                UInt64 index = offset + i;
-                this.Set(index, bytes[i]);
+                this.Buffer[i >> 16][i & 0xFFFF] = bytes[i - offset];
             }
         }
 

@@ -45,6 +45,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebAssembly\Global.cs" />
+    <Compile Include="WebAssembly\Instruction\Custom.cs" />
     <Compile Include="WebAssembly\Instruction\Else.cs" />
     <Compile Include="WebAssembly\Instruction\End.cs" />
     <Compile Include="WebAssembly\Instruction\F32abs.cs" />

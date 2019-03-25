@@ -97,7 +97,7 @@ namespace WebAssembly.Module
             {
                 this.startFunction.NativeCall();
 
-                while (this.Store.Step(this.Debug)) { }
+                while (this.Store.Step(1000, this.Debug)) { }
             }
         }
 
@@ -283,7 +283,7 @@ namespace WebAssembly.Module
                 do
                 {
                 }
-                while (this.Store.CurrentFrame.Step(this.Debug));
+                while (this.Store.Step(1000, this.Debug));
                 this.Store.CurrentFrame = null;
 
                 this.Globals.Add(new WebAssembly.Global(type, mutable, this.Store.Stack.Pop(), (UInt32)this.Globals.Count()));
@@ -384,7 +384,7 @@ namespace WebAssembly.Module
                 do
                 {
                 }
-                while (this.Store.CurrentFrame.Step(this.Debug));
+                while (this.Store.Step(1000, this.Debug));
                 this.Store.CurrentFrame = null;
 
                 UInt32 offset = this.Store.Stack.PopI32();
@@ -453,7 +453,7 @@ namespace WebAssembly.Module
                 while (expr != null);
 
                 UInt64 offset;
-                if (this.Store.Stack.Peek().GetType().ToString() == "System.UInt32")
+                if (this.Store.Stack.Peek() is UInt32)
                 {
                     offset = (UInt64)this.Store.Stack.PopI32();
                 }
@@ -490,6 +490,13 @@ namespace WebAssembly.Module
             func.SetName(this.Name + "@" + name);
 
             this.Exports.Add(name, func);
+        }
+
+        public void AddExportFunc(string name, Function f)
+        {
+            f.SetName(this.Name + "@" + name);
+
+            this.Exports.Add(name, f);
         }
 
         public WebAssembly.Global AddExportGlob(string name, byte type, bool mutable, object v)
@@ -564,7 +571,7 @@ namespace WebAssembly.Module
         {
             this.Execute(function, parameters);
 
-            while (this.Store.Step(this.Debug))
+            while (this.Store.Step(10000, this.Debug))
             {
 
             }
