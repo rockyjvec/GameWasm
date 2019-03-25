@@ -1,3 +1,3 @@
 # SpaceWasm
-An implmementation of WebAssembly in C# with basic support for emscripten.
+An implementation of WebAssembly in C# with basic support for emscripten.
 
