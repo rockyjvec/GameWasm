@@ -1,3 +1,5 @@
-# SpaceWasm
-An implementation of WebAssembly in C# with basic support for emscripten. To be used in Space Engineers.
+# GameWasm
+An implementation of a WebAssembly/WASI VM in C# to be used for modding support in games.
+
+This implementation differs from others by allowing execution in the VM to be throttled, paused etc.  This allows games, such as Space Engineers, that allow in game scripting to have the scripts be sandboxed and limited so they don't take up too many cpu cycles, memeory, etc.
 
