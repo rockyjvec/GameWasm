@@ -12,9 +12,12 @@ namespace GameWasm.Webassembly.Instruction
         private object[] _constants = null;
         Parser parser;
 
-        private const bool optimizer = true;
+        public const bool optimizer = true;
+        public bool isCallInstruction = false;
+        public bool isControlInstruction = false;
+        public bool isConstantInstruction = false;
 
-        public Instruction Execute(Frame f)
+        public Instruction Execute(Frame f, int steps = 0)
         {
             if (_constants != null)
             {
@@ -25,12 +28,42 @@ namespace GameWasm.Webassembly.Instruction
                 }
             }
 
-            return Run(f);
+            var next = Run(f);
+            if (optimizer && next != null && steps > 0 && !isCallInstruction )
+            {
+                return next.Execute(f, steps - 1);
+            }
+
+            return next;
         }
         
         public Instruction(Parser parser, bool implemented = false)
         {
             this.parser = parser;
+
+            this.isCallInstruction =
+                (this as Call) != null ||
+                (this as CallIndirect) != null ||
+                false;
+
+            this.isControlInstruction = //(this as Block) != null ||
+                       //  (this as Br) != null || 
+                       //  (this as BrIf) != null || 
+                       //  (this as BrTable) != null ||
+                       (this as Call) != null ||
+                       (this as CallIndirect) != null ||
+                       //  (this as Custom) != null ||
+                       //    (this as Drop) != null ||
+                       //      (this as Else) != null ||
+                       //(this as End) != null ||
+                       //       (this as If) != null ||
+                       //         (this as Loop) != null ||
+                       //(this as Return) != null ||
+                       //           (this as Select) != null  ||
+                       false;
+            
+            this.isConstantInstruction = (this as I32const) != null || (this as I64const) != null || (this as F32const) != null ||
+                                         (this as F64const) != null;
 
             if(!implemented)
             {
@@ -47,32 +80,7 @@ namespace GameWasm.Webassembly.Instruction
         {
             throw new Exception("Run not implemented in " + this);
         }
-
-        public bool isControlInstruction()
-        {
-            return //(this as Block) != null ||
-//                     (this as Br) != null || 
-//                     (this as BrIf) != null || 
-//                     (this as BrTable) != null ||
-//                     (this as Call) != null ||
-//                     (this as CallIndirect) != null ||
-//                     (this as Custom) != null ||
-//                     (this as Drop) != null ||
-//                     (this as Else) != null ||
-                     (this as End) != null ||
-//                     (this as If) != null ||
-//                     (this as Loop) != null ||
-//                     (this as Return) != null ||
-//                     (this as Select) != null  ||
-                  false;
-        }
-
-        public bool isConstantInstruction()
-        {
-            return (this as I32const) != null || (this as I64const) != null || (this as F32const) != null ||
-                   (this as F64const) != null;
-        }
-
+        
         public static Instruction Consume(Parser parser, bool debug)
         {
             Stack<Instruction> controlFlowStack = new Stack<Instruction>();
@@ -515,7 +523,7 @@ namespace GameWasm.Webassembly.Instruction
                 for (var c = start; c != null; c = c.Next)
                 {
                     // Remove constant instructions
-                    if (c.isConstantInstruction() && c != start)
+                    if (c.isConstantInstruction && c != start)
                     {
                         var q = new List<object>();
                         do
@@ -538,7 +546,7 @@ namespace GameWasm.Webassembly.Instruction
                             }
 
                             c = c.Next;
-                        } while (c != null && c.isConstantInstruction());
+                        } while (c != null && c.isConstantInstruction);
 
                         if (c != null && (c as End) == null) // can't add the constants to an end since multiple things can go to an end.
                         {

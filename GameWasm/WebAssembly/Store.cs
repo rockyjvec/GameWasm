@@ -217,7 +217,7 @@ namespace GameWasm.Webassembly
                         else
                         {
 //                            Console.WriteLine(CurrentFrame.Instruction + " " + CurrentFrame.Instruction.Pointer);
-                            CurrentFrame.Instruction = CurrentFrame.Instruction.Execute(CurrentFrame);
+                            CurrentFrame.Instruction = CurrentFrame.Instruction.Execute(CurrentFrame, 10);
                         }
                     }
                 }
