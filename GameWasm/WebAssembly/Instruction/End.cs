@@ -4,9 +4,9 @@
     {
         public byte Type = 0;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.PopLabel(1, true);
+            f.PopLabel(1, true);
             return Next;
         }
 

@@ -4,11 +4,11 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F64nearest : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var a = store.Stack.PopF64();
+            var a = f.PopF64();
 
-            store.Stack.Push((double)Math.Round(a));
+            f.Push((double)Math.Round(a));
             return Next;
         }
 

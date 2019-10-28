@@ -2,16 +2,16 @@
 {
     internal class I32remu : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopI32();
-            var a = store.Stack.PopI32();
+            var b = f.PopI32();
+            var a = f.PopI32();
 
             if (b == 0) throw new Trap("integer divide by zero");
 
             try
             {
-                store.Stack.Push(a % b);
+                f.Push(a % b);
             }
             catch (System.OverflowException e)
             {

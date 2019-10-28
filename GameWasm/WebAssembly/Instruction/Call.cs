@@ -1,11 +1,13 @@
-﻿namespace GameWasm.Webassembly.Instruction
+﻿using GameWasm.Webassembly.Stack;
+
+namespace GameWasm.Webassembly.Instruction
 {
     class Call : Instruction
     {
         int funcidx;
-        public override Instruction Run(Store store)
+        public override Instruction Run(Frame f)
         {
-            store.CurrentFrame.Module.Functions[funcidx].NativeCall();
+            f.Function.Module.Store.CallFunction(f.Function.Module.Functions[funcidx]);
             return Next;
         }
 

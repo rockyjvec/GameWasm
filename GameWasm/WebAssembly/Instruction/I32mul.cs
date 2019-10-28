@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32mul : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((UInt32)store.Stack.PopI32() * (UInt32)store.Stack.PopI32());
+            f.Push((UInt32)f.PopI32() * (UInt32)f.PopI32());
 
             return Next;
         }

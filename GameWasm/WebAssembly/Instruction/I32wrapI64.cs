@@ -5,9 +5,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32wrapI64 : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((UInt32)store.Stack.PopI64());
+            f.Push((UInt32)f.PopI64());
             return Next;
         }
 

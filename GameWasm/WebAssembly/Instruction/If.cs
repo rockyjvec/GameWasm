@@ -11,24 +11,24 @@
             this.end = end;
         }
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var v = store.Stack.PopI32();
+            var v = f.PopI32();
 
 
             if (v > 0)
             {
                 if(end as Else != null)
-                    store.Stack.Push(new Stack.Label((end as Else).end, new byte[] { type }));
+                    f.Push(new Stack.Label((end as Else).end, new byte[] { type }));
                 else
-                    store.Stack.Push(new Stack.Label(end, new byte[] { type }));
+                    f.Push(new Stack.Label(end, new byte[] { type }));
                 return Next;
             }
             else
             {
                 if (end as Else != null)
                 {
-                    store.Stack.Push(new Stack.Label((end as Else).end, new byte[] { type }));
+                    f.Push(new Stack.Label((end as Else).end, new byte[] { type }));
                 }
 
                 return end.Next;

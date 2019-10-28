@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F32ceil : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((float)Math.Ceiling(store.Stack.PopF32()));
+            f.Push((float)Math.Ceiling(f.PopF32()));
             return Next;
         }
 

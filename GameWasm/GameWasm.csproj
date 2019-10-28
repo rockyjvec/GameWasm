@@ -217,17 +217,11 @@
         <Compile Include="WebAssembly\Instruction\Select.cs" />
         <Compile Include="WebAssembly\Instruction\Unreachable.cs" />
         <Compile Include="WebAssembly\Memory.cs" />
-        <Compile Include="WebAssembly\Module\Asm2Wasm.cs" />
-        <Compile Include="WebAssembly\Module\Env.cs" />
-        <Compile Include="WebAssembly\Module\Global\Global.cs" />
-        <Compile Include="WebAssembly\Module\Global\Math.cs" />
         <Compile Include="WebAssembly\Module\Module.cs" />
-        <Compile Include="WebAssembly\Module\SpecTest.cs" />
         <Compile Include="WebAssembly\Module\Wasi.cs" />
         <Compile Include="WebAssembly\Parser.cs" />
         <Compile Include="WebAssembly\Stack\Frame.cs" />
         <Compile Include="WebAssembly\Stack\Label.cs" />
-        <Compile Include="WebAssembly\Stack\Stack.cs" />
         <Compile Include="WebAssembly\Store.cs" />
         <Compile Include="WebAssembly\Table.cs" />
         <Compile Include="WebAssembly\Test\Address.cs" />

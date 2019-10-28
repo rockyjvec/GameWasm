@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64reinterpretI32 : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(BitConverter.ToUInt64(BitConverter.GetBytes(store.Stack.PopF64()), 0));
+            f.Push(BitConverter.ToUInt64(BitConverter.GetBytes(f.PopF64()), 0));
             return Next;
         }
 

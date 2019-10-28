@@ -4,15 +4,15 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F64ne : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            if (store.Stack.PopF64() != store.Stack.PopF64())
+            if (f.PopF64() != f.PopF64())
             {
-                store.Stack.Push((UInt32)1);
+                f.Push((UInt32)1);
             }
             else
             {
-                store.Stack.Push((UInt32)0);
+                f.Push((UInt32)0);
             }
 
             return Next;

@@ -4,15 +4,15 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I32eqz : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            if (store.Stack.PopI32() == 0)
+            if (f.PopI32() == 0)
             {
-                store.Stack.Push((UInt32)1);
+                f.Push((UInt32)1);
             }
             else
             {
-                store.Stack.Push((UInt32)0);
+                f.Push((UInt32)0);
             }
 
             return Next;

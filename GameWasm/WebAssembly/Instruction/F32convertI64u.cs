@@ -2,9 +2,9 @@
 {
     internal class F32convertI64u : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((float)store.Stack.PopI64());
+            f.Push((float)f.PopI64());
             return Next;
         }
 

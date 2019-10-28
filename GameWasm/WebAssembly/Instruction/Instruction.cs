@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameWasm.Webassembly.Stack;
 
 namespace GameWasm.Webassembly.Instruction
 {
@@ -25,7 +26,7 @@ namespace GameWasm.Webassembly.Instruction
             throw new Exception("End not implementedin " + this);
         }
 
-        public virtual Instruction Run(Store store)
+        public virtual Instruction Run(Frame frame)
         {
             throw new Exception("Run not implemented in " + this);
         }

@@ -4,10 +4,10 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64extendI32u : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopI32();
-            store.Stack.Push((UInt64)b);
+            var b = f.PopI32();
+            f.Push((UInt64)b);
 
             return Next;
         }

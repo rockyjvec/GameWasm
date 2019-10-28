@@ -4,15 +4,15 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I64eq : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            if (store.Stack.PopI64() == store.Stack.PopI64())
+            if (f.PopI64() == f.PopI64())
             {
-                store.Stack.Push((UInt32)1);
+                f.Push((UInt32)1);
             }
             else
             {
-                store.Stack.Push((UInt32)0);
+                f.Push((UInt32)0);
             }
 
             return Next;

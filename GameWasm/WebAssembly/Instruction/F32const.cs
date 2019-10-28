@@ -4,9 +4,9 @@
     {
         float value;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(value);
+            f.Push(value);
             return Next;
         }
 

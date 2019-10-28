@@ -2,10 +2,10 @@
 {
     internal class F32copysign : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopF32();
-            var a = store.Stack.PopF32();
+            var b = f.PopF32();
+            var a = f.PopF32();
 
             if (a >= 0 && b < 0)
             {
@@ -17,7 +17,7 @@
                 a = -a;
             }
 
-            store.Stack.Push(a);
+            f.Push(a);
             return Next;
         }
 

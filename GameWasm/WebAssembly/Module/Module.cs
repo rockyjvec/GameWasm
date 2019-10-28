@@ -20,8 +20,6 @@ namespace GameWasm.Webassembly.Module
 
         Function startFunction = null;
 
-        public bool Debug = false;
-
         int functionIndex = 0;
 
         public Dictionary<string, object> Exports = new Dictionary<string, object>();
@@ -94,9 +92,8 @@ namespace GameWasm.Webassembly.Module
 
             if(startFunction != null)
             {
-                startFunction.NativeCall();
-
-                while (Store.Step(1000, Debug)) { }
+                Store.CallFunction(startFunction);
+                while (Store.Step(1000)) { }
             }
         }
 
@@ -279,14 +276,13 @@ namespace GameWasm.Webassembly.Module
                 parser.GetGlobalType(out type, out mutable);
 
                 var expr = parser.GetExpr();
-                Store.CurrentFrame = new Frame(Store, this, null, expr);
+                Store.Frames.Push(new Frame(Store, null, expr));
                 do
                 {
                 }
-                while (Store.Step(1000, Debug));
-                Store.CurrentFrame = null;
+                while (Store.Step(1000));
 
-                Globals.Add(new Webassembly.Global(type, mutable, Store.Stack.Pop(), (UInt32)Globals.Count()));
+                Globals.Add(new Webassembly.Global(type, mutable, Store.Frames.Peek().Pop(), (UInt32)Globals.Count()));
             }
         }
 
@@ -380,14 +376,13 @@ namespace GameWasm.Webassembly.Module
                 }
 
                 var expr = parser.GetExpr();
-                Store.CurrentFrame = new Frame(Store, this, null, expr);
+                Store.Frames.Push(new Frame(Store, null, expr));
                 do
                 {
                 }
-                while (Store.Step(1000, Debug));
-                Store.CurrentFrame = null;
+                while (Store.Step(1000));
 
-                UInt32 offset = Store.Stack.PopI32();
+                UInt32 offset = Store.Frames.Peek().PopI32();
 
                 UInt32 funcVecSize = parser.GetUInt32();
                 for (uint func = 0; func < funcVecSize; func++)
@@ -446,20 +441,20 @@ namespace GameWasm.Webassembly.Module
                 }
 
                 var expr = parser.GetExpr();
+                Store.Frames.Push(new Frame(Store, null, expr));
                 do
                 {
-                    expr = expr.Run(Store);
                 }
-                while (expr != null);
+                while (Store.Step(1000));
 
                 UInt64 offset;
-                if (Store.Stack.Peek() is UInt32)
+                if (Store.Frames.Peek().Peek() is UInt32)
                 {
-                    offset = (UInt64)Store.Stack.PopI32();
+                    offset = (UInt64)Store.Frames.Peek().PopI32();
                 }
                 else
                 {
-                    offset = Store.Stack.PopI64();
+                    offset = Store.Frames.Peek().PopI64();
                 }
                 
                 UInt32 memVecSize = parser.GetUInt32();
@@ -553,25 +548,25 @@ namespace GameWasm.Webassembly.Module
 
             foreach(var p in parameters)
             {
-                Store.Stack.Push(p);
+                Store.Frames.Peek().Push(p);
             }
 
             Function f = Exports[function] as Function;
-            f.NativeCall();
+            Store.CallFunction(f);
         }
 
         public object Call(string function, params object[] parameters)
         {
             CallVoid(function, parameters);
 
-            return Store.Stack.Pop();
+            return Store.Frames.Peek().Pop();
         }
 
         public void CallVoid(string function, params object[] parameters)
         {
             Execute(function, parameters);
 
-            while (Store.Step(1000, Debug))
+            while (Store.Step(1000))
             {
 
             }

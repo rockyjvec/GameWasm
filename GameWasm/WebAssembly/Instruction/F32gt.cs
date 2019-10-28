@@ -4,18 +4,18 @@ namespace GameWasm.Webassembly.Instruction
 {
     class F32gt : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopF32();
-            var a = store.Stack.PopF32();
+            var b = f.PopF32();
+            var a = f.PopF32();
 
             if (a > b)
             {
-                store.Stack.Push((UInt32)1);
+                f.Push((UInt32)1);
             }
             else
             {
-                store.Stack.Push((UInt32)0);
+                f.Push((UInt32)0);
             }
 
             return Next;

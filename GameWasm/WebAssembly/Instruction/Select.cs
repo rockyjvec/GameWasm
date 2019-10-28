@@ -4,11 +4,11 @@ namespace GameWasm.Webassembly.Instruction
 {
     class Select : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var a = store.Stack.PopI32();
-            var val2 = store.Stack.Pop();
-            var val1 = store.Stack.Pop();
+            var a = f.PopI32();
+            var val2 = f.Pop();
+            var val1 = f.Pop();
             if(val1.GetType() != val2.GetType())
             {
                 throw new Exception("Select types don't match.");
@@ -16,11 +16,11 @@ namespace GameWasm.Webassembly.Instruction
 
             if(a != 0)
             {
-                store.Stack.Push(val1);
+                f.Push(val1);
             }
             else
             {
-                store.Stack.Push(val2);
+                f.Push(val2);
             }
 
             return Next;

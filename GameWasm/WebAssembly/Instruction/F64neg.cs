@@ -2,10 +2,10 @@
 {
     internal class F64neg : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var a = store.Stack.PopF64();
-            store.Stack.Push(-a);
+            var a = f.PopF64();
+            f.Push(-a);
             return Next;
         }
 

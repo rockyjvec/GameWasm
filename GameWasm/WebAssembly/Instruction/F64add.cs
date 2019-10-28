@@ -2,9 +2,9 @@
 {
     internal class F64add : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(store.Stack.PopF64() + store.Stack.PopF64());
+            f.Push(f.PopF64() + f.PopF64());
 
             return Next;
         }

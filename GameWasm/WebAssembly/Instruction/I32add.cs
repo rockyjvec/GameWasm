@@ -2,12 +2,12 @@
 {
     internal class I32add : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopI32();
-            var a = store.Stack.PopI32();
+            var b = f.PopI32();
+            var a = f.PopI32();
 
-            store.Stack.Push(a + b);
+            f.Push(a + b);
 
             return Next;
         }

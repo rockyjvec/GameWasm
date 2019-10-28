@@ -4,16 +4,16 @@
     {
         int index;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(store.CurrentFrame.Locals[index]);
+            f.Push(f.Locals[index]);
             return Next;
         }
 
         public LocalGet(Parser parser) : base(parser, true)
         {
             /*
-            if (index >= store.CurrentFrame.Locals.Count())
+            if (index >= f.Locals.Count())
                 throw new Exception("Invalid local variable");*/
             index = (int)parser.GetUInt32();
         }

@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32popcnt : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var a = store.Stack.PopI32();
+            var a = f.PopI32();
 
             UInt32 bits = 0;
             UInt32 compare = 1;
@@ -20,7 +20,7 @@ namespace GameWasm.Webassembly.Instruction
                 compare <<= 1;
             }
 
-            store.Stack.Push(bits);
+            f.Push(bits);
 
             return Next;
         }

@@ -4,10 +4,10 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64rems : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = (Int64)store.Stack.PopI64();
-            var a = (Int64)store.Stack.PopI64();
+            var b = (Int64)f.PopI64();
+            var a = (Int64)f.PopI64();
 
             if (b == 0) throw new Trap("integer divide by zero");
 
@@ -15,11 +15,11 @@ namespace GameWasm.Webassembly.Instruction
             {
                 if ((UInt64)a == 0x8000000000000000 && (UInt64)b == 0xFFFFFFFFFFFFFFFF)
                 {
-                    store.Stack.Push((UInt64)0);
+                    f.Push((UInt64)0);
                 }
                 else
                 {
-                    store.Stack.Push((UInt64)(a % b));
+                    f.Push((UInt64)(a % b));
                 }
             }
             catch (System.OverflowException e)

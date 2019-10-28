@@ -14,6 +14,7 @@ namespace GameWasm.Webassembly.Test
             var filename = "func_ptrs1.wasm";
 
             var store = new Store();
+            /*
             var test = store.LoadModule("test", path + '/' + filename);
 
             assert(test.Call("one"), (UInt32) 13);
@@ -21,11 +22,11 @@ namespace GameWasm.Webassembly.Test
             assert(test.Call("three", (UInt32) 13), (UInt32) 11);
             test.CallVoid("four", (UInt32) 83);            
             
-            
+            */
             filename = "func_ptrs2.wasm";
 
             store = new Store();
-            test = store.LoadModule("test", path + '/' + filename);
+            var test = store.LoadModule("test", path + '/' + filename);
             
             assert(test.Call("callt", (UInt32) 0), (UInt32) 1);
             assert(test.Call("callt", (UInt32) 1), (UInt32) 2);

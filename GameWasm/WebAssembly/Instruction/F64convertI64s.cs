@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F64convertI64s : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((double)(Int64)store.Stack.PopI64());
+            f.Push((double)(Int64)f.PopI64());
             return Next;
         }
         public F64convertI64s(Parser parser) : base(parser, true)

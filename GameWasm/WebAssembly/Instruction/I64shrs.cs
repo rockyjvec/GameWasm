@@ -4,12 +4,12 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64shrs : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = (byte)store.Stack.PopI64();
-            var a = (Int64)store.Stack.PopI64();
+            var b = (byte)f.PopI64();
+            var a = (Int64)f.PopI64();
 
-            store.Stack.Push((UInt64)(a >> b));
+            f.Push((UInt64)(a >> b));
             return Next;
         }
 

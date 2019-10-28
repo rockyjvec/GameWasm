@@ -6,12 +6,12 @@ namespace GameWasm.Webassembly.Instruction
     {
         UInt32 align, offset;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var v = store.Stack.PopI32();
-            var index = store.Stack.PopI32();
+            var v = f.PopI32();
+            var index = f.PopI32();
 
-            store.CurrentFrame.Module.Memory[0].SetI32((UInt64)offset + (UInt64)index, v);
+            f.Function.Module.Memory[0].SetI32((UInt64)offset + (UInt64)index, v);
             
             return Next;
         }

@@ -8,19 +8,19 @@ namespace GameWasm.Webassembly.Instruction
         int typeidx;
         int tableidx;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var index = store.Stack.PopI32();
-            if(tableidx >= store.CurrentFrame.Module.Tables.Count())
+            var index = f.PopI32();
+            if(tableidx >= f.Function.Module.Tables.Count())
             {
                 throw new Exception("Table index out of bounds.");
             }
-            var funcidx = store.CurrentFrame.Module.Tables[tableidx].Get(index);
-            if(funcidx >= store.CurrentFrame.Module.Functions.Count())
+            var funcidx = f.Function.Module.Tables[tableidx].Get(index);
+            if(funcidx >= f.Function.Module.Functions.Count())
             {
                 throw new Exception("Function index out of bounds.");
             }
-            store.CurrentFrame.Module.Functions[(int)funcidx].NativeCall();
+            f.Function.Module.Store.CallFunction(f.Function.Module.Functions[(int)funcidx]);
             return Next;
         }
 

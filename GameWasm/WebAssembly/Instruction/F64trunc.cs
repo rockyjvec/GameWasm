@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F64trunc : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((double)Math.Truncate((double)store.Stack.PopF64()));
+            f.Push((double)Math.Truncate((double)f.PopF64()));
 
             return Next;
         }

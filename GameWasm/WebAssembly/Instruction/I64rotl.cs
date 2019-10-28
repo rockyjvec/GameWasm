@@ -4,12 +4,12 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64rotl : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopI64();
-            var a = store.Stack.PopI64();
+            var b = f.PopI64();
+            var a = f.PopI64();
 
-            store.Stack.Push((UInt64)((a << (int)b) | (a >> (64 - (int)b))));
+            f.Push((UInt64)((a << (int)b) | (a >> (64 - (int)b))));
             return Next;
         }
 

@@ -2,9 +2,9 @@
 {
     class Drop : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.PopValue();
+            f.PopValue();
 
             return Next;
         }

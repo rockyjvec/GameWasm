@@ -224,6 +224,9 @@ namespace GameWasm.Webassembly.Module
         private string[] EnvVars = new string[] { "HOME=/home/rocky", "DOOMWADDIR=/home/rocky" };
         private string[] Args = new string[] { };
         private Dictionary<UInt32, FileStream> FileDescriptors = new Dictionary<UInt32, FileStream>();
+        
+        private bool Debug = false;
+            
         public Wasi(Store store) : base("wasi_unstable", store)
         {
             AddExportFunc("args_get", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, ArgsGet );
@@ -398,8 +401,8 @@ namespace GameWasm.Webassembly.Module
                     // not sure what to do for other cases
                     break;
                 case 3: // --dir
-                    Store.CurrentFrame.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_PREOPENTYPE_DIR}); // Type Directory?
-                    Store.CurrentFrame.Module.Memory[0].SetI32((UInt32)parameters[1]+4, (UInt32)Encoding.UTF8.GetBytes(Directory).Length); // Directory name length
+                    Store.Frames.Peek().Function.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_PREOPENTYPE_DIR}); // Type Directory?
+                    Store.Frames.Peek().Function.Module.Memory[0].SetI32((UInt32)parameters[1]+4, (UInt32)Encoding.UTF8.GetBytes(Directory).Length); // Directory name length
                     break;
                 default:
                     return new object[] { WASI_EBADF };
@@ -422,10 +425,10 @@ namespace GameWasm.Webassembly.Module
                     // not sure what to do for other cases
                     break;
                 case 3: // --dir
-                    Store.CurrentFrame.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_FILETYPE_DIRECTORY}); // File Type Directory
-                    Store.CurrentFrame.Module.Memory[0].SetI32((UInt32)parameters[1]+2, WASI_FDFLAG_SYNC); // Flags
-                    Store.CurrentFrame.Module.Memory[0].SetBytes((UInt32)parameters[1]+8, BitConverter.GetBytes(RIGHTS_DIRECTORY_BASE));
-                    Store.CurrentFrame.Module.Memory[0].SetBytes((UInt32)parameters[1]+16, BitConverter.GetBytes(RIGHTS_DIRECTORY_INHERITING));
+                    Store.Frames.Peek().Function.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_FILETYPE_DIRECTORY}); // File Type Directory
+                    Store.Frames.Peek().Function.Module.Memory[0].SetI32((UInt32)parameters[1]+2, WASI_FDFLAG_SYNC); // Flags
+                    Store.Frames.Peek().Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+8, BitConverter.GetBytes(RIGHTS_DIRECTORY_BASE));
+                    Store.Frames.Peek().Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+16, BitConverter.GetBytes(RIGHTS_DIRECTORY_INHERITING));
                     
                     break;
                 
@@ -433,10 +436,10 @@ namespace GameWasm.Webassembly.Module
                     if (FileDescriptors.ContainsKey((UInt32) parameters[0]))
                     {
                         var fd = FileDescriptors[(UInt32) parameters[0]];
-                        Store.CurrentFrame.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_FILETYPE_REGULAR_FILE}); // File Type Directory
-                        Store.CurrentFrame.Module.Memory[0].SetI32((UInt32)parameters[1]+2, WASI_FDFLAG_SYNC); // Flags
-                        Store.CurrentFrame.Module.Memory[0].SetBytes((UInt32)parameters[1]+8, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_BASE));
-                        Store.CurrentFrame.Module.Memory[0].SetBytes((UInt32)parameters[1]+16, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_INHERITING));
+                        Store.Frames.Peek().Function.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_FILETYPE_REGULAR_FILE}); // File Type Directory
+                        Store.Frames.Peek().Function.Module.Memory[0].SetI32((UInt32)parameters[1]+2, WASI_FDFLAG_SYNC); // Flags
+                        Store.Frames.Peek().Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+8, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_BASE));
+                        Store.Frames.Peek().Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+16, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_INHERITING));
                     }
                     break;
             }

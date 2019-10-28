@@ -2,16 +2,16 @@
 {
     internal class I64divu : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopI64();
-            var a = store.Stack.PopI64();
+            var b = f.PopI64();
+            var a = f.PopI64();
 
             if (b == 0) throw new Trap("integer divide by zero");
 
             try
             {
-                store.Stack.Push(a / b);
+                f.Push(a / b);
             }
             catch (System.OverflowException e)
             {

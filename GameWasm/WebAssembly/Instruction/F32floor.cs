@@ -4,11 +4,11 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F32floor : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var a = store.Stack.PopF32();
+            var a = f.PopF32();
 
-            store.Stack.Push((float)Math.Floor(a));
+            f.Push((float)Math.Floor(a));
             return Next;
         }
 

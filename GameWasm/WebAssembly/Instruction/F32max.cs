@@ -4,12 +4,12 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F32max : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopF32();
-            var a = store.Stack.PopF32();
+            var b = f.PopF32();
+            var a = f.PopF32();
 
-            store.Stack.Push((float)Math.Max(a, b));
+            f.Push((float)Math.Max(a, b));
             return Next;
         }
 

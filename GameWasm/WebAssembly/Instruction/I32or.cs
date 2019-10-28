@@ -2,9 +2,9 @@
 {
     internal class I32or : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(store.Stack.PopI32() | store.Stack.PopI32());
+            f.Push(f.PopI32() | f.PopI32());
             return Next;
         }
 

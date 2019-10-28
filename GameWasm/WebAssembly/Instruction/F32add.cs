@@ -2,9 +2,9 @@
 {
     internal class F32add : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(store.Stack.PopF32() + store.Stack.PopF32());
+            f.Push(f.PopF32() + f.PopF32());
 
             return Next;
         }

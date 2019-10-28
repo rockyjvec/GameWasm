@@ -5,7 +5,7 @@ namespace GameWasm.Webassembly.Instruction
     class Custom : Instruction
     {
         Action a;
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
             a();
             return Next;

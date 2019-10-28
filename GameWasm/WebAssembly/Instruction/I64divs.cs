@@ -4,16 +4,16 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64divs : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopI64();
-            var a = store.Stack.PopI64();
+            var b = f.PopI64();
+            var a = f.PopI64();
 
             if ((Int64)b == 0) throw new Trap("integer divide by zero");
 
             try
             {
-                store.Stack.Push((UInt64)((Int64)a / (Int64)b));
+                f.Push((UInt64)((Int64)a / (Int64)b));
             }
             catch (System.OverflowException e)
             {

@@ -4,7 +4,7 @@
     {
         public Instruction end;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
             return end;
         }

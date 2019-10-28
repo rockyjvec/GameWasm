@@ -7,13 +7,13 @@ namespace GameWasm.Webassembly.Instruction
     {
         public int index;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var a = store.Stack.PopValue();
-            store.Stack.Push(a);
-            if (index >= store.CurrentFrame.Locals.Count())
+            var a = f.PopValue();
+            f.Push(a);
+            if (index >= f.Locals.Count())
                 throw new Exception("Invalid local variable");
-            store.CurrentFrame.Locals[index] = a;
+            f.Locals[index] = a;
             return Next;
         }
 

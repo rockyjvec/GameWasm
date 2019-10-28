@@ -7,9 +7,9 @@ namespace GameWasm.Webassembly.Instruction
         UInt32 defaultLabelidx;
         UInt32[] table;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            UInt32 index = store.Stack.PopI32();
+            UInt32 index = f.PopI32();
 
             if(index >= table.Length)
             {
@@ -20,7 +20,7 @@ namespace GameWasm.Webassembly.Instruction
                 index = table[(int)index];
             }
 
-            Stack.Label l = store.Stack.PopLabel(index + 1);
+            Stack.Label l = f.PopLabel(index + 1);
 
             if (l.Instruction as Loop != null) return l.Instruction;
             return l.Instruction.Next;

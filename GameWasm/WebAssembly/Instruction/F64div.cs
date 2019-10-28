@@ -2,12 +2,12 @@
 {
     internal class F64div : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopF64();
-            var a = store.Stack.PopF64();
+            var b = f.PopF64();
+            var a = f.PopF64();
 
-            store.Stack.Push(a / b);
+            f.Push(a / b);
             return Next;
         }
 

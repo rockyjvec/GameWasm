@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using GameWasm.Webassembly.Stack;
 
 namespace GameWasm.Webassembly
 {
     public class Store
     {
         public Dictionary<string, Module.Module> Modules = new Dictionary<string, Module.Module>();
-        public Stack.Stack Stack; 
-        public Stack.Frame CurrentFrame = null;
+        public Stack<Stack.Frame> Frames = new Stack<Stack.Frame>();
         
+        private int _stackMax = 1000;
+            
         public Store()
         {
-            Stack = new Stack.Stack(this);
+            Frames.Push(new Frame(this, null, null));
             init();
         }
 
@@ -34,44 +36,139 @@ namespace GameWasm.Webassembly
 
         private void init()
         {
-            LoadModule(new Module.Global.Global(this));
-            LoadModule(new Module.Global.Math(this));
-            LoadModule(new Module.Env(this));
-            LoadModule(new Module.Asm2Wasm(this));
-            LoadModule(new Module.SpecTest(this));
             LoadModule(new Module.Wasi(this));
         }
 
-        public bool Step(int count = 1, bool debug = false)
+        public void CallFunction(Function f)
+        {
+            var frame = new Frame(this, f, f.GetInstruction());
+            
+            frame.Push(new Label(new Instruction.End(null), f.Type.Results));
+            frame.Locals = new object[f.Type.Parameters.Length + f.LocalTypes.Count];
+            int localIndex = f.Type.Parameters.Length;
+
+            for (int i = f.Type.Parameters.Length - 1; i >= 0; i--)
+            {
+                // This might need to be reversed?
+                var p = Frames.Peek().Pop();
+                frame.Locals[i] = p;
+                bool valid = false;
+                switch (f.Type.Parameters[i])
+                {
+                    case Type.i32:
+                        if (p is UInt32)
+                            valid = true;
+                        break;
+                    case Type.i64:
+                        if (p is UInt64)
+                            valid = true;
+                        break;
+                    case Type.f32:
+                        if (p is Single)
+                            valid = true;
+                        break;
+                    case Type.f64:
+                        if (p is Double)
+                            valid = true;
+                        break;
+                }
+
+                if (!valid)
+                {
+                    throw new Trap("indirect call type mismatch");
+                }
+            }
+
+            foreach (var t in f.LocalTypes)
+            {
+                object local;
+                switch(t)
+                {
+                    case Type.i32:
+                        local = (UInt32)0;
+                        break;
+                    case Type.i64:
+                        local = (UInt64)0;
+                        break;
+                    case Type.f32:
+                        local = (Single)0;
+                        break;
+                    case Type.f64:
+                        local = (Double)0;
+                        break;
+                    default:
+                        throw new Exception("Invalid local type: 0x" + t.ToString("X"));
+                }
+
+                frame.Locals[localIndex++] = local;
+            }
+            
+            Frames.Push(frame);
+        }
+        
+        // Returning false means execution is complete
+        public bool Step(int count = 1)
         {
             bool exception = true;
 
             try
             {
+                if (Frames.Count > _stackMax)
+                {
+                    throw new Trap("call stack exhausted");
+                }
+
                 for (int step = 0; step < count; step++)
                 {
-
-                    var frame = CurrentFrame;
-
-                    if (frame == null)
+                    if (Frames.Count == 1)
                     {
                         exception = false;
                         return false;
                     }
                     else
                     {
-                        if (frame.Instruction == null)
+                        if (Frames.Peek().Instruction == null)
                         {
-                            if(frame.Function == null)
+                            if(Frames.Peek().Function == null)
                             {
                                 exception = false;
                                 return false;
                             }
                             else
                             {
-                                frame.Function.HandleReturn(this);
+                                // Handle return 
+                                var lastFrame = Frames.Pop();
+                                var currentFrame = Frames.Peek();
 
-                                if (!Stack.PopFrame())
+                                foreach (var r in lastFrame.Function.Type.Results)
+                                {
+                                    try
+                                    {
+                                        switch (r)
+                                        {
+                                            case Type.i32:
+                                                currentFrame.Push(lastFrame.PopI32());
+                                                break;
+                                            case Type.i64:
+                                                currentFrame.Push(lastFrame.PopI64());
+                                                break;
+                                            case Type.f32:
+                                                currentFrame.Push(lastFrame.PopF32());
+                                                break;
+                                            case Type.f64:
+                                                currentFrame.Push(lastFrame.PopF64());
+                                                break;
+                                            default:
+                                                throw new Exception("Invalid return type");
+                                        }
+                                    }
+                                    catch (System.InvalidCastException e)
+                                    {
+                                        throw new Trap("indirect call type mismatch");
+                                    }
+                                }
+
+                                if (Frames.Count == 1)
                                 {
                                     exception = false;
                                     return false;
@@ -80,53 +177,7 @@ namespace GameWasm.Webassembly
                         }
                         else
                         {
-                            if (debug)
-                            {
-                                int num = 0;
-                                foreach (var v in frame.Locals)
-                                {
-                                    Console.WriteLine("$var" + num + ": " + Type.Pretify(v));
-                                    num++;
-                                }
-                                num = 0;
-                                foreach (var v in frame.Module.Globals)
-                                {
-                                    Console.WriteLine("$global" + num + ": " + Type.Pretify(v.GetValue()));
-                                    num++;
-                                }
-
-                                int numLabels = 0;
-
-/*                                foreach (var i in Stack.ToArray()
-                                {
-                                    if (i as Stack.Label != null)
-                                    {
-                                        numLabels++;
-                                    }
-
-                                    if (i as Stack.Frame != null)
-                                    {
-                                        break;
-                                    }
-                                }
-                                */
-                                Console.Write(frame.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + frame.Module.Name + "@" + ((frame.Function != null)?frame.Function.GetName():"null") + " => " + new string(' ', numLabels * 2) + frame.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
-                            }
-
-                            frame.Instruction = frame.Instruction.Run(this);
-
-                            if (debug)
-                            {
-                                if (Stack.Size == 0)
-                                {
-                                }
-                                else
-                                {
-                                    Console.Write(" $ret: " + Type.Pretify(Stack.Peek()));
-                                }
-                                Console.Write("\n");
-                                Console.ReadKey();
-                            }
+                            Frames.Peek().Instruction = Frames.Peek().Instruction.Run(Frames.Peek());
                         }
                     }
                 }
@@ -137,8 +188,8 @@ namespace GameWasm.Webassembly
             {
                 if (exception)
                 {
-                    CurrentFrame = null;
-                    Stack = new Stack.Stack(this);
+                    Frames.Clear();
+                    Frames.Push(new Frame(this, null, null));
                 }
             }
 

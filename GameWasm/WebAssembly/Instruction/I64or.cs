@@ -2,9 +2,9 @@
 {
     internal class I64or : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(store.Stack.PopI64() | store.Stack.PopI64());
+            f.Push(f.PopI64() | f.PopI64());
             return Next;
         }
 

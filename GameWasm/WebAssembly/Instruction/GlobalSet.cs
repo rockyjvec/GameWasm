@@ -7,9 +7,9 @@ namespace GameWasm.Webassembly.Instruction
     {
         Global global;
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            global.Set(store.Stack.Pop());
+            global.Set(f.Pop());
 
             return Next;
         }

@@ -2,9 +2,9 @@
 {
     internal class F64promoteF32 : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((double)store.Stack.PopF32());
+            f.Push((double)f.PopF32());
             return Next;
         }
 

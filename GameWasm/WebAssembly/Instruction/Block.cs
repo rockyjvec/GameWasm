@@ -10,9 +10,9 @@
             label = end;
         }
 
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push(new Stack.Label(label, new byte[] { type }));
+            f.Push(new Stack.Label(label, new byte[] { type }));
             return Next;
         }
 

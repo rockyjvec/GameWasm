@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64clz : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var a = store.Stack.PopI64();
+            var a = f.PopI64();
 
             UInt64 bits = 0;
             UInt64 compare = 0x8000000000000000;
@@ -23,7 +23,7 @@ namespace GameWasm.Webassembly.Instruction
                 }
             }
 
-            store.Stack.Push(bits);
+            f.Push(bits);
 
             return Next;
         }

@@ -4,11 +4,11 @@ namespace GameWasm.Webassembly.Instruction
 {
     class MemoryGrow : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var size = store.Stack.PopI32();
+            var size = f.PopI32();
 
-            store.Stack.Push((UInt32)store.CurrentFrame.Module.Memory[0].Grow(size));
+            f.Push((UInt32)f.Function.Module.Memory[0].Grow(size));
 
             return Next;
         }

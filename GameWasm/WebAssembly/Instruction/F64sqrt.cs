@@ -4,11 +4,11 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F64sqrt : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = store.Stack.PopF32();
+            var b = f.PopF32();
 
-            store.Stack.Push((double)Math.Sqrt((double)b));
+            f.Push((double)Math.Sqrt((double)b));
 
             return Next;
         }

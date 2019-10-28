@@ -4,12 +4,12 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32shrs : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            var b = (byte)store.Stack.PopI32();
-            var a = (Int32)store.Stack.PopI32();
+            var b = (byte)f.PopI32();
+            var a = (Int32)f.PopI32();
 
-            store.Stack.Push((UInt32)(a >> b));
+            f.Push((UInt32)(a >> b));
             return Next;
         }
 

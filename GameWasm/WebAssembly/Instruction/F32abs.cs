@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F32abs : Instruction
     {
-        public override Instruction Run(Store store)
+        public override Instruction Run(Stack.Frame f)
         {
-            store.Stack.Push((float)Math.Abs(store.Stack.PopF32()));
+            f.Push((float)Math.Abs(f.PopF32()));
             return Next;
         }
         public F32abs(Parser parser) : base(parser, true)
