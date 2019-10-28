@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{846C0D5E-9FC3-4B43-B4EB-6CBC0826F7A5}</ProjectGuid>
+        <OutputType>Exe</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>GameWasm</RootNamespace>
+        <AssemblyName>GameWasm</AssemblyName>
+        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="System" />
+        <Reference Include="System.Core" />
+        <Reference Include="System.Data" />
+        <Reference Include="System.Xml" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Program.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="WebAssembly\Function.cs" />
+        <Compile Include="WebAssembly\Global.cs" />
+        <Compile Include="WebAssembly\Instruction\Block.cs" />
+        <Compile Include="WebAssembly\Instruction\Br.cs" />
+        <Compile Include="WebAssembly\Instruction\BrIf.cs" />
+        <Compile Include="WebAssembly\Instruction\BrTable.cs" />
+        <Compile Include="WebAssembly\Instruction\Call.cs" />
+        <Compile Include="WebAssembly\Instruction\CallIndirect.cs" />
+        <Compile Include="WebAssembly\Instruction\Custom.cs" />
+        <Compile Include="WebAssembly\Instruction\Drop.cs" />
+        <Compile Include="WebAssembly\Instruction\Else.cs" />
+        <Compile Include="WebAssembly\Instruction\End.cs" />
+        <Compile Include="WebAssembly\Instruction\F32abs.cs" />
+        <Compile Include="WebAssembly\Instruction\F32add.cs" />
+        <Compile Include="WebAssembly\Instruction\F32ceil.cs" />
+        <Compile Include="WebAssembly\Instruction\F32const.cs" />
+        <Compile Include="WebAssembly\Instruction\F32convertI32s.cs" />
+        <Compile Include="WebAssembly\Instruction\F32convertI32u.cs" />
+        <Compile Include="WebAssembly\Instruction\F32convertI64s.cs" />
+        <Compile Include="WebAssembly\Instruction\F32convertI64u.cs" />
+        <Compile Include="WebAssembly\Instruction\F32copysign.cs" />
+        <Compile Include="WebAssembly\Instruction\F32demoteF64.cs" />
+        <Compile Include="WebAssembly\Instruction\F32div.cs" />
+        <Compile Include="WebAssembly\Instruction\F32eq.cs" />
+        <Compile Include="WebAssembly\Instruction\F32floor.cs" />
+        <Compile Include="WebAssembly\Instruction\F32ge.cs" />
+        <Compile Include="WebAssembly\Instruction\F32gt.cs" />
+        <Compile Include="WebAssembly\Instruction\F32le.cs" />
+        <Compile Include="WebAssembly\Instruction\F32load.cs" />
+        <Compile Include="WebAssembly\Instruction\F32lt.cs" />
+        <Compile Include="WebAssembly\Instruction\F32max.cs" />
+        <Compile Include="WebAssembly\Instruction\F32min.cs" />
+        <Compile Include="WebAssembly\Instruction\F32mul.cs" />
+        <Compile Include="WebAssembly\Instruction\F32ne.cs" />
+        <Compile Include="WebAssembly\Instruction\F32nearest.cs" />
+        <Compile Include="WebAssembly\Instruction\F32neg.cs" />
+        <Compile Include="WebAssembly\Instruction\F32reinterpretI32.cs" />
+        <Compile Include="WebAssembly\Instruction\F32sqrt.cs" />
+        <Compile Include="WebAssembly\Instruction\F32store.cs" />
+        <Compile Include="WebAssembly\Instruction\F32sub.cs" />
+        <Compile Include="WebAssembly\Instruction\F32trunc.cs" />
+        <Compile Include="WebAssembly\Instruction\F64abs.cs" />
+        <Compile Include="WebAssembly\Instruction\F64add.cs" />
+        <Compile Include="WebAssembly\Instruction\F64ceil.cs" />
+        <Compile Include="WebAssembly\Instruction\F64const.cs" />
+        <Compile Include="WebAssembly\Instruction\F64convertI32s.cs" />
+        <Compile Include="WebAssembly\Instruction\F64convertI32u.cs" />
+        <Compile Include="WebAssembly\Instruction\F64convertI64s.cs" />
+        <Compile Include="WebAssembly\Instruction\F64convertI64u.cs" />
+        <Compile Include="WebAssembly\Instruction\F64copysign.cs" />
+        <Compile Include="WebAssembly\Instruction\F64div.cs" />
+        <Compile Include="WebAssembly\Instruction\F64eq.cs" />
+        <Compile Include="WebAssembly\Instruction\F64floor.cs" />
+        <Compile Include="WebAssembly\Instruction\F64ge.cs" />
+        <Compile Include="WebAssembly\Instruction\F64gt.cs" />
+        <Compile Include="WebAssembly\Instruction\F64le.cs" />
+        <Compile Include="WebAssembly\Instruction\F64load.cs" />
+        <Compile Include="WebAssembly\Instruction\F64lt.cs" />
+        <Compile Include="WebAssembly\Instruction\F64max.cs" />
+        <Compile Include="WebAssembly\Instruction\F64min.cs" />
+        <Compile Include="WebAssembly\Instruction\F64mul.cs" />
+        <Compile Include="WebAssembly\Instruction\F64ne.cs" />
+        <Compile Include="WebAssembly\Instruction\F64nearest.cs" />
+        <Compile Include="WebAssembly\Instruction\F64neg.cs" />
+        <Compile Include="WebAssembly\Instruction\F64promoteF32.cs" />
+        <Compile Include="WebAssembly\Instruction\F64reinterpretI64.cs" />
+        <Compile Include="WebAssembly\Instruction\F64sqrt.cs" />
+        <Compile Include="WebAssembly\Instruction\F64store.cs" />
+        <Compile Include="WebAssembly\Instruction\F64sub.cs" />
+        <Compile Include="WebAssembly\Instruction\F64trunc.cs" />
+        <Compile Include="WebAssembly\Instruction\GlobalGet.cs" />
+        <Compile Include="WebAssembly\Instruction\GlobalSet.cs" />
+        <Compile Include="WebAssembly\Instruction\I32add.cs" />
+        <Compile Include="WebAssembly\Instruction\I32and.cs" />
+        <Compile Include="WebAssembly\Instruction\I32clz.cs" />
+        <Compile Include="WebAssembly\Instruction\I32const.cs" />
+        <Compile Include="WebAssembly\Instruction\I32ctz.cs" />
+        <Compile Include="WebAssembly\Instruction\I32divs.cs" />
+        <Compile Include="WebAssembly\Instruction\I32divu.cs" />
+        <Compile Include="WebAssembly\Instruction\I32eq.cs" />
+        <Compile Include="WebAssembly\Instruction\I32eqz.cs" />
+        <Compile Include="WebAssembly\Instruction\I32ges.cs" />
+        <Compile Include="WebAssembly\Instruction\I32geu.cs" />
+        <Compile Include="WebAssembly\Instruction\I32gts.cs" />
+        <Compile Include="WebAssembly\Instruction\I32gtu.cs" />
+        <Compile Include="WebAssembly\Instruction\I32les.cs" />
+        <Compile Include="WebAssembly\Instruction\I32leu.cs" />
+        <Compile Include="WebAssembly\Instruction\I32load.cs" />
+        <Compile Include="WebAssembly\Instruction\I32load16s.cs" />
+        <Compile Include="WebAssembly\Instruction\I32load16u.cs" />
+        <Compile Include="WebAssembly\Instruction\I32load8s.cs" />
+        <Compile Include="WebAssembly\Instruction\I32load8u.cs" />
+        <Compile Include="WebAssembly\Instruction\I32lts.cs" />
+        <Compile Include="WebAssembly\Instruction\I32ltu.cs" />
+        <Compile Include="WebAssembly\Instruction\I32mul.cs" />
+        <Compile Include="WebAssembly\Instruction\I32ne.cs" />
+        <Compile Include="WebAssembly\Instruction\I32or.cs" />
+        <Compile Include="WebAssembly\Instruction\I32popcnt.cs" />
+        <Compile Include="WebAssembly\Instruction\I32reinterpretF32.cs" />
+        <Compile Include="WebAssembly\Instruction\I32rems.cs" />
+        <Compile Include="WebAssembly\Instruction\I32remu.cs" />
+        <Compile Include="WebAssembly\Instruction\I32rotl.cs" />
+        <Compile Include="WebAssembly\Instruction\I32rotr.cs" />
+        <Compile Include="WebAssembly\Instruction\I32shl.cs" />
+        <Compile Include="WebAssembly\Instruction\I32shrs.cs" />
+        <Compile Include="WebAssembly\Instruction\I32shru.cs" />
+        <Compile Include="WebAssembly\Instruction\I32store.cs" />
+        <Compile Include="WebAssembly\Instruction\I32store16.cs" />
+        <Compile Include="WebAssembly\Instruction\I32store8.cs" />
+        <Compile Include="WebAssembly\Instruction\I32sub.cs" />
+        <Compile Include="WebAssembly\Instruction\I32truncF32s.cs" />
+        <Compile Include="WebAssembly\Instruction\I32truncF32u.cs" />
+        <Compile Include="WebAssembly\Instruction\I32truncF64s.cs" />
+        <Compile Include="WebAssembly\Instruction\I32truncF64u.cs" />
+        <Compile Include="WebAssembly\Instruction\I32wrapI64.cs" />
+        <Compile Include="WebAssembly\Instruction\I32xor.cs" />
+        <Compile Include="WebAssembly\Instruction\I64add.cs" />
+        <Compile Include="WebAssembly\Instruction\I64and.cs" />
+        <Compile Include="WebAssembly\Instruction\I64clz.cs" />
+        <Compile Include="WebAssembly\Instruction\I64const.cs" />
+        <Compile Include="WebAssembly\Instruction\I64ctz.cs" />
+        <Compile Include="WebAssembly\Instruction\I64divs.cs" />
+        <Compile Include="WebAssembly\Instruction\I64divu.cs" />
+        <Compile Include="WebAssembly\Instruction\I64eq.cs" />
+        <Compile Include="WebAssembly\Instruction\I64eqz.cs" />
+        <Compile Include="WebAssembly\Instruction\I64extendI32s.cs" />
+        <Compile Include="WebAssembly\Instruction\I64extendI32u.cs" />
+        <Compile Include="WebAssembly\Instruction\I64ges.cs" />
+        <Compile Include="WebAssembly\Instruction\I64geu.cs" />
+        <Compile Include="WebAssembly\Instruction\I64gts.cs" />
+        <Compile Include="WebAssembly\Instruction\I64gtu.cs" />
+        <Compile Include="WebAssembly\Instruction\I64les.cs" />
+        <Compile Include="WebAssembly\Instruction\I64leu.cs" />
+        <Compile Include="WebAssembly\Instruction\I64load.cs" />
+        <Compile Include="WebAssembly\Instruction\I64load16s.cs" />
+        <Compile Include="WebAssembly\Instruction\I64load16u.cs" />
+        <Compile Include="WebAssembly\Instruction\I64load32s.cs" />
+        <Compile Include="WebAssembly\Instruction\I64load32u.cs" />
+        <Compile Include="WebAssembly\Instruction\I64load8s.cs" />
+        <Compile Include="WebAssembly\Instruction\I64load8u.cs" />
+        <Compile Include="WebAssembly\Instruction\I64lts.cs" />
+        <Compile Include="WebAssembly\Instruction\I64ltu.cs" />
+        <Compile Include="WebAssembly\Instruction\I64mul.cs" />
+        <Compile Include="WebAssembly\Instruction\I64ne.cs" />
+        <Compile Include="WebAssembly\Instruction\I64or.cs" />
+        <Compile Include="WebAssembly\Instruction\I64popcnt.cs" />
+        <Compile Include="WebAssembly\Instruction\I64reinterpretI32.cs" />
+        <Compile Include="WebAssembly\Instruction\I64rems.cs" />
+        <Compile Include="WebAssembly\Instruction\I64remu.cs" />
+        <Compile Include="WebAssembly\Instruction\I64rotl.cs" />
+        <Compile Include="WebAssembly\Instruction\I64rotr.cs" />
+        <Compile Include="WebAssembly\Instruction\I64shl.cs" />
+        <Compile Include="WebAssembly\Instruction\I64shrs.cs" />
+        <Compile Include="WebAssembly\Instruction\I64shru.cs" />
+        <Compile Include="WebAssembly\Instruction\I64store.cs" />
+        <Compile Include="WebAssembly\Instruction\I64store16.cs" />
+        <Compile Include="WebAssembly\Instruction\I64store32.cs" />
+        <Compile Include="WebAssembly\Instruction\I64store8.cs" />
+        <Compile Include="WebAssembly\Instruction\I64sub.cs" />
+        <Compile Include="WebAssembly\Instruction\I64truncF32s.cs" />
+        <Compile Include="WebAssembly\Instruction\I64truncF32u.cs" />
+        <Compile Include="WebAssembly\Instruction\I64truncF64s.cs" />
+        <Compile Include="WebAssembly\Instruction\I64truncF64u.cs" />
+        <Compile Include="WebAssembly\Instruction\I64xor.cs" />
+        <Compile Include="WebAssembly\Instruction\If.cs" />
+        <Compile Include="WebAssembly\Instruction\Instruction.cs" />
+        <Compile Include="WebAssembly\Instruction\LocalGet.cs" />
+        <Compile Include="WebAssembly\Instruction\LocalSet.cs" />
+        <Compile Include="WebAssembly\Instruction\LocalTee.cs" />
+        <Compile Include="WebAssembly\Instruction\Loop.cs" />
+        <Compile Include="WebAssembly\Instruction\MemoryGrow.cs" />
+        <Compile Include="WebAssembly\Instruction\MemorySize.cs" />
+        <Compile Include="WebAssembly\Instruction\Nop.cs" />
+        <Compile Include="WebAssembly\Instruction\Return.cs" />
+        <Compile Include="WebAssembly\Instruction\Select.cs" />
+        <Compile Include="WebAssembly\Instruction\Unreachable.cs" />
+        <Compile Include="WebAssembly\Memory.cs" />
+        <Compile Include="WebAssembly\Module\Asm2Wasm.cs" />
+        <Compile Include="WebAssembly\Module\Env.cs" />
+        <Compile Include="WebAssembly\Module\Global\Global.cs" />
+        <Compile Include="WebAssembly\Module\Global\Math.cs" />
+        <Compile Include="WebAssembly\Module\Module.cs" />
+        <Compile Include="WebAssembly\Module\SpecTest.cs" />
+        <Compile Include="WebAssembly\Module\Wasi.cs" />
+        <Compile Include="WebAssembly\Parser.cs" />
+        <Compile Include="WebAssembly\Stack\Frame.cs" />
+        <Compile Include="WebAssembly\Stack\Label.cs" />
+        <Compile Include="WebAssembly\Stack\Stack.cs" />
+        <Compile Include="WebAssembly\Store.cs" />
+        <Compile Include="WebAssembly\Table.cs" />
+        <Compile Include="WebAssembly\Test\Address.cs" />
+        <Compile Include="WebAssembly\Test\Align1.cs" />
+        <Compile Include="WebAssembly\Test\Align2.cs" />
+        <Compile Include="WebAssembly\Test\Block.cs" />
+        <Compile Include="WebAssembly\Test\Br.cs" />
+        <Compile Include="WebAssembly\Test\BreakDrop.cs" />
+        <Compile Include="WebAssembly\Test\BrIf.cs" />
+        <Compile Include="WebAssembly\Test\BrTable.cs" />
+        <Compile Include="WebAssembly\Test\Call.cs" />
+        <Compile Include="WebAssembly\Test\CallIndirect.cs" />
+        <Compile Include="WebAssembly\Test\Conversions.cs" />
+        <Compile Include="WebAssembly\Test\Elem.cs" />
+        <Compile Include="WebAssembly\Test\Endianness.cs" />
+        <Compile Include="WebAssembly\Test\Fac.cs" />
+        <Compile Include="WebAssembly\Test\Forward.cs" />
+        <Compile Include="WebAssembly\Test\Func1.cs" />
+        <Compile Include="WebAssembly\Test\Func2.cs" />
+        <Compile Include="WebAssembly\Test\FuncPtrs.cs" />
+        <Compile Include="WebAssembly\Test\Globals.cs" />
+        <Compile Include="WebAssembly\Test\I32.cs" />
+        <Compile Include="WebAssembly\Test\I64.cs" />
+        <Compile Include="WebAssembly\Test\If.cs" />
+        <Compile Include="WebAssembly\Test\Labels.cs" />
+        <Compile Include="WebAssembly\Test\LeftToRight.cs" />
+        <Compile Include="WebAssembly\Test\Load.cs" />
+        <Compile Include="WebAssembly\Test\LoadF32.cs" />
+        <Compile Include="WebAssembly\Test\LoadF64.cs" />
+        <Compile Include="WebAssembly\Test\LoadI32.cs" />
+        <Compile Include="WebAssembly\Test\LoadI64.cs" />
+        <Compile Include="WebAssembly\Test\LocalGet.cs" />
+        <Compile Include="WebAssembly\Test\LocalSet.cs" />
+        <Compile Include="WebAssembly\Test\LocalTee.cs" />
+        <Compile Include="WebAssembly\Test\Loop.cs" />
+        <Compile Include="WebAssembly\Test\Memory.cs" />
+        <Compile Include="WebAssembly\Test\MemoryGrow.cs" />
+        <Compile Include="WebAssembly\Test\MemoryRedundancy.cs" />
+        <Compile Include="WebAssembly\Test\Nop.cs" />
+        <Compile Include="WebAssembly\Test\Return.cs" />
+        <Compile Include="WebAssembly\Test\Select.cs" />
+        <Compile Include="WebAssembly\Test\Stack.cs" />
+        <Compile Include="WebAssembly\Test\Start.cs" />
+        <Compile Include="WebAssembly\Test\StoreTest.cs" />
+        <Compile Include="WebAssembly\Test\Switch.cs" />
+        <Compile Include="WebAssembly\Test\Test.cs" />
+        <Compile Include="WebAssembly\Test\Unwind.cs" />
+        <Compile Include="WebAssembly\Trap.cs" />
+        <Compile Include="WebAssembly\Type.cs" />
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
+
+</Project>
+<!--Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+	<TargetFramework>netcoreapp3.0</TargetFramework>
+    </PropertyGroup>
+
+</Project-->
