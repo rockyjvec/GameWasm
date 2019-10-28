@@ -2,9 +2,9 @@
 {
     internal class F64const : Instruction
     {
-        double value;
+        public double value;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push(value);
             return Next;

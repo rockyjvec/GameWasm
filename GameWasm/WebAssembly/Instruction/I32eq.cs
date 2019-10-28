@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32eq : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             if (f.PopI32() == f.PopI32())
             {

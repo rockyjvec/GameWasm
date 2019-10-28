@@ -4,9 +4,9 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I64const : Instruction
     {
-        UInt64 value;
+        public UInt64 value;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push(value);
             return Next;

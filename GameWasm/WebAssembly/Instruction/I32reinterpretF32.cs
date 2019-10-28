@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32reinterpretF32 : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push(BitConverter.ToUInt32(BitConverter.GetBytes(f.PopF32()), 0));
             return Next;

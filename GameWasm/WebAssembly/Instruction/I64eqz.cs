@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I64eqz : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             if (f.PopI64() == 0)
             {

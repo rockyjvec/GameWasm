@@ -11,7 +11,7 @@
             this.end = end;
         }
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var v = f.PopI32();
 

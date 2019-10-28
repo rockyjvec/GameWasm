@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         UInt32 align, offset;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var v = (UInt64)f.PopI64();
             var index = f.PopI32();

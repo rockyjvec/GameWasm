@@ -5,7 +5,7 @@ namespace GameWasm.Webassembly.Instruction
     class Br : Instruction
     {
         UInt32 labelidx;
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             Stack.Label l = f.PopLabel(labelidx + 1);
 

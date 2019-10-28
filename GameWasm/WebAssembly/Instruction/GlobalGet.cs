@@ -7,7 +7,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         Global global;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push(global.GetValue());
             return Next;

@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         UInt32 labelidx;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var v = f.Pop();
             if ((UInt32)v > 0)

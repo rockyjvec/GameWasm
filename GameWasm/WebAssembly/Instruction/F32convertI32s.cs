@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F32convertI32s : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push((float)(Int32)f.PopI32());
             return Next;

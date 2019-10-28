@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F64ceil : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push((double)Math.Ceiling(f.PopF64()));
             return Next;

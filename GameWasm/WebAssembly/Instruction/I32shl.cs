@@ -2,7 +2,7 @@
 {
     internal class I32shl : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = (byte)f.PopI32();
             var a = f.PopI32();

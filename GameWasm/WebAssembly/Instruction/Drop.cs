@@ -2,7 +2,7 @@
 {
     class Drop : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.PopValue();
 

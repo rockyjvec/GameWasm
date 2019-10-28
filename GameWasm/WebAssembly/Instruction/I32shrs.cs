@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32shrs : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = (byte)f.PopI32();
             var a = (Int32)f.PopI32();

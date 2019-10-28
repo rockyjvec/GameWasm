@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class F64abs : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push((double)Math.Abs(f.PopF64()));
             return Next;

@@ -2,7 +2,7 @@
 {
     internal class I64or : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push(f.PopI64() | f.PopI64());
             return Next;

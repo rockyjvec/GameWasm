@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I64les : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = (Int64)f.PopI64();
             var a = (Int64)f.PopI64();

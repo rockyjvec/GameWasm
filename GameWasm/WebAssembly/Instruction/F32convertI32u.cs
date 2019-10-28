@@ -2,7 +2,7 @@
 {
     internal class F32convertI32u : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push((float)f.PopI32());
             return Next;

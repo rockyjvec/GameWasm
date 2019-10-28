@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64extendI32u : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = f.PopI32();
             f.Push((UInt64)b);

@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64shru : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = (byte)f.PopI64();
             var a = (UInt64)f.PopI64();

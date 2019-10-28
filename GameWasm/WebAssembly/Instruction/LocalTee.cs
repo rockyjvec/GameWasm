@@ -7,7 +7,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         public int index;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var a = f.PopValue();
             f.Push(a);

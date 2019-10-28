@@ -2,7 +2,7 @@
 {
     internal class F32add : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push(f.PopF32() + f.PopF32());
 

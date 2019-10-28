@@ -8,7 +8,7 @@ namespace GameWasm.Webassembly.Instruction
         int typeidx;
         int tableidx;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var index = f.PopI32();
             if(tableidx >= f.Function.Module.Tables.Count())

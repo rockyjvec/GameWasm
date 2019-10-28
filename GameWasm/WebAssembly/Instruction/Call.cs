@@ -5,7 +5,7 @@ namespace GameWasm.Webassembly.Instruction
     class Call : Instruction
     {
         int funcidx;
-        public override Instruction Run(Frame f)
+        protected override Instruction Run(Frame f)
         {
             f.Function.Module.Store.CallFunction(f.Function.Module.Functions[funcidx]);
             return Next;

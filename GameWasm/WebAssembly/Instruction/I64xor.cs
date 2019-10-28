@@ -2,7 +2,7 @@
 {
     internal class I64xor : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = f.PopI64();
             var a = f.PopI64();

@@ -2,7 +2,7 @@
 {
     internal class I32remu : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = f.PopI32();
             var a = f.PopI32();

@@ -115,7 +115,7 @@ namespace GameWasm.Webassembly.Stack
 
         public UInt32 PopI32()
         {
-            return (UInt32)Pop();
+            return (UInt32) Pop();
         }
 
         public UInt32 PeekI32()

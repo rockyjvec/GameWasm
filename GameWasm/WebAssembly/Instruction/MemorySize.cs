@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class MemorySize : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push((UInt32)f.Function.Module.Memory[0].CurrentPages);
             return Next;

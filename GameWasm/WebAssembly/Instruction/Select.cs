@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class Select : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var a = f.PopI32();
             var val2 = f.Pop();

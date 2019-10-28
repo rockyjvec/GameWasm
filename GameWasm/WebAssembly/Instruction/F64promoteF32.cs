@@ -2,7 +2,7 @@
 {
     internal class F64promoteF32 : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Push((double)f.PopF32());
             return Next;

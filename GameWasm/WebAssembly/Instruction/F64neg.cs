@@ -2,7 +2,7 @@
 {
     internal class F64neg : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var a = f.PopF64();
             f.Push(-a);

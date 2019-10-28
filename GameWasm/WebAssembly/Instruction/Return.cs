@@ -2,7 +2,7 @@
 {
     class Return : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             return null;
         }

@@ -4,7 +4,7 @@
     {
         int index;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             f.Locals[index] = f.Pop();
             return Next;

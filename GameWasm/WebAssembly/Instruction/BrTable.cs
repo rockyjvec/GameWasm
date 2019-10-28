@@ -7,7 +7,7 @@ namespace GameWasm.Webassembly.Instruction
         UInt32 defaultLabelidx;
         UInt32[] table;
 
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             UInt32 index = f.PopI32();
 

@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I32ltu : Instruction
     {
-        public override Instruction Run(Stack.Frame f)
+        protected override Instruction Run(Stack.Frame f)
         {
             var b = (UInt32)f.PopI32();
             var a = (UInt32)f.PopI32();

@@ -9,8 +9,25 @@ namespace GameWasm.Webassembly.Instruction
     {
         public UInt32 Pointer;
         public Instruction Next = null;
+        private object[] _constants = null;
         Parser parser;
 
+        private const bool optimizer = true;
+
+        public Instruction Execute(Frame f)
+        {
+            if (_constants != null)
+            {
+                for(int i = 0; i < _constants.Length; i++)
+                {
+                    var v = _constants[i]; 
+                    f.Push(v);
+                }
+            }
+
+            return Run(f);
+        }
+        
         public Instruction(Parser parser, bool implemented = false)
         {
             this.parser = parser;
@@ -26,9 +43,34 @@ namespace GameWasm.Webassembly.Instruction
             throw new Exception("End not implementedin " + this);
         }
 
-        public virtual Instruction Run(Frame frame)
+        protected virtual Instruction Run(Frame frame)
         {
             throw new Exception("Run not implemented in " + this);
+        }
+
+        public bool isControlInstruction()
+        {
+            return //(this as Block) != null ||
+//                     (this as Br) != null || 
+//                     (this as BrIf) != null || 
+//                     (this as BrTable) != null ||
+//                     (this as Call) != null ||
+//                     (this as CallIndirect) != null ||
+//                     (this as Custom) != null ||
+//                     (this as Drop) != null ||
+//                     (this as Else) != null ||
+                     (this as End) != null ||
+//                     (this as If) != null ||
+//                     (this as Loop) != null ||
+//                     (this as Return) != null ||
+//                     (this as Select) != null  ||
+                  false;
+        }
+
+        public bool isConstantInstruction()
+        {
+            return (this as I32const) != null || (this as I64const) != null || (this as F32const) != null ||
+                   (this as F64const) != null;
         }
 
         public static Instruction Consume(Parser parser, bool debug)
@@ -455,6 +497,7 @@ namespace GameWasm.Webassembly.Instruction
                     if(debug)
                     {
                         Console.WriteLine(current);
+                        Console.ReadKey();
                     }
 
                     if (last != null && !done && last.Next == null)
@@ -463,6 +506,50 @@ namespace GameWasm.Webassembly.Instruction
                     }
 
                     last = current;
+                }
+            }
+
+            if (optimizer)
+            {
+                last = start;
+                for (var c = start; c != null; c = c.Next)
+                {
+                    // Remove constant instructions
+                    if (c.isConstantInstruction() && c != start)
+                    {
+                        var q = new List<object>();
+                        do
+                        {
+                            if ((c as I32const) != null)
+                            {
+                                q.Add((c as I32const).value);
+                            }
+                            if ((c as I64const) != null)
+                            {
+                                q.Add((c as I64const).value);
+                            }
+                            if ((c as F32const) != null)
+                            {
+                                q.Add((c as F32const).value);
+                            }
+                            if ((c as F64const) != null)
+                            {
+                                q.Add((c as F64const).value);
+                            }
+
+                            c = c.Next;
+                        } while (c != null && c.isConstantInstruction());
+
+                        if (c != null && (c as End) == null) // can't add the constants to an end since multiple things can go to an end.
+                        {
+                            c._constants = q.ToArray();
+                            last.Next = c;
+                            c = last;
+                        }
+                    }
+
+                    last = c;
+                    if (c == null) break;
                 }
             }
 
