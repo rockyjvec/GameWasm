@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly
 
         public Module.Module Module;
 
-        Instruction.Instruction instruction;
+        public Instruction.Instruction Start;
 
         public List<byte> LocalTypes = new List<byte>();
 
@@ -21,7 +21,7 @@ namespace GameWasm.Webassembly
         {
             this.Module = module;
             Type = new Type(parameters, results);
-            instruction = i;
+            Start = i;
         }
 
         public Function(Module.Module module, UInt32 index, Type type)
@@ -37,7 +37,7 @@ namespace GameWasm.Webassembly
             this.Module = module;
             name = "fnative";
             Type = type;
-            instruction = new Instruction.Custom(NotImplemented);
+            Start = new Instruction.Custom(NotImplemented);
         }
 
         public Function(Module.Module module, Func<object[], object[]> action, Type type)
@@ -45,13 +45,13 @@ namespace GameWasm.Webassembly
             this.Module = module;
             name = "fnative";
             Type = type;
-            instruction = new Instruction.Custom(delegate
+            Start = new Instruction.Custom(delegate
             {
-                object[] ret = action(module.Store.Frames.Peek().Locals.ToArray());
+                object[] ret = action(module.Store.CurrentFrame.Locals.ToArray());
 
                 foreach (var v in ret)
                 {
-                    module.Store.Frames.Peek().Push(v);
+                    module.Store.CurrentFrame.Push(v);
                 }
             });
         }
@@ -68,14 +68,9 @@ namespace GameWasm.Webassembly
 
         public void SetInstruction(Instruction.Instruction instruction)
         {
-            this.instruction = instruction;
+            this.Start = instruction;
         }
-
-        public Instruction.Instruction GetInstruction()
-        {
-            return instruction;
-        }
-
+        
         public void SetName(string name)
         {
             name =  name + "(" + name + ")";

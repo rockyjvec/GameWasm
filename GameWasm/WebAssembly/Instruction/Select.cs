@@ -9,10 +9,10 @@ namespace GameWasm.Webassembly.Instruction
             var a = f.PopI32();
             var val2 = f.Pop();
             var val1 = f.Pop();
-            if(val1.GetType() != val2.GetType())
+            /*if(val1.GetType() != val2.GetType())
             {
                 throw new Exception("Select types don't match.");
-            }
+            }*/
 
             if(a != 0)
             {

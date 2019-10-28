@@ -8,21 +8,21 @@ namespace GameWasm.Webassembly.Stack
         public Store Store;
         public Function Function;
 
-        private int _stackMax = 1000;
-        private int _stackPtr = 0;
+        private const int _stackMax = 1000;
+        private int _stackPtr;
         private object[] _stack;
 
         public Instruction.Instruction Instruction;
         public object[] Locals;
-
-        public object[] Results;
-
-        public Frame(Store store, Function function, Instruction.Instruction instruction)
+        
+        public Frame(Store store, Function function, Instruction.Instruction instruction, object[] locals)
         {
             Store = store;
             Function = function;
             Instruction = instruction;
+            _stackPtr = 0;
             _stack = new object[_stackMax];
+            Locals = locals;
         }
         
         public void Push(object v)
@@ -36,8 +36,10 @@ namespace GameWasm.Webassembly.Stack
         }
 
         public object Pop()
-        {            
-            return _stack[--_stackPtr];
+        {
+            object o = _stack[_stackPtr - 1];
+            _stack[--_stackPtr] = null;
+            return o;
         }
 
         public object Peek()

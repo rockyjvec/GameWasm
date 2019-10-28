@@ -276,13 +276,13 @@ namespace GameWasm.Webassembly.Module
                 parser.GetGlobalType(out type, out mutable);
 
                 var expr = parser.GetExpr();
-                Store.Frames.Push(new Frame(Store, null, expr));
+                Store.Push(new Frame(Store, null, expr, new object[] { }));
                 do
                 {
                 }
                 while (Store.Step(1000));
 
-                Globals.Add(new Webassembly.Global(type, mutable, Store.Frames.Peek().Pop(), (UInt32)Globals.Count()));
+                Globals.Add(new Webassembly.Global(type, mutable, Store.CurrentFrame.Pop(), (UInt32)Globals.Count()));
             }
         }
 
@@ -376,13 +376,13 @@ namespace GameWasm.Webassembly.Module
                 }
 
                 var expr = parser.GetExpr();
-                Store.Frames.Push(new Frame(Store, null, expr));
+                Store.Push(new Frame(Store, null, expr, new object[] { }));
                 do
                 {
                 }
                 while (Store.Step(1000));
 
-                UInt32 offset = Store.Frames.Peek().PopI32();
+                UInt32 offset = Store.CurrentFrame.PopI32();
 
                 UInt32 funcVecSize = parser.GetUInt32();
                 for (uint func = 0; func < funcVecSize; func++)
@@ -441,20 +441,20 @@ namespace GameWasm.Webassembly.Module
                 }
 
                 var expr = parser.GetExpr();
-                Store.Frames.Push(new Frame(Store, null, expr));
+                Store.Push(new Frame(Store, null, expr, new object[] { }));
                 do
                 {
                 }
                 while (Store.Step(1000));
 
                 UInt64 offset;
-                if (Store.Frames.Peek().Peek() is UInt32)
+                if (Store.CurrentFrame.Peek() is UInt32)
                 {
-                    offset = (UInt64)Store.Frames.Peek().PopI32();
+                    offset = (UInt64)Store.CurrentFrame.PopI32();
                 }
                 else
                 {
-                    offset = Store.Frames.Peek().PopI64();
+                    offset = Store.CurrentFrame.PopI64();
                 }
                 
                 UInt32 memVecSize = parser.GetUInt32();
@@ -548,7 +548,7 @@ namespace GameWasm.Webassembly.Module
 
             foreach(var p in parameters)
             {
-                Store.Frames.Peek().Push(p);
+                Store.CurrentFrame.Push(p);
             }
 
             Function f = Exports[function] as Function;
@@ -559,7 +559,7 @@ namespace GameWasm.Webassembly.Module
         {
             CallVoid(function, parameters);
 
-            return Store.Frames.Peek().Pop();
+            return Store.CurrentFrame.Pop();
         }
 
         public void CallVoid(string function, params object[] parameters)

@@ -8,13 +8,57 @@ namespace GameWasm.Webassembly
     public class Store
     {
         public Dictionary<string, Module.Module> Modules = new Dictionary<string, Module.Module>();
-        public Stack<Stack.Frame> Frames = new Stack<Stack.Frame>();
         
         private int _stackMax = 1000;
+        private int _stackPtr = 0;
+        private Frame[] _stack;
+        public Frame CurrentFrame;
+
+        public void Push(Frame f)
+        {
+            if (_stackPtr + 1 > _stackMax)
+            {
+                throw new Trap("call stack exhausted");
+            }
+//            if(f.Function != null)
+  //            Console.WriteLine(new String(' ', _stackPtr * 2) + f.Function.Module.Name + "@" + f.Function.GetName() );
+            CurrentFrame = f;
+            _stack[_stackPtr++] = f;
+        }
+
+        public Frame Pop()
+        {
+            if (_stackPtr == 0)
+            {
+                throw new Trap("call stack exhausted");
+            }
             
+            if (_stackPtr == 1)
+            {
+                CurrentFrame = null;
+            }
+            else
+            {
+                CurrentFrame = _stack[_stackPtr - 2];
+            }
+            
+            var last = _stack[--_stackPtr];
+            _stack[_stackPtr] = null;
+            return last;
+        }
+
+        public void Clear()
+        {
+            for (; _stackPtr > 0; Pop())
+            {
+                
+            }
+        }
+        
         public Store()
         {
-            Frames.Push(new Frame(this, null, null));
+            _stack = new Frame[_stackMax];
+            Push(new Frame(this, null, null, new Object[] { }));
             init();
         }
 
@@ -41,16 +85,16 @@ namespace GameWasm.Webassembly
 
         public void CallFunction(Function f)
         {
-            var frame = new Frame(this, f, f.GetInstruction());
+            var frame = new Frame(this, f, f.Start, new object[f.Type.Parameters.Length + f.LocalTypes.Count]);
             
             frame.Push(new Label(new Instruction.End(null), f.Type.Results));
-            frame.Locals = new object[f.Type.Parameters.Length + f.LocalTypes.Count];
+
             int localIndex = f.Type.Parameters.Length;
 
             for (int i = f.Type.Parameters.Length - 1; i >= 0; i--)
             {
                 // This might need to be reversed?
-                var p = Frames.Peek().Pop();
+                var p = CurrentFrame.Pop();
                 frame.Locals[i] = p;
                 bool valid = false;
                 switch (f.Type.Parameters[i])
@@ -103,7 +147,7 @@ namespace GameWasm.Webassembly
                 frame.Locals[localIndex++] = local;
             }
             
-            Frames.Push(frame);
+            Push(frame);
         }
         
         // Returning false means execution is complete
@@ -113,23 +157,18 @@ namespace GameWasm.Webassembly
 
             try
             {
-                if (Frames.Count > _stackMax)
-                {
-                    throw new Trap("call stack exhausted");
-                }
-
                 for (int step = 0; step < count; step++)
                 {
-                    if (Frames.Count == 1)
+                    if (_stackPtr == 1)
                     {
                         exception = false;
                         return false;
                     }
                     else
                     {
-                        if (Frames.Peek().Instruction == null)
+                        if (CurrentFrame.Instruction == null)
                         {
-                            if(Frames.Peek().Function == null)
+                            if(CurrentFrame.Function == null)
                             {
                                 exception = false;
                                 return false;
@@ -137,8 +176,8 @@ namespace GameWasm.Webassembly
                             else
                             {
                                 // Handle return 
-                                var lastFrame = Frames.Pop();
-                                var currentFrame = Frames.Peek();
+                                var lastFrame = Pop();
+                                var currentFrame = CurrentFrame;
 
                                 foreach (var r in lastFrame.Function.Type.Results)
                                 {
@@ -168,7 +207,7 @@ namespace GameWasm.Webassembly
                                     }
                                 }
 
-                                if (Frames.Count == 1)
+                                if (_stackPtr == 1)
                                 {
                                     exception = false;
                                     return false;
@@ -177,7 +216,7 @@ namespace GameWasm.Webassembly
                         }
                         else
                         {
-                            Frames.Peek().Instruction = Frames.Peek().Instruction.Run(Frames.Peek());
+                            CurrentFrame.Instruction = CurrentFrame.Instruction.Run(CurrentFrame);
                         }
                     }
                 }
@@ -188,8 +227,8 @@ namespace GameWasm.Webassembly
             {
                 if (exception)
                 {
-                    Frames.Clear();
-                    Frames.Push(new Frame(this, null, null));
+                    Clear();
+                    Push(new Frame(this, null, null, new object[] { }));
                 }
             }
 
