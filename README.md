@@ -11,7 +11,7 @@ I'm planning to use this in Space Engineers, initially, to add better, sandboxed
 
 [x] Throttling
 
-[X] Runs [DOOMWASI](/rockyjvec/DOOMWASI)
+[X] Runs [DOOMWASI](https://github.com/rockyjvec/DOOMWASI)
 
 [-] WASI - Partial support.
 
