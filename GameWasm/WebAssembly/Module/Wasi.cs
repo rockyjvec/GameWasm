@@ -223,7 +223,7 @@ namespace GameWasm.Webassembly.Module
         private string Directory = "/home/rocky";
         private string[] EnvVars = new string[] { "HOME=/home/rocky", "DOOMWADDIR=/home/rocky" };
         private string[] Args = new string[] { };
-        private Dictionary<UInt32, FileStream> FileDescriptors = new Dictionary<UInt32, FileStream>();
+        private Dictionary<UInt32, Stream> FileDescriptors = new Dictionary<UInt32, Stream>();
         
         private bool Debug = false;
             
@@ -256,6 +256,9 @@ namespace GameWasm.Webassembly.Module
             
             AddExportFunc("proc_exit", new byte[] { Type.i32 }, null, ProcExit );
 
+            FileDescriptors[0] = Console.OpenStandardInput();
+            FileDescriptors[1] = Console.OpenStandardOutput();
+            FileDescriptors[2] = Console.OpenStandardError();
             Debug = false;
         }
         
@@ -459,11 +462,6 @@ namespace GameWasm.Webassembly.Module
 
         public object[] FdRead(object[] parameters)
         {
-            if (Debug)
-            {
-               // Console.WriteLine("fd_read("+(UInt32) parameters[0]+")");
-            }
-
             if (!FileDescriptors.ContainsKey((UInt32) parameters[0]))
             {
                 return new object[] { WASI_EBADF };
@@ -477,21 +475,14 @@ namespace GameWasm.Webassembly.Module
                 UInt32 bytes = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8));
                 UInt32 length = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8 + 4));
 
-                if (Debug)
+                if (bytes + length - 1 < Memory[0].Buffer.Length)
                 {
-                 //   Console.WriteLine("Reading " + length + " bytes.");
+                    read += (UInt32)fd.Read(Memory[0].Buffer, (int)bytes, (int)length);
                 }
-
-                byte [] buf = new byte[length];
-                read += (UInt32)fd.Read(buf, 0, (int)length);
-
-                if (Debug)
+                else
                 {
-                //    Console.WriteLine("Read: " + Encoding.UTF8.GetString(buf));
+                    throw new Trap("out of bounds memory access");
                 }
-                
-                Memory[0].SetBytes(bytes, buf);
-                read += length;
             }
             Memory[0].SetI32((UInt32)parameters[3], read);
             
@@ -525,35 +516,40 @@ namespace GameWasm.Webassembly.Module
 
         public object[] FdWrite(object[] parameters)
         {
-            if (Debug && (UInt32)parameters[0] > 3)
+            if (Debug && (UInt32) parameters[0] > 3)
             {
-                Console.WriteLine("fd_write("+(UInt32) parameters[0]+")");
+                Console.WriteLine("fd_write(" + (UInt32) parameters[0] + ")");
             }
-            UInt32 written = 0;
-            for (int i = 0; i < (UInt32) parameters[2]; i++)
-            {
-                UInt32 bytes = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8));
-                UInt32 length = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8 + 4));
 
-                switch ((UInt32) parameters[0])
+            UInt32 written = 0;
+            if (FileDescriptors.ContainsKey((UInt32) parameters[0]))
+            {
+                var fd = FileDescriptors[(UInt32) parameters[0]];
+                for (int i = 0; i < (UInt32) parameters[2]; i++)
                 {
-                    case 1:
-                    case 2:
-                        var str = Encoding.UTF8.GetString(Memory[0].GetBytes(bytes, length));
-                       // if(str == "memset")
-                       // Store.Modules["test"].Debug = true;
-                        Console.Write(str);
-                        break;
-                    default:
-                        if (FileDescriptors.ContainsKey((UInt32) parameters[0]))
+                    UInt32 bytes = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8));
+                    UInt32 length = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8 + 4));
+
+                    if (length > 0)
+                    {
+                        if (bytes + length - 1 < Memory[0].Buffer.Length)
                         {
-                            var fd = FileDescriptors[(UInt32) parameters[0]];
-                            fd.Write(Memory[0].GetBytes(bytes, length), 0, (int)length);
+                            fd.Write(Memory[0].Buffer, (int) bytes, (int) length);
                         }
-                        break;
+                        else
+                        {
+                            throw new Trap("out of bounds memory access");
+                        }
+                    }
+
+                    written += length;
                 }
-                written += length;
             }
+            else
+            {
+                return new object[] { WASI_EBADF };
+            }
+
             Memory[0].SetI32((UInt32)parameters[3], written);
             return new object[] { WASI_ESUCCESS };
         }

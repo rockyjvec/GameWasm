@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime;
 using GameWasm.Webassembly;
 
 namespace GameWasm
