@@ -1,14 +1,13 @@
 ﻿namespace GameWasm.Webassembly.Stack
 {
-    public class Label
+    public struct Label
     {
         public Instruction.Instruction Instruction;
-        public byte[] Type;
-        public Label(Instruction.Instruction i, byte[] type)
+        public int Stack;
+        public Label(Instruction.Instruction i)
         {
-            if (type.Length == 1 && type[0] == 64) Type = new byte[] { };
-            else Type = type;
             Instruction = i;
+            Stack = 0;
         }
     }
 }

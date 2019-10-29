@@ -5,20 +5,19 @@ using GameWasm.Webassembly.Stack;
 namespace GameWasm.Webassembly
 {
     
+    [StructLayout(LayoutKind.Explicit)]
     public struct Value
     {
-    //    [FieldOffset(0)] 
+        [FieldOffset(8)] 
         public byte type;
-      //  [FieldOffset(1)]
+        [FieldOffset(0)]
         public UInt32 i32;
-        //[FieldOffset(1)]
+        [FieldOffset(0)]
         public UInt64 i64;
-        //[FieldOffset(1)]
+        [FieldOffset(0)]
         public float f32;
-        //[FieldOffset(1)]
+        [FieldOffset(0)]
         public double f64;
-        //[FieldOffset(1)]
-        public Label label;
 
         public static Value GetI32(UInt32 v)
         {

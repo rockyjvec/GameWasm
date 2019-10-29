@@ -14,21 +14,20 @@
         protected override Instruction Run(Stack.Frame f)
         {
             var v = f.PopI32();
-
-
+            
             if (v > 0)
             {
                 if(end as Else != null)
-                    f.PushLabel(new Stack.Label((end as Else).end, new byte[] { type }));
+                    f.PushLabel(new Stack.Label((end as Else).end));
                 else
-                    f.PushLabel(new Stack.Label(end, new byte[] { type }));
+                    f.PushLabel(new Stack.Label(end));
                 return Next;
             }
             else
             {
                 if (end as Else != null)
                 {
-                    f.PushLabel(new Stack.Label((end as Else).end, new byte[] { type }));
+                    f.PushLabel(new Stack.Label((end as Else).end));
                 }
 
                 return end.Next;

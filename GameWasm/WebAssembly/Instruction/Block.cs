@@ -12,7 +12,7 @@
 
         protected override Instruction Run(Stack.Frame f)
         {
-            f.PushLabel(new Stack.Label(label, new byte[] { type }));
+            f.PushLabel(new Stack.Label(label));
             return Next;
         }
 

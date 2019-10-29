@@ -76,7 +76,7 @@ namespace GameWasm.Webassembly
         {
             var frame = new Frame(f, f.Start, new Value[f.Type.Parameters.Length + f.LocalTypes.Count]);
             
-            frame.PushLabel(new Label(new Instruction.End(null, null), f.Type.Results));
+            frame.PushLabel(new Label(new Instruction.End(null, null) ));
 
             int localIndex = f.Type.Parameters.Length;
 

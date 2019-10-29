@@ -10,6 +10,7 @@ namespace GameWasm.Webassembly.Stack
         public Value[] Locals;
 
         private Stack<Value> _stack;
+        private Stack<Label> _labels;
         
         public Frame(Function function, Instruction.Instruction instruction, Value[] locals)
         {
@@ -18,6 +19,7 @@ namespace GameWasm.Webassembly.Stack
             Locals = locals;
 
             _stack = new Stack<Value>();
+            _labels = new Stack<Label>();
         }
 
         public bool Empty()
@@ -135,56 +137,24 @@ namespace GameWasm.Webassembly.Stack
         
         public void PushLabel(Label v)
         {
-            Value value = new Value();
-            value.type = Type.label;
-            value.label = v;
-            Push(value);
+            v.Stack = _stack.Count;
+            _labels.Push(v);
         }
 
         public Label PopLabel(uint number = 1, bool end = false)
         {
-            Queue<Value> tmp = new Queue<Value>();
-
-            Value l;
-            do
+            Label l = _labels.Pop();
+            for (; number > 1; number--)
             {
-                l = Pop();
-                if (l.type == Type.label)
-                {
-                    number--;
-                    if (number == 0) break;
-                }
-                else
-                {
-                    tmp.Enqueue(l);
-                }
-            }
-            while (true);
-
-            var label = l.label;
-
-            if(!end && (label.Instruction as Instruction.Loop) != null) return label;
-
-            if (label.Type.Length > tmp.Count)
-            {
-                throw new Exception("Invalid label arity.");
+                l = _labels.Pop();
             }
 
-            for(int i = 0; i < label.Type.Length; i++)
+            if (end)
             {
-                if (tmp.Count > 0)
-                {
-                    var value = tmp.Dequeue();
-                    if (label.Type[i] == value.type)
-                    {
-                        Push(value);
-                        continue;
-                    }
-                }
-                throw new Exception("Invalid label arity.");
+                for(; _stack.Count > l.Stack; _stack.Pop()) {}
             }
 
-            return label;
+            return l;
         }
     }
 }
