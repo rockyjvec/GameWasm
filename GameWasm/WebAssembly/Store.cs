@@ -7,59 +7,17 @@ namespace GameWasm.Webassembly
 {
     public class Store
     {
+        public Frame CurrentFrame;
         public Dictionary<string, Module.Module> Modules = new Dictionary<string, Module.Module>();
         
         private int _stackMax = 1000;
-        private int _stackPtr = 0;
-        private Frame[] _stack;
-        public Frame CurrentFrame;
+        private readonly Stack<Frame> _stack;
 
-        public void Push(Frame f)
-        {
-            if (_stackPtr + 1 > _stackMax)
-            {
-                throw new Trap("call stack exhausted");
-            }
-//            if(f.Function != null)
-  //            Console.WriteLine(new String(' ', _stackPtr * 2) + f.Function.Module.Name + "@" + f.Function.GetName() );
-            CurrentFrame = f;
-            _stack[_stackPtr++] = f;
-        }
-
-        public Frame Pop()
-        {
-            if (_stackPtr == 0)
-            {
-                throw new Trap("call stack exhausted");
-            }
-            
-            if (_stackPtr == 1)
-            {
-                CurrentFrame = null;
-            }
-            else
-            {
-                CurrentFrame = _stack[_stackPtr - 2];
-            }
-            
-            var last = _stack[--_stackPtr];
-            _stack[_stackPtr] = null;
-            return last;
-        }
-
-        public void Clear()
-        {
-            for (; _stackPtr > 0; Pop())
-            {
-                
-            }
-        }
-        
         public Store()
         {
-            _stack = new Frame[_stackMax];
-            Push(new Frame(this, null, null, new Object[] { }));
-            init();
+            _stack = new Stack<Frame>();
+            Push(new Frame( null, null, new Object[] { }));
+            LoadModule(new Module.Wasi(this));
         }
 
         public Module.Module LoadModule(string name, string fileName)
@@ -77,15 +35,46 @@ namespace GameWasm.Webassembly
             Modules.Add(module.Name, module);
             return module;
         }
-
-        private void init()
+        
+        public void Push(Frame f)
         {
-            LoadModule(new Module.Wasi(this));
+            if (_stack.Count > _stackMax)
+            {
+                throw new Trap("call stack exhausted");
+            }
+
+            CurrentFrame = f;
+            _stack.Push(f);
         }
 
+        public Frame Pop()
+        {
+            if (_stack.Count == 0)
+            {
+                throw new Trap("call stack exhausted");
+            }
+            
+            var last = _stack.Pop();
+            if (_stack.Count == 0)
+            {
+                CurrentFrame = null;
+            }
+            else
+            {
+                CurrentFrame = _stack.Peek();
+            }
+            
+            return last;
+        }
+
+        public void Clear()
+        {
+            _stack.Clear();
+        }
+        
         public void CallFunction(Function f)
         {
-            var frame = new Frame(this, f, f.Start, new object[f.Type.Parameters.Length + f.LocalTypes.Count]);
+            var frame = new Frame(f, f.Start, new object[f.Type.Parameters.Length + f.LocalTypes.Count]);
             
             frame.Push(new Label(new Instruction.End(null, null), f.Type.Results));
 
@@ -159,7 +148,7 @@ namespace GameWasm.Webassembly
             {
                 for (int step = 0; step < count; step++)
                 {
-                    if (_stackPtr == 1)
+                    if (_stack.Count == 1)
                     {
                         exception = false;
                         return false;
@@ -207,7 +196,7 @@ namespace GameWasm.Webassembly
                                     }
                                 }
 
-                                if (_stackPtr == 1)
+                                if (_stack.Count == 1)
                                 {
                                     exception = false;
                                     return false;
@@ -229,7 +218,7 @@ namespace GameWasm.Webassembly
                 if (exception)
                 {
                     Clear();
-                    Push(new Frame(this, null, null, new object[] { }));
+                    Push(new Frame(null, null, new object[] { }));
                 }
             }
 

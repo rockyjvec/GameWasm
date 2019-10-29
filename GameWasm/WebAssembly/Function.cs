@@ -12,12 +12,6 @@ namespace GameWasm.Webassembly
         public UInt32 Index = 0;
         public Instruction.Instruction Start;
 
-        public int numI32s = 0;
-        public int numI64s = 0;
-        public int numF32s = 0;
-        public int numF64s = 0;
-        public int numLabels = 0;
-        
         public List<byte> LocalTypes = new List<byte>();
 
         // Standard constructor

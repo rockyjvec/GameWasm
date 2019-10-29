@@ -5,51 +5,39 @@ namespace GameWasm.Webassembly.Stack
 {
     public class Frame
     {
-        public Store Store;
         public Function Function;
-
-        private const int _stackMax = 1000;
-        private int _stackPtr;
-        private object[] _stack;
-
         public Instruction.Instruction Instruction;
         public object[] Locals;
+
+        private Stack<object> _stack;
         
-        public Frame(Store store, Function function, Instruction.Instruction instruction, object[] locals)
+        public Frame(Function function, Instruction.Instruction instruction, object[] locals)
         {
-            Store = store;
             Function = function;
             Instruction = instruction;
-            _stackPtr = 0;
-            _stack = new object[_stackMax];
             Locals = locals;
+
+            _stack = new Stack<object>();
         }
 
         public bool Empty()
         {
-            return _stackPtr == 0;
+            return _stack.Count == 0;
         }
         
         public void Push(object v)
         {
-            if (_stackPtr + 1 >= _stackMax)
-            {
-                throw new Trap("call stack exhausted");
-            }
-
-            _stack[_stackPtr++] = v;
+            _stack.Push(v);
         }
 
         public object Pop()
         {
-            object o = _stack[_stackPtr - 1];
-            _stack[--_stackPtr] = null;
-            return o;
+            return _stack.Pop();
         }
 
         public object Peek()
         {            
-            return _stack[_stackPtr - 1];
+            return _stack.Peek();
         }
 
         public object PopValue()
