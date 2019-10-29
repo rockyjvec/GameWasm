@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public GlobalGet(Parser parser) : base(parser, true)
+        public GlobalGet(Parser parser, Function f) : base(parser, f, true)
         {
             var index = (int)parser.GetUInt32();
             if (index >= parser.Module.Globals.Count())

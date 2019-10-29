@@ -8,7 +8,7 @@
             return Next;
         }
 
-        public I64and(Parser parser) : base(parser, true)
+        public I64and(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

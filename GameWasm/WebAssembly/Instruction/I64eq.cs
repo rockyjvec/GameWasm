@@ -18,7 +18,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public I64eq(Parser parser) : base(parser, true)
+        public I64eq(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

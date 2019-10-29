@@ -11,7 +11,7 @@
             return Next;
         }
 
-        public I32shl(Parser parser) : base(parser, true)
+        public I32shl(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

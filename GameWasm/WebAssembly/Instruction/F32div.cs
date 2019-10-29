@@ -11,7 +11,7 @@
             return Next;
         }
 
-        public F32div(Parser parser) : base(parser, true)
+        public F32div(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

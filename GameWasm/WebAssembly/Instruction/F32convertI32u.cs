@@ -8,7 +8,7 @@
             return Next;
         }
 
-        public F32convertI32u(Parser parser) : base(parser, true)
+        public F32convertI32u(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

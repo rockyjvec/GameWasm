@@ -11,7 +11,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public Custom(Action a) : base(null, true)
+        public Custom(Action a) : base(null,null, true)
         {
             this.a = a;
         }

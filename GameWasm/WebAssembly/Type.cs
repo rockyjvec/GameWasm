@@ -12,8 +12,10 @@ namespace GameWasm.Webassembly
 
         public Type(byte[] parameters, byte[] results)
         {
-            Parameters = parameters;
-            Results = results;
+            Parameters = new byte[] { };
+            if(parameters != null) Parameters = parameters;
+            Results = new byte[] { };
+            if(results != null) Results = results;
         }
 
         public bool SameAs(Type item)

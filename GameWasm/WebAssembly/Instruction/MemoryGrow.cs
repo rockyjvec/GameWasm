@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public MemoryGrow(Parser parser) : base(parser, true)
+        public MemoryGrow(Parser parser, Function f) : base(parser, f, true)
         {
             UInt32 zero = parser.GetUInt32(); // May be used in future version of WebAssembly to address additional memories
 

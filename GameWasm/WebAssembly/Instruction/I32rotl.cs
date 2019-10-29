@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public I32rotl(Parser parser) : base(parser, true)
+        public I32rotl(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

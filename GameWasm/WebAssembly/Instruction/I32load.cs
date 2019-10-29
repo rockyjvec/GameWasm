@@ -12,7 +12,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public I32load(Parser parser) : base(parser, true)
+        public I32load(Parser parser, Function f) : base(parser, f, true)
         {
             align = (UInt64)parser.GetUInt32();
             offset = (UInt64)parser.GetUInt32();

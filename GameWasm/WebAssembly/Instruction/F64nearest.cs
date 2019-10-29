@@ -12,7 +12,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public F64nearest(Parser parser) : base(parser, true)
+        public F64nearest(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

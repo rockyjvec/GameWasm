@@ -9,7 +9,7 @@ namespace GameWasm.Webassembly.Instruction
             f.Push((float)(Int32)f.PopI32());
             return Next;
         }
-        public F32convertI32s(Parser parser) : base(parser, true)
+        public F32convertI32s(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

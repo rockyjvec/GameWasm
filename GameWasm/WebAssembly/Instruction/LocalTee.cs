@@ -17,7 +17,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public LocalTee(Parser parser) : base(parser, true)
+        public LocalTee(Parser parser, Function f) : base(parser, f, true)
         {
             index = (int)parser.GetUInt32();
         }

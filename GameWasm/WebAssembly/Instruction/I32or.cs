@@ -8,7 +8,7 @@
             return Next;
         }
 
-        public I32or(Parser parser) : base(parser, true)
+        public I32or(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

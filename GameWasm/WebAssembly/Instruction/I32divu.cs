@@ -21,7 +21,7 @@
             return Next;
         }
 
-        public I32divu(Parser parser) : base(parser, true)
+        public I32divu(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

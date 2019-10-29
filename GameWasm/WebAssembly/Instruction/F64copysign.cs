@@ -21,7 +21,7 @@
             return Next;
         }
 
-        public F64copysign(Parser parser) : base(parser, true)
+        public F64copysign(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

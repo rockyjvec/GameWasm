@@ -25,7 +25,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public I64popcnt(Parser parser) : base(parser, true)
+        public I64popcnt(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

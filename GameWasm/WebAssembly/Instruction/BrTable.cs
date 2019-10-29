@@ -26,7 +26,7 @@ namespace GameWasm.Webassembly.Instruction
             return l.Instruction.Next;
         }
 
-        public BrTable(Parser parser) : base(parser, true)
+        public BrTable(Parser parser, Function f) : base(parser, f, true)
         {
             UInt32 vectorSize = parser.GetUInt32();
             table = new UInt32[vectorSize];

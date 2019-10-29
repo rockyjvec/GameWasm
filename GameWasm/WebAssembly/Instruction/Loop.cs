@@ -14,7 +14,7 @@
             return Next;
         }
 
-        public Loop(Parser parser) : base(parser, true)
+        public Loop(Parser parser, Function f) : base(parser, f, true)
         {
             type = parser.GetBlockType();
         }

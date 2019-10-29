@@ -7,7 +7,7 @@
             return null;
         }
 
-        public Return(Parser parser) : base(parser, true)
+        public Return(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

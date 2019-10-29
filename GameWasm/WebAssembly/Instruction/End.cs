@@ -10,7 +10,7 @@
             return Next;
         }
 
-        public End(Parser parser) : base(parser, true)
+        public End(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

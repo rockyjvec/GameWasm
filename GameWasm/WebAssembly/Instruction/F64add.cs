@@ -9,7 +9,7 @@
             return Next;
         }
 
-        public F64add(Parser parser) : base(parser, true)
+        public F64add(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

@@ -14,7 +14,7 @@
             this.end = end;
         }
 
-        public Else(Parser parser) : base(parser, true)
+        public Else(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

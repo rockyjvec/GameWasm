@@ -8,7 +8,7 @@
             return Next;
         }
 
-        public F64promoteF32(Parser parser) : base(parser, true)
+        public F64promoteF32(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

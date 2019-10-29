@@ -12,7 +12,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public I64const(Parser parser) : base(parser, true)
+        public I64const(Parser parser, Function f) : base(parser, f, true)
         {
             value = (UInt64)parser.GetInt64();
         }

@@ -22,7 +22,7 @@ namespace GameWasm.Webassembly.Instruction
             }
         }
 
-        public BrIf(Parser parser) : base(parser, true)
+        public BrIf(Parser parser, Function f) : base(parser, f, true)
         {
             labelidx = parser.GetIndex();
         }

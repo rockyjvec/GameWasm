@@ -10,7 +10,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public F64reinterpretI64(Parser parser) : base(parser, true)
+        public F64reinterpretI64(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

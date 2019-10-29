@@ -11,7 +11,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public I32wrapI64(Parser parser) : base(parser, true)
+        public I32wrapI64(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

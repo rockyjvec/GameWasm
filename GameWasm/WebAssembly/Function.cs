@@ -6,44 +6,45 @@ namespace GameWasm.Webassembly
 {
     public class Function
     {
-        string name = "";
-        public UInt32 Index = 0;
-        public Type Type;
-        public bool Catcher = false;
-
         public Module.Module Module;
-
+        public string Name = "";
+        public Type Type;
+        public UInt32 Index = 0;
         public Instruction.Instruction Start;
 
+        public int numI32s = 0;
+        public int numI64s = 0;
+        public int numF32s = 0;
+        public int numF64s = 0;
+        public int numLabels = 0;
+        
         public List<byte> LocalTypes = new List<byte>();
 
-        public Function(Module.Module module, byte[] parameters, byte[] results, Instruction.Instruction i)
+        // Standard constructor
+        public Function(Module.Module module, String name, Type type = null, UInt32 index = 0xFFFFFFFF, Instruction.Instruction start = null)
         {
-            this.Module = module;
-            Type = new Type(parameters, results);
-            Start = i;
-        }
-
-        public Function(Module.Module module, UInt32 index, Type type)
-        {
-            this.Module = module;
+            Module = module;
+            Name = name;
             Index = index;
-            name = "f" + (index);
-            Type = type;
-        }
-
-        public Function(Module.Module module, Type type)
-        {
-            this.Module = module;
-            name = "fnative";
-            Type = type;
+            
+            Type = new Type(new byte[] { }, new byte[] { });
+            if (type != null)
+            {
+                Type = type;
+            }
+            
             Start = new Instruction.Custom(NotImplemented);
+            if (start != null)
+            {
+                Start = start;
+            }
         }
-
-        public Function(Module.Module module, Func<object[], object[]> action, Type type)
+        
+        // Native function constructor
+        public Function(Module.Module module, String name, Func<object[], object[]> action, Type type)
         {
             this.Module = module;
-            name = "fnative";
+            Name = name;
             Type = type;
             Start = new Instruction.Custom(delegate
             {
@@ -58,17 +59,7 @@ namespace GameWasm.Webassembly
 
         protected void NotImplemented()
         {
-            throw new Exception("Function not implemented: " + Module.Name + "@" + name);
-        }
-
-        public void AddLocal(byte type)
-        {
-            LocalTypes.Add(type);
-        }
-
-        public void SetInstruction(Instruction.Instruction instruction)
-        {
-            this.Start = instruction;
+            throw new Exception("Function not implemented: " + Module.Name + "@" + Name);
         }
         
         public void SetName(string name)
@@ -78,7 +69,7 @@ namespace GameWasm.Webassembly
 
         public string GetName()
         {
-            return name;
+            return Name;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public I32rems(Parser parser) : base(parser, true)
+        public I32rems(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

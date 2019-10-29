@@ -21,7 +21,7 @@
             return Next;
         }
 
-        public I64remu(Parser parser) : base(parser, true)
+        public I64remu(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

@@ -35,7 +35,7 @@
             }
         }
 
-        public If(Parser parser) : base(parser, true)
+        public If(Parser parser, Function f) : base(parser, f, true)
         {
             type = parser.GetBlockType();
         }

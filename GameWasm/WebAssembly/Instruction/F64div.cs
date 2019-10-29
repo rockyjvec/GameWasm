@@ -11,7 +11,7 @@
             return Next;
         }
 
-        public F64div(Parser parser) : base(parser, true)
+        public F64div(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

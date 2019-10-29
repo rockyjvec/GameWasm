@@ -9,7 +9,7 @@
             return Next;
         }
 
-        public F32neg(Parser parser) : base(parser, true)
+        public F32neg(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

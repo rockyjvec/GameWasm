@@ -14,7 +14,7 @@ namespace GameWasm.Webassembly.Instruction
             return l.Instruction.Next;
         }
 
-        public Br(Parser parser) : base(parser, true)
+        public Br(Parser parser, Function f) : base(parser, f, true)
         {
             labelidx = parser.GetIndex();
         }

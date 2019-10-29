@@ -12,7 +12,7 @@
             return Next;
         }
 
-        public I64mul(Parser parser) : base(parser, true)
+        public I64mul(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

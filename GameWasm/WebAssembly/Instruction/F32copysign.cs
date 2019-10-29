@@ -21,7 +21,7 @@
             return Next;
         }
 
-        public F32copysign(Parser parser) : base(parser, true)
+        public F32copysign(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

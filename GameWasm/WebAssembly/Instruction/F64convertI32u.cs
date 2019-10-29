@@ -7,7 +7,7 @@
             f.Push((double)f.PopI32());
             return Next;
         }
-        public F64convertI32u(Parser parser) : base(parser, true)
+        public F64convertI32u(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

@@ -232,7 +232,7 @@ namespace GameWasm.Webassembly.Module
                 int index = (int)parser.GetIndex();
                 if(index < types.Count())
                 {
-                    Functions.Add(new Function(this, (uint)(Functions.Count()), types[index]));
+                    Functions.Add(new Function(this, "$f" + (uint)(Functions.Count()), types[index]));
                 }
                 else
                 {
@@ -275,14 +275,12 @@ namespace GameWasm.Webassembly.Module
                 bool mutable;
                 parser.GetGlobalType(out type, out mutable);
 
-                var expr = parser.GetExpr();
-                Store.Push(new Frame(Store, null, expr, new object[] { }));
-                do
-                {
-                }
-                while (Store.Step(1000));
+                var f = new Function(this, "loadGlobal[" + import + "]", new Type(null, new byte[] { type }));
+                f.Start = parser.GetExpr(f, false);
+                Store.CallFunction(f);
+                do { } while (Store.Step(1000));
 
-                Globals.Add(new Webassembly.Global(type, mutable, Store.CurrentFrame.Pop(), (UInt32)Globals.Count()));
+                Globals.Add(new Webassembly.Global(type, mutable, Store.CurrentFrame.PopValue(), (UInt32)Globals.Count()));
             }
         }
 
@@ -375,12 +373,10 @@ namespace GameWasm.Webassembly.Module
                     throw new Exception("Element table index does not exist");
                 }
 
-                var expr = parser.GetExpr();
-                Store.Push(new Frame(Store, null, expr, new object[] { }));
-                do
-                {
-                }
-                while (Store.Step(1000));
+                var f = new Function(this, "loadElement[" + element + "]", new Type(null, new byte[] { Type.i32 }));
+                f.Start = parser.GetExpr(f, false);
+                Store.CallFunction(f);
+                do { } while (Store.Step(1000));
 
                 UInt32 offset = Store.CurrentFrame.PopI32();
 
@@ -414,10 +410,10 @@ namespace GameWasm.Webassembly.Module
                     UInt32 count = parser.GetUInt32();
                     byte type = parser.GetValType();
                     for(uint n = 0; n < count; n++)
-                        Functions[(int)functionIndex].AddLocal(type);
+                        Functions[(int)functionIndex].LocalTypes.Add(type);
                 }
 
-                Functions[(int)functionIndex].SetInstruction(parser.GetExpr());
+                Functions[(int)functionIndex].Start = parser.GetExpr(Functions[(int)functionIndex]);
                 functionIndex++;
 
                 if(parser.GetPointer() != end)
@@ -440,30 +436,15 @@ namespace GameWasm.Webassembly.Module
                     throw new Exception("Data memory index does not exist");
                 }
 
-                var expr = parser.GetExpr();
-                Store.Push(new Frame(Store, null, expr, new object[] { }));
-                do
-                {
-                }
-                while (Store.Step(1000));
+                var f = new Function(this, "loadData[" + data + "]", new Type(null, new byte[] { Type.i32 }));
+                f.Start = parser.GetExpr(f, false);
+                Store.CallFunction(f);
+                do { } while (Store.Step(1000));
 
-                UInt64 offset;
-                if (Store.CurrentFrame.Peek() is UInt32)
-                {
-                    offset = (UInt64)Store.CurrentFrame.PopI32();
-                }
-                else
-                {
-                    offset = Store.CurrentFrame.PopI64();
-                }
-                
+                UInt64 offset = Store.CurrentFrame.PopI32();
                 UInt32 memVecSize = parser.GetUInt32();
-                for (uint mem = 0; mem < memVecSize; mem++)
-                {
-                    byte b = parser.GetByte();
-
-                    Memory[memidx].Set(offset + mem, b);
-                }
+                Buffer.BlockCopy(parser.GetBytes((int)parser.GetPointer(), (int) memVecSize), 0, Memory[memidx].Buffer, (int)offset, (int)memVecSize);
+                parser.SetPointer(parser.GetPointer() + memVecSize);
             }
         }
 
@@ -478,11 +459,9 @@ namespace GameWasm.Webassembly.Module
             Function func;
 
             if (action == null)
-                func = new Function(this, new Type(parameters, results));
-            else
-                func = new Function(this, action, new Type(parameters, results));
-
-            func.SetName(Name + "@" + name);
+                func = new Function(this, Name + "@" + name, new Type(parameters, results));
+            else 
+                func = new Function(this, Name + "@" + name, action, new Type(parameters, results));
 
             Exports.Add(name, func);
         }

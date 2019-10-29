@@ -24,7 +24,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public CallIndirect(Parser parser) : base(parser, true)
+        public CallIndirect(Parser parser, Function f) : base(parser, f, true)
         {
             typeidx = (int)parser.GetIndex();
 

@@ -47,9 +47,9 @@ namespace GameWasm.Webassembly
             return bytes[index];
         }
 
-        public Instruction.Instruction GetExpr(bool debug = false)
+        public Instruction.Instruction GetExpr(Function f, bool debug = false)
         {
-            return Instruction.Instruction.Consume(this, debug);
+            return Instruction.Instruction.Consume(this, f, debug);
         }
 
         public UInt32 GetIndex()

@@ -26,7 +26,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public Select(Parser parser) : base(parser, true)
+        public Select(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

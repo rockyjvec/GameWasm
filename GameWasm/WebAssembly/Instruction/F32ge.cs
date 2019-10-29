@@ -21,7 +21,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public F32ge(Parser parser) : base(parser, true)
+        public F32ge(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

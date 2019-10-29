@@ -10,7 +10,7 @@
             return Next;
         }
 
-        public F64const(Parser parser) : base(parser, true)
+        public F64const(Parser parser, Function f) : base(parser, f, true)
         {
             value = parser.GetF64();
         }

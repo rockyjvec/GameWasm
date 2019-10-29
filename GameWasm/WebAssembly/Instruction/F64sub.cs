@@ -11,7 +11,7 @@
             return Next;
         }
 
-        public F64sub(Parser parser) : base(parser, true)
+        public F64sub(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

@@ -7,7 +7,7 @@
             return Next;
         }
 
-        public Nop(Parser parser) : base(parser, true)
+        public Nop(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

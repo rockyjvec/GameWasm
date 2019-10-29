@@ -10,7 +10,7 @@
             return Next;
         }
 
-        public F32const(Parser parser) : base(parser, true)
+        public F32const(Parser parser, Function f) : base(parser, f, true)
         {
             value = parser.GetF32();
         }

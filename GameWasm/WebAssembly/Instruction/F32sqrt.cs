@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public F32sqrt(Parser parser) : base(parser, true)
+        public F32sqrt(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

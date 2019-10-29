@@ -10,7 +10,7 @@ namespace GameWasm.Webassembly.Instruction
 
             return Next;
         }
-        public I32mul(Parser parser) : base(parser, true)
+        public I32mul(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

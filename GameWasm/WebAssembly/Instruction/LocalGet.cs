@@ -10,7 +10,7 @@
             return Next;
         }
 
-        public LocalGet(Parser parser) : base(parser, true)
+        public LocalGet(Parser parser, Function f) : base(parser, f, true)
         {
             /*
             if (index >= f.Locals.Count())

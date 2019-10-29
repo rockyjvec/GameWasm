@@ -11,7 +11,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public Call(Parser parser) : base(parser, true)
+        public Call(Parser parser, Function f) : base(parser, f, true)
         {
             funcidx = (int)parser.GetIndex();
         }

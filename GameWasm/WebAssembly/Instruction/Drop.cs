@@ -9,7 +9,7 @@
             return Next;
         }
 
-        public Drop(Parser parser) : base(parser, true)
+        public Drop(Parser parser, Function f) : base(parser, f, true)
         {
             
         }

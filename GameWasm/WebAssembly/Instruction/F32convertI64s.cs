@@ -10,7 +10,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public F32convertI64s(Parser parser) : base(parser, true)
+        public F32convertI64s(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

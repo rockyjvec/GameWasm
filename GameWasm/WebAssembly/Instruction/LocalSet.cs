@@ -10,7 +10,7 @@
             return Next;
         }
 
-        public LocalSet(Parser parser) : base(parser, true)
+        public LocalSet(Parser parser, Function f) : base(parser, f, true)
         {
             /*if (index >= f.Locals.Count())
                 throw new Exception("Invalid local variable");*/

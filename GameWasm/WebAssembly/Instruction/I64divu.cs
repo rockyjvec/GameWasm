@@ -20,7 +20,7 @@
             return Next;
         }
 
-        public I64divu(Parser parser) : base(parser, true)
+        public I64divu(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

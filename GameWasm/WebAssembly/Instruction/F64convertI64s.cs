@@ -9,7 +9,7 @@ namespace GameWasm.Webassembly.Instruction
             f.Push((double)(Int64)f.PopI64());
             return Next;
         }
-        public F64convertI64s(Parser parser) : base(parser, true)
+        public F64convertI64s(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

@@ -12,7 +12,7 @@
             return Next;
         }
 
-        public F64mul(Parser parser) : base(parser, true)
+        public F64mul(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

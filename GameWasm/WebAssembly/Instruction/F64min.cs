@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public F64min(Parser parser) : base(parser, true)
+        public F64min(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

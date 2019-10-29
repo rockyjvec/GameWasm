@@ -22,7 +22,7 @@
             return Next;
         }
 
-        public I32remu(Parser parser) : base(parser, true)
+        public I32remu(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

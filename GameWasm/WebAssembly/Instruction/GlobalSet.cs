@@ -14,7 +14,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public GlobalSet(Parser parser) : base(parser, true)
+        public GlobalSet(Parser parser, Function f) : base(parser, f, true)
         {
             var index = (int)parser.GetUInt32();
             if (index >= parser.Module.Globals.Count())

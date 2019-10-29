@@ -9,7 +9,7 @@ namespace GameWasm.Webassembly.Instruction
             f.Push((float)Math.Abs(f.PopF32()));
             return Next;
         }
-        public F32abs(Parser parser) : base(parser, true)
+        public F32abs(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }

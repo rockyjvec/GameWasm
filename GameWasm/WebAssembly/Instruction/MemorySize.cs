@@ -10,7 +10,7 @@ namespace GameWasm.Webassembly.Instruction
             return Next;
         }
 
-        public MemorySize(Parser parser) : base(parser, true)
+        public MemorySize(Parser parser, Function f) : base(parser, f, true)
         {
             byte zero = parser.GetByte(); // May be used in future version of WebAssembly to address additional memories
 

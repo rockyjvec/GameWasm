@@ -12,7 +12,7 @@ namespace GameWasm.Webassembly.Instruction
         }
 
 
-        public F32trunc(Parser parser) : base(parser, true)
+        public F32trunc(Parser parser, Function f) : base(parser, f, true)
         {
         }
     }
