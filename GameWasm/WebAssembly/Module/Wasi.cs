@@ -262,25 +262,25 @@ namespace GameWasm.Webassembly.Module
             Debug = false;
         }
         
-        public object[] ArgsGet(object[] parameters)
+        public Value[] ArgsGet(Value[] parameters)
         {
             if (Debug)
             {
                 Console.WriteLine("args_get()");
             }
 
-            UInt32 offset = (UInt32)parameters[1];
+            UInt32 offset = parameters[1].i32;
             for (int i = 0; i < Args.Length; i++)
             {
-                Memory[0].SetI32((UInt32)((UInt32)parameters[0] + (4*i)), offset);
+                Memory[0].SetI32((UInt32)(parameters[0].i32 + (4*i)), offset);
                 Memory[0].SetBytes(offset, Encoding.UTF8.GetBytes(Args[i] + "\0"));
                 offset += (UInt32)EnvVars[i].Length + 1;
             }
             
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] ArgsSizesGet(object[] parameters)
+        public Value[] ArgsSizesGet(Value[] parameters)
         {
             if (Debug)
             {
@@ -292,31 +292,31 @@ namespace GameWasm.Webassembly.Module
             {
                 length += (UInt32)s.Length;
             }
-            Memory[0].SetI32((UInt32)parameters[0], (UInt32)Args.Length);
-            Memory[0].SetI32((UInt32)parameters[1], length + (UInt32)Args.Length); // add room for null termination of each arg
+            Memory[0].SetI32(parameters[0].i32, (UInt32)Args.Length);
+            Memory[0].SetI32(parameters[1].i32, length + (UInt32)Args.Length); // add room for null termination of each arg
             
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
       
-        public object[] EnvironGet(object[] parameters)
+        public Value[] EnvironGet(Value[] parameters)
         {
             if (Debug)
             {
                 Console.WriteLine("environ_get()");
             }
 
-            UInt32 offset = (UInt32)parameters[1];
+            UInt32 offset = parameters[1].i32;
             for (int i = 0; i < EnvVars.Length; i++)
             {
-                Memory[0].SetI32((UInt32)((UInt32)parameters[0] + (4*i)), offset);
+                Memory[0].SetI32((UInt32)(parameters[0].i32 + (4*i)), offset);
                 Memory[0].SetBytes(offset, Encoding.UTF8.GetBytes(EnvVars[i] + "\0"));
                 offset += (UInt32)EnvVars[i].Length + 1;
             }
             
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] EnvironSizesGet(object[] parameters)
+        public Value[] EnvironSizesGet(Value[] parameters)
         {
             if (Debug)
             {
@@ -328,45 +328,45 @@ namespace GameWasm.Webassembly.Module
             {
                 length += (UInt32)s.Length;
             }
-            Memory[0].SetI32((UInt32)parameters[0], (UInt32)EnvVars.Length);
-            Memory[0].SetI32((UInt32)parameters[1], length + (UInt32)EnvVars.Length); // add room for null termination of each variable
+            Memory[0].SetI32(parameters[0].i32, (UInt32)EnvVars.Length);
+            Memory[0].SetI32(parameters[1].i32, length + (UInt32)EnvVars.Length); // add room for null termination of each variable
             
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdClose(object[] parameters)
+        public Value[] FdClose(Value[] parameters)
         {
             if (Debug)
             {
-                Console.WriteLine("fd_close("+(UInt32) parameters[0]+")");
+                Console.WriteLine("fd_close("+parameters[0].i32+")");
             }
 
-            switch ((UInt32) parameters[0])
+            switch (parameters[0].i32)
             {
                 case 1:
                 case 2:
                 case 3:
-                    return new object[] { WASI_EBADF };
+                    return new Value[] { Value.GetI32(WASI_EBADF) };
                 default:
-                    if (FileDescriptors.ContainsKey((UInt32) parameters[0]))
+                    if (FileDescriptors.ContainsKey(parameters[0].i32))
                     {
-                        var fd = FileDescriptors[(UInt32) parameters[0]];
+                        var fd = FileDescriptors[parameters[0].i32];
                         fd.Close();
-                        FileDescriptors.Remove((UInt32) parameters[0]);
+                        FileDescriptors.Remove(parameters[0].i32);
                     }
                     break;
             }
 
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdPrestatDirName(object[] parameters)
+        public Value[] FdPrestatDirName(Value[] parameters)
         {
             if (Debug)
             {
-                Console.WriteLine("fd_prestat_dir_name("+(UInt32) parameters[0]+")");
+                Console.WriteLine("fd_prestat_dir_name("+parameters[0].i32+")");
             }
-            switch ((UInt32) parameters[0])
+            switch (parameters[0].i32)
             {
                 case 0: // stdin
                 case 1: // stdout
@@ -374,9 +374,9 @@ namespace GameWasm.Webassembly.Module
                     // not sure what to do for other cases
                     break;
                 case 3: // --dir
-                    if (Directory.Length <= (UInt32) parameters[2])
+                    if (Directory.Length <= parameters[2].i32)
                     {
-                        Memory[0].SetBytes((UInt32)parameters[1], Encoding.UTF8.GetBytes(Directory)); // Directory name length
+                        Memory[0].SetBytes(parameters[1].i32, Encoding.UTF8.GetBytes(Directory)); // Directory name length
                     }
                     else
                     {
@@ -384,19 +384,19 @@ namespace GameWasm.Webassembly.Module
                     }
                     break;
                 default:
-                    return new object[] { WASI_EBADF };
+                    return new Value[] { Value.GetI32(WASI_EBADF) };
             }
 
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdPrestatGet(object[] parameters)
+        public Value[] FdPrestatGet(Value[] parameters)
         {
             if (Debug)
             {
-                Console.WriteLine("fd_prestat_get("+(UInt32) parameters[0]+")");
+                Console.WriteLine("fd_prestat_get("+parameters[0].i32+")");
             }
-            switch ((UInt32) parameters[0])
+            switch (parameters[0].i32)
             {
                 case 0: // stdin
                 case 1: // stdout
@@ -404,23 +404,23 @@ namespace GameWasm.Webassembly.Module
                     // not sure what to do for other cases
                     break;
                 case 3: // --dir
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_PREOPENTYPE_DIR}); // Type Directory?
-                    Store.CurrentFrame.Function.Module.Memory[0].SetI32((UInt32)parameters[1]+4, (UInt32)Encoding.UTF8.GetBytes(Directory).Length); // Directory name length
+                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_PREOPENTYPE_DIR}); // Type Directory?
+                    Store.CurrentFrame.Function.Module.Memory[0].SetI32(parameters[1].i32+4, (UInt32)Encoding.UTF8.GetBytes(Directory).Length); // Directory name length
                     break;
                 default:
-                    return new object[] { WASI_EBADF };
+                    return new Value[] { Value.GetI32(WASI_EBADF) };
             }
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdFdStatGet(object[] parameters)
+        public Value[] FdFdStatGet(Value[] parameters)
         {
             if (Debug)
             {
-                Console.WriteLine("fd_fdstat_get("+(UInt32) parameters[0]+")");
+                Console.WriteLine("fd_fdstat_get("+parameters[0].i32+")");
             }
 
-            switch ((UInt32) parameters[0])
+            switch (parameters[0].i32)
             {
                 case 0: // stdin
                 case 1: // stdout
@@ -428,52 +428,52 @@ namespace GameWasm.Webassembly.Module
                     // not sure what to do for other cases
                     break;
                 case 3: // --dir
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_FILETYPE_DIRECTORY}); // File Type Directory
-                    Store.CurrentFrame.Function.Module.Memory[0].SetI32((UInt32)parameters[1]+2, WASI_FDFLAG_SYNC); // Flags
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+8, BitConverter.GetBytes(RIGHTS_DIRECTORY_BASE));
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+16, BitConverter.GetBytes(RIGHTS_DIRECTORY_INHERITING));
+                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_FILETYPE_DIRECTORY}); // File Type Directory
+                    Store.CurrentFrame.Function.Module.Memory[0].SetI32(parameters[1].i32+2, WASI_FDFLAG_SYNC); // Flags
+                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+8, BitConverter.GetBytes(RIGHTS_DIRECTORY_BASE));
+                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+16, BitConverter.GetBytes(RIGHTS_DIRECTORY_INHERITING));
                     
                     break;
                 
                 default:
-                    if (FileDescriptors.ContainsKey((UInt32) parameters[0]))
+                    if (FileDescriptors.ContainsKey(parameters[0].i32))
                     {
-                        var fd = FileDescriptors[(UInt32) parameters[0]];
-                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes((UInt32)parameters[1], new byte[] {WASI_FILETYPE_REGULAR_FILE}); // File Type Directory
-                        Store.CurrentFrame.Function.Module.Memory[0].SetI32((UInt32)parameters[1]+2, WASI_FDFLAG_SYNC); // Flags
-                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+8, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_BASE));
-                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes((UInt32)parameters[1]+16, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_INHERITING));
+                        var fd = FileDescriptors[parameters[0].i32];
+                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_FILETYPE_REGULAR_FILE}); // File Type Directory
+                        Store.CurrentFrame.Function.Module.Memory[0].SetI32(parameters[1].i32+2, WASI_FDFLAG_SYNC); // Flags
+                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+8, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_BASE));
+                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+16, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_INHERITING));
                     }
                     break;
             }
 
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdFilestatGet(object[] parameters)
+        public Value[] FdFilestatGet(Value[] parameters)
         {
             if (Debug)
             {
-                Console.WriteLine("fd_filestat_get("+(UInt32) parameters[0]+") !!NOT IMPLEMENTED!!");
+                Console.WriteLine("fd_filestat_get("+parameters[0].i32+") !!NOT IMPLEMENTED!!");
             }
 
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdRead(object[] parameters)
+        public Value[] FdRead(Value[] parameters)
         {
-            if (!FileDescriptors.ContainsKey((UInt32) parameters[0]))
+            if (!FileDescriptors.ContainsKey(parameters[0].i32))
             {
-                return new object[] { WASI_EBADF };
+                return new Value[] { Value.GetI32(WASI_EBADF) };
             }
 
-            var fd = FileDescriptors[(UInt32) parameters[0]];
+            var fd = FileDescriptors[parameters[0].i32];
             
             UInt32 read = 0;
-            for (int i = 0; i < (UInt32) parameters[2]; i++)
+            for (int i = 0; i < parameters[2].i32; i++)
             {
-                UInt32 bytes = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8));
-                UInt32 length = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8 + 4));
+                UInt32 bytes = Memory[0].GetI32((UInt32) (parameters[1].i32 + i * 8));
+                UInt32 length = Memory[0].GetI32((UInt32) (parameters[1].i32 + i * 8 + 4));
 
                 if (bytes + length - 1 < Memory[0].Buffer.Length)
                 {
@@ -484,22 +484,22 @@ namespace GameWasm.Webassembly.Module
                     throw new Trap("out of bounds memory access");
                 }
             }
-            Memory[0].SetI32((UInt32)parameters[3], read);
+            Memory[0].SetI32(parameters[3].i32, read);
             
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdSeek(object[] parameters)
+        public Value[] FdSeek(Value[] parameters)
         {
-            UInt64 offset = (UInt64) parameters[1];
-            byte whence = (byte) (UInt32)parameters[2];
+            UInt64 offset = parameters[1].i64;
+            byte whence = (byte) parameters[2].i32;
 
-            if (!FileDescriptors.ContainsKey((UInt32) parameters[0]))
+            if (!FileDescriptors.ContainsKey(parameters[0].i32))
             {
-                return new object[] { WASI_EBADF };
+                return new Value[] { Value.GetI32(WASI_EBADF) };
             }
 
-            var fd = FileDescriptors[(UInt32) parameters[0]];
+            var fd = FileDescriptors[parameters[0].i32];
 
             UInt64 pos;
             if(whence == WASI_WHENCE_CUR) 
@@ -509,26 +509,26 @@ namespace GameWasm.Webassembly.Module
             else
                 pos = (UInt64) fd.Seek((long)offset, SeekOrigin.Begin);
 
-            Memory[0].SetBytes((UInt32)parameters[3], BitConverter.GetBytes(pos));
+            Memory[0].SetBytes(parameters[3].i32, BitConverter.GetBytes(pos));
             
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] FdWrite(object[] parameters)
+        public Value[] FdWrite(Value[] parameters)
         {
-            if (Debug && (UInt32) parameters[0] > 3)
+            if (Debug && parameters[0].i32 > 3)
             {
-                Console.WriteLine("fd_write(" + (UInt32) parameters[0] + ")");
+                Console.WriteLine("fd_write(" + parameters[0].i32 + ")");
             }
 
             UInt32 written = 0;
-            if (FileDescriptors.ContainsKey((UInt32) parameters[0]))
+            if (FileDescriptors.ContainsKey(parameters[0].i32))
             {
-                var fd = FileDescriptors[(UInt32) parameters[0]];
-                for (int i = 0; i < (UInt32) parameters[2]; i++)
+                var fd = FileDescriptors[parameters[0].i32];
+                for (int i = 0; i < parameters[2].i32; i++)
                 {
-                    UInt32 bytes = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8));
-                    UInt32 length = Memory[0].GetI32((UInt32) ((UInt32) parameters[1] + i * 8 + 4));
+                    UInt32 bytes = Memory[0].GetI32((UInt32) (parameters[1].i32 + i * 8));
+                    UInt32 length = Memory[0].GetI32((UInt32) (parameters[1].i32 + i * 8 + 4));
 
                     if (length > 0)
                     {
@@ -547,19 +547,19 @@ namespace GameWasm.Webassembly.Module
             }
             else
             {
-                return new object[] { WASI_EBADF };
+                return new Value[] { Value.GetI32(WASI_EBADF) };
             }
 
-            Memory[0].SetI32((UInt32)parameters[3], written);
-            return new object[] { WASI_ESUCCESS };
+            Memory[0].SetI32(parameters[3].i32, written);
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
         
-        public object[] PathFilestatGet(object[] parameters)
+        public Value[] PathFilestatGet(Value[] parameters)
         {
-            string path = Encoding.UTF8.GetString(Memory[0].GetBytes((UInt32)parameters[2], (UInt32)parameters[3]));
+            string path = Encoding.UTF8.GetString(Memory[0].GetBytes(parameters[2].i32, parameters[3].i32));
             if (Debug)
             {
-                Console.WriteLine("path_filestat_get("+(UInt32) parameters[0]+", "+(UInt32)parameters[1]+", \""+path+"\")");
+                Console.WriteLine("path_filestat_get("+parameters[0].i32+", "+parameters[1].i32+", \""+path+"\")");
             }
 
             //TODO: Check follow symlink flag
@@ -568,13 +568,13 @@ namespace GameWasm.Webassembly.Module
             
             if (!f.Exists)
             {
-                return new object[] { WASI_EBADF };
+                return new Value[] { Value.GetI32(WASI_EBADF) };
             }
 
             // Device
-            Memory[0].SetBytes((UInt32)parameters[4], BitConverter.GetBytes((UInt64) 0));
+            Memory[0].SetBytes(parameters[4].i32, BitConverter.GetBytes((UInt64) 0));
             // INode
-            Memory[0].SetBytes((UInt32)parameters[4] + 8, BitConverter.GetBytes((UInt64) 0));
+            Memory[0].SetBytes(parameters[4].i32 + 8, BitConverter.GetBytes((UInt64) 0));
             // Type
             byte type = 0;
             if (f.Attributes.HasFlag(FileAttributes.Device))
@@ -593,33 +593,33 @@ namespace GameWasm.Webassembly.Module
             {
                 type = WASI_FILETYPE_UNKNOWN;
             }
-            Memory[0].SetBytes((UInt32)parameters[4] + 16, new byte[] { type });
+            Memory[0].SetBytes(parameters[4].i32 + 16, new byte[] { type });
             // # Hardlinks to file
-            Memory[0].SetBytes((UInt32)parameters[4] + 20, BitConverter.GetBytes((UInt32) 0));
+            Memory[0].SetBytes(parameters[4].i32 + 20, BitConverter.GetBytes((UInt32) 0));
             // FileSize
-            Memory[0].SetBytes((UInt32)parameters[4] + 24, BitConverter.GetBytes((UInt64) f.Length));
+            Memory[0].SetBytes(parameters[4].i32 + 24, BitConverter.GetBytes((UInt64) f.Length));
             // AccessTime
-            Memory[0].SetBytes((UInt32)parameters[4] + 32, BitConverter.GetBytes((UInt64) f.LastAccessTime.ToFileTime()));
+            Memory[0].SetBytes(parameters[4].i32 + 32, BitConverter.GetBytes((UInt64) f.LastAccessTime.ToFileTime()));
             // ModificationTime
-            Memory[0].SetBytes((UInt32)parameters[4] + 40, BitConverter.GetBytes((UInt64) f.LastWriteTime.ToFileTime()));
+            Memory[0].SetBytes(parameters[4].i32 + 40, BitConverter.GetBytes((UInt64) f.LastWriteTime.ToFileTime()));
             // CreationTime
-            Memory[0].SetBytes((UInt32)parameters[4] + 48, BitConverter.GetBytes((UInt64) f.CreationTime.ToFileTime()));
+            Memory[0].SetBytes(parameters[4].i32 + 48, BitConverter.GetBytes((UInt64) f.CreationTime.ToFileTime()));
 
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
         
-        public object[] PathOpen(object[] parameters)
+        public Value[] PathOpen(Value[] parameters)
         {
-            string path = Encoding.UTF8.GetString(Memory[0].GetBytes((UInt32)parameters[2], (UInt32)parameters[3]));
+            string path = Encoding.UTF8.GetString(Memory[0].GetBytes(parameters[2].i32, parameters[3].i32));
 
             if (Debug)
             {
-                Console.WriteLine("path_open("+(UInt32) parameters[0]+", "+path+")");
+                Console.WriteLine("path_open("+parameters[0].i32+", "+path+")");
             }
 
             var f = new FileInfo(path);
 
-            UInt32 flags = (UInt32) parameters[4];
+            UInt32 flags = parameters[4].i32;
             FileStream fd;
             // TODO: handle permissions, modes, and other attributes (currently just opens readOnly
             if ((flags & WASI_O_CREAT) > 0)
@@ -630,34 +630,34 @@ namespace GameWasm.Webassembly.Module
             {
                 if (!f.Exists)
                 {
-                    return new object[] {WASI_ENFILE};
+                    return new Value[] { Value.GetI32(WASI_ENFILE) };
                 }
                 fd = f.Open(FileMode.Open);
             }
             
             FileDescriptors.Add((UInt32)fd.SafeFileHandle.DangerousGetHandle().ToInt32() + 3, fd);
-            Memory[0].SetI32((UInt32)parameters[8], (UInt32)fd.SafeFileHandle.DangerousGetHandle().ToInt32() + 3);
+            Memory[0].SetI32(parameters[8].i32, (UInt32)fd.SafeFileHandle.DangerousGetHandle().ToInt32() + 3);
 
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
         
-        public object[] ProcExit(object[] parameters)
+        public Value[] ProcExit(Value[] parameters)
         {
             if (Debug)
             {
-                Console.WriteLine("proc_exit("+(UInt32) parameters[0]+")");
+                Console.WriteLine("proc_exit("+parameters[0].i32+")");
             }
             
             throw new Exception("ProcExit Called");
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
-        public object[] ClockTimeGet(object[] parameters)
+        public Value[] ClockTimeGet(Value[] parameters)
         {
             long nano = Stopwatch.GetTimestamp() * 1000000000 / Stopwatch.Frequency;
-            Memory[0].SetI64((UInt32)parameters[2], (UInt64)nano);
+            Memory[0].SetI64(parameters[2].i32, (UInt64)nano);
 
-            return new object[] { WASI_ESUCCESS };
+            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
     }
 }

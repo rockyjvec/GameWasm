@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push((float)Math.Abs(f.PopF32()));
+            f.PushF32((float)Math.Abs(f.PopF32()));
             return Next;
         }
         public F32abs(Parser parser, Function f) : base(parser, f, true)

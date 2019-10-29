@@ -449,7 +449,7 @@ namespace GameWasm.Webassembly.Module
         }
 
 
-        public void AddExportFunc(string name, byte[] parameters = null, byte[] results = null, Func<object[], object[]> action = null)
+        public void AddExportFunc(string name, byte[] parameters = null, byte[] results = null, Func<Value[], Value[]> action = null)
         {
             if (parameters == null)
                 parameters = new byte[] { };
@@ -473,7 +473,7 @@ namespace GameWasm.Webassembly.Module
             Exports.Add(name, f);
         }
 
-        public Webassembly.Global AddExportGlob(string name, byte type, bool mutable, object v)
+        public Webassembly.Global AddExportGlob(string name, byte type, bool mutable, Value v)
         {
             var global = new Webassembly.Global(type, mutable, v, (UInt32)Exports.Count());
             Exports.Add(name, global);
@@ -518,7 +518,7 @@ namespace GameWasm.Webassembly.Module
             }
         }
 
-        public void Execute(string function, params object[] parameters)
+        public void Execute(string function, params Value[] parameters)
         {
             if(!Exports.ContainsKey(function) || (Exports[function] as Function) == null)
             {
@@ -534,7 +534,7 @@ namespace GameWasm.Webassembly.Module
             Store.CallFunction(f);
         }
 
-        public object Call(string function, params object[] parameters)
+        public Value Call(string function, params object[] parameters)
         {
             CallVoid(function, parameters);
 
@@ -543,7 +543,31 @@ namespace GameWasm.Webassembly.Module
 
         public void CallVoid(string function, params object[] parameters)
         {
-            Execute(function, parameters);
+            Value[] parms = new Value[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (parameters[i] is UInt32)
+                {
+                    parms[i].type = Type.i32;
+                    parms[i].i32 = (UInt32)parameters[i];
+                }
+                else if (parameters[i] is UInt64)
+                {
+                    parms[i].type = Type.i64;
+                    parms[i].i64 = (UInt64)parameters[i];
+                }
+                if (parameters[i] is float)
+                {
+                    parms[i].type = Type.f32;
+                    parms[i].f32 = (float)parameters[i];
+                }
+                if (parameters[i] is double)
+                {
+                    parms[i].type = Type.f64;
+                    parms[i].f64 = (double)parameters[i];
+                }
+            }
+            Execute(function, parms);
 
             while (Store.Step(1000))
             {

@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push((UInt32)f.Function.Module.Memory[0].CurrentPages);
+            f.PushI32((UInt32)f.Function.Module.Memory[0].CurrentPages);
             return Next;
         }
 

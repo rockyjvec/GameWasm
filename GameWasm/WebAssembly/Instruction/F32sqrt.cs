@@ -8,7 +8,7 @@ namespace GameWasm.Webassembly.Instruction
         {
             var b = f.PopF32();
 
-            f.Push((float)Math.Sqrt((float)b));
+            f.PushF32((float)Math.Sqrt((float)b));
 
             return Next;
         }

@@ -8,7 +8,7 @@ namespace GameWasm.Webassembly.Instruction
         {
             var a = f.PopF64();
 
-            f.Push((double)Math.Round(a));
+            f.PushF64((double)Math.Round(a));
             return Next;
         }
 

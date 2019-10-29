@@ -7,7 +7,7 @@
             var b = f.PopI64();
             var a = f.PopI64();
 
-            f.Push(a * b);
+            f.PushI64(a * b);
 
             return Next;
         }

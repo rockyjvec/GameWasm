@@ -5,13 +5,13 @@ namespace GameWasm.Webassembly
     public class Global
     {
         public byte Type;
-        object value;
+        Value value;
         bool mutable;
         public UInt32 Index;
         public string Name;
 
 
-        public Global (byte type, bool mutable, object value, UInt32 index)
+        public Global (byte type, bool mutable, Value value, UInt32 index)
         {
             Type = type;
             this.mutable = mutable;
@@ -20,36 +20,18 @@ namespace GameWasm.Webassembly
             Name = "$global" + Index;
         }
 
-        public object GetValue()
+        public Value GetValue()
         {
             return value;
         }
 
-        public UInt32 GetI32()
-        {
-            return (UInt32)value;
-        }
-
-        public UInt64 GetI64()
-        {
-            return (UInt64)value;
-        }
-
-        public float GetF32()
-        {
-            return (float)value;
-        }
-
-        public double GetF64()
-        {
-            return (double)value;
-        }
-
-        public void Set(object value, bool force = false)
+        public void Set(Value value, bool force = false)
         {
             if (!mutable && !force)
                 throw new Exception("Global not mutable");
 
+            if(value.type != this.value.type) throw new Trap("indirect call type mismatch");
+            
             this.value = value;
         }
 

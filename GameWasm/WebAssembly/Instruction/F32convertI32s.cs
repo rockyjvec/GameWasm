@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push((float)(Int32)f.PopI32());
+            f.PushF32((float)(Int32)f.PopI32());
             return Next;
         }
         public F32convertI32s(Parser parser, Function f) : base(parser, f, true)

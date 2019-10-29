@@ -6,7 +6,21 @@
 
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Locals[index] = f.Pop();
+            switch (f.Locals[index].type)
+            {
+                case Type.i32:
+                    f.Locals[index].i32 = f.PopI32();
+                    break;
+                case Type.i64:
+                    f.Locals[index].i64 = f.PopI64();
+                    break;
+                case Type.f32:
+                    f.Locals[index].f32 = f.PopF32();
+                    break;
+                case Type.f64:
+                    f.Locals[index].f64 = f.PopF64();
+                    break;
+            }
             return Next;
         }
 

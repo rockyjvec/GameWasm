@@ -5,7 +5,7 @@ namespace GameWasm.Webassembly
 {
     public class Type
     {
-        public const byte i32 = 0x7F, i64 = 0x7E, f32 = 0x7D, f64 = 0x7C;
+        public const byte i32 = 0x7F, i64 = 0x7E, f32 = 0x7D, f64 = 0x7C, label = 0xFF;
 
         public byte[] Parameters;
         public byte[] Results;

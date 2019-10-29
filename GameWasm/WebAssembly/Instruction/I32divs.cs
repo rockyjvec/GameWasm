@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
 
             try
             {
-                f.Push((UInt32) ((Int32) a / (Int32) b));
+                f.PushI32((UInt32) ((Int32) a / (Int32) b));
             }
             catch (System.DivideByZeroException)
             {

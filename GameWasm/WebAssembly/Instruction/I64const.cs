@@ -8,7 +8,7 @@ namespace GameWasm.Webassembly.Instruction
 
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push(value);
+            f.PushI64(value);
             return Next;
         }
 

@@ -6,7 +6,7 @@
 
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push(value);
+            f.PushF32(value);
             return Next;
         }
 

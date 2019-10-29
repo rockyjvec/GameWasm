@@ -4,7 +4,7 @@
     {
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push((double)f.PopF32());
+            f.PushF64((double)f.PopF32());
             return Next;
         }
 

@@ -11,7 +11,7 @@
 
             try
             {
-                f.Push(a / b);
+                f.PushI32(a / b);
             }
             catch (System.OverflowException e)
             {

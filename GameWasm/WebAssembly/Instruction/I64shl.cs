@@ -9,7 +9,7 @@ namespace GameWasm.Webassembly.Instruction
             var b = (byte)f.PopI64();
             var a = (UInt64)f.PopI64();
 
-            f.Push(a << b);
+            f.PushI64(a << b);
             return Next;
         }
 

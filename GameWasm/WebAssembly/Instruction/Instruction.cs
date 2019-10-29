@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
         public UInt32 Pointer;
         public Instruction Next = null;
         
-        private object[] _constants = null;
+        private Value[] _constants = null;
         Parser parser;
 
         public const bool optimizer = true;
@@ -564,24 +564,33 @@ namespace GameWasm.Webassembly.Instruction
                     // Remove constant instructions
                     if (c.isConstantInstruction && c != start)
                     {
-                        var q = new List<object>();
+                        var q = new List<Value>();
                         do
                         {
+                            Value v = new Value();
                             if ((c as I32const) != null)
                             {
-                                q.Add((c as I32const).value);
+                                v.type = Type.i32;
+                                v.i32 = (c as I32const).value;
+                                q.Add(v);
                             }
                             if ((c as I64const) != null)
                             {
-                                q.Add((c as I64const).value);
+                                v.type = Type.i64;
+                                v.i64 = (c as I64const).value;
+                                q.Add(v);
                             }
                             if ((c as F32const) != null)
                             {
-                                q.Add((c as F32const).value);
+                                v.type = Type.f32;
+                                v.f32 = (c as F32const).value;
+                                q.Add(v);
                             }
                             if ((c as F64const) != null)
                             {
-                                q.Add((c as F64const).value);
+                                v.type = Type.f64;
+                                v.f64 = (c as F64const).value;
+                                q.Add(v);
                             }
 
                             c = c.Next;

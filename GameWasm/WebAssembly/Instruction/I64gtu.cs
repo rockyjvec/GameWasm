@@ -10,11 +10,11 @@ namespace GameWasm.Webassembly.Instruction
             var a = (UInt64)f.PopI64();
             if (a > b)
             {
-                f.Push((UInt32)1);
+                f.PushI32((UInt32)1);
             }
             else
             {
-                f.Push((UInt32)0);
+                f.PushI32((UInt32)0);
             }
 
             return Next;

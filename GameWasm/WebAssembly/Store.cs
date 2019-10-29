@@ -16,7 +16,7 @@ namespace GameWasm.Webassembly
         public Store()
         {
             _stack = new Stack<Frame>();
-            Push(new Frame( null, null, new Object[] { }));
+            Push(new Frame( null, null, new Value[] { }));
             LoadModule(new Module.Wasi(this));
         }
 
@@ -74,9 +74,9 @@ namespace GameWasm.Webassembly
         
         public void CallFunction(Function f)
         {
-            var frame = new Frame(f, f.Start, new object[f.Type.Parameters.Length + f.LocalTypes.Count]);
+            var frame = new Frame(f, f.Start, new Value[f.Type.Parameters.Length + f.LocalTypes.Count]);
             
-            frame.Push(new Label(new Instruction.End(null, null), f.Type.Results));
+            frame.PushLabel(new Label(new Instruction.End(null, null), f.Type.Results));
 
             int localIndex = f.Type.Parameters.Length;
 
@@ -85,27 +85,7 @@ namespace GameWasm.Webassembly
                 // This might need to be reversed?
                 var p = CurrentFrame.Pop();
                 frame.Locals[i] = p;
-                bool valid = false;
-                switch (f.Type.Parameters[i])
-                {
-                    case Type.i32:
-                        if (p is UInt32)
-                            valid = true;
-                        break;
-                    case Type.i64:
-                        if (p is UInt64)
-                            valid = true;
-                        break;
-                    case Type.f32:
-                        if (p is Single)
-                            valid = true;
-                        break;
-                    case Type.f64:
-                        if (p is Double)
-                            valid = true;
-                        break;
-                }
-
+                bool valid = p.type == f.Type.Parameters[i];
                 if (!valid)
                 {
                     throw new Trap("indirect call type mismatch");
@@ -114,20 +94,21 @@ namespace GameWasm.Webassembly
 
             foreach (var t in f.LocalTypes)
             {
-                object local;
+                Value local = new Value();
+                local.type = t;
                 switch(t)
                 {
                     case Type.i32:
-                        local = (UInt32)0;
+                        local.i32 = (UInt32)0;
                         break;
                     case Type.i64:
-                        local = (UInt64)0;
+                        local.i64 = (UInt64)0;
                         break;
                     case Type.f32:
-                        local = (Single)0;
+                        local.f32 = (float)0;
                         break;
                     case Type.f64:
-                        local = (Double)0;
+                        local.f64 = (double)0;
                         break;
                     default:
                         throw new Exception("Invalid local type: 0x" + t.ToString("X"));
@@ -175,16 +156,16 @@ namespace GameWasm.Webassembly
                                         switch (r)
                                         {
                                             case Type.i32:
-                                                currentFrame.Push(lastFrame.PopI32());
+                                                currentFrame.PushI32(lastFrame.PopI32());
                                                 break;
                                             case Type.i64:
-                                                currentFrame.Push(lastFrame.PopI64());
+                                                currentFrame.PushI64(lastFrame.PopI64());
                                                 break;
                                             case Type.f32:
-                                                currentFrame.Push(lastFrame.PopF32());
+                                                currentFrame.PushF32(lastFrame.PopF32());
                                                 break;
                                             case Type.f64:
-                                                currentFrame.Push(lastFrame.PopF64());
+                                                currentFrame.PushF64(lastFrame.PopF64());
                                                 break;
                                             default:
                                                 throw new Exception("Invalid return type");
@@ -218,7 +199,7 @@ namespace GameWasm.Webassembly
                 if (exception)
                 {
                     Clear();
-                    Push(new Frame(null, null, new object[] { }));
+                    Push(new Frame(null, null, new Value[] { }));
                 }
             }
 

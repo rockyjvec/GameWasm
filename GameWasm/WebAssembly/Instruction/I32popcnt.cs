@@ -20,7 +20,7 @@ namespace GameWasm.Webassembly.Instruction
                 compare <<= 1;
             }
 
-            f.Push(bits);
+            f.PushI32(bits);
 
             return Next;
         }

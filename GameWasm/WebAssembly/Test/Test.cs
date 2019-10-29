@@ -11,19 +11,19 @@ namespace GameWasm.Webassembly.Test
             test();
         }
 
-        protected void assert(object a, object b)
+        protected void assert(Value a, UInt32 b)
         {
-            if((UInt32)a != (UInt32)b)
+            if(a.type == Type.i32 && a.i32 != b)
             {
                 throw new Exception("Fail!");
             } 
         }
         
-        protected void assertF32(object a, object b)
+        protected void assertF32(Value a, float b)
         {
-            if ((float)a != (float)b)
+            if (a.type == Type.f32 && a.f32 != b)
             {
-                if(float.IsNaN((float)a) && float.IsNaN((float)b))
+                if(float.IsNaN(a.f32) && float.IsNaN(b))
                 {
                     return;
                 }
@@ -31,11 +31,11 @@ namespace GameWasm.Webassembly.Test
             }
         }
 
-        protected void assertF64(object a, object b)
+        protected void assertF64(Value a, double b)
         {
-            if ((double)a != (double)b)
+            if (a.type == Type.f64 && a.f64 != b)
             {
-                if (double.IsNaN((double)a) && double.IsNaN((double)b))
+                if (double.IsNaN(a.f64) && double.IsNaN(b))
                 {
                     return;
                 }
@@ -43,9 +43,9 @@ namespace GameWasm.Webassembly.Test
             }
         }
 
-        protected void assert64(object a, object b)
+        protected void assert64(Value a, UInt64 b)
         {
-            if ((UInt64)a != (UInt64)b)
+            if (a.type == Type.i64 && a.i64 != b)
             {
                 throw new Exception("Fail!");
             }

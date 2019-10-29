@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push((UInt32)(Int32)Math.Truncate((double)f.PopF64()));
+            f.PushI32((UInt32)(Int32)Math.Truncate((double)f.PopF64()));
 
             return Next;
         }

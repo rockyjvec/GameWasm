@@ -8,7 +8,7 @@ namespace GameWasm.Webassembly.Instruction
         {
             var size = f.PopI32();
 
-            f.Push((UInt32)f.Function.Module.Memory[0].Grow(size));
+            f.PushI32((UInt32)f.Function.Module.Memory[0].Grow(size));
 
             return Next;
         }

@@ -8,7 +8,7 @@ namespace GameWasm.Webassembly.Instruction
 
         protected override Instruction Run(Stack.Frame f)
         {
-            var v = f.Pop();
+            var v = f.PopI32();
             if ((UInt32)v > 0)
             {
                 Stack.Label l = f.PopLabel(labelidx + 1);

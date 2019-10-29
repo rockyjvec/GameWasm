@@ -11,7 +11,7 @@
 
             try
             {
-                f.Push(a % b);
+                f.PushI64(a % b);
             }
             catch (System.OverflowException e)
             {

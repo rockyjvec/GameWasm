@@ -35,14 +35,14 @@ namespace GameWasm.Webassembly
         }
         
         // Native function constructor
-        public Function(Module.Module module, String name, Func<object[], object[]> action, Type type)
+        public Function(Module.Module module, String name, Func<Value[], Value[]> action, Type type)
         {
             this.Module = module;
             Name = name;
             Type = type;
             Start = new Instruction.Custom(delegate
             {
-                object[] ret = action(module.Store.CurrentFrame.Locals.ToArray());
+                Value[] ret = action(module.Store.CurrentFrame.Locals.ToArray());
 
                 foreach (var v in ret)
                 {

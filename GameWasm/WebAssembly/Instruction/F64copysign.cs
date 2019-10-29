@@ -17,7 +17,7 @@
                 a = -a;
             }
 
-            f.Push(a);
+            f.PushF64(a);
             return Next;
         }
 

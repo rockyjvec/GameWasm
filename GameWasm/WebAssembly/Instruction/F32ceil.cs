@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         protected override Instruction Run(Stack.Frame f)
         {
-            f.Push((float)Math.Ceiling(f.PopF32()));
+            f.PushF32((float)Math.Ceiling(f.PopF32()));
             return Next;
         }
 

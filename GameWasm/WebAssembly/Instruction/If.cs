@@ -19,16 +19,16 @@
             if (v > 0)
             {
                 if(end as Else != null)
-                    f.Push(new Stack.Label((end as Else).end, new byte[] { type }));
+                    f.PushLabel(new Stack.Label((end as Else).end, new byte[] { type }));
                 else
-                    f.Push(new Stack.Label(end, new byte[] { type }));
+                    f.PushLabel(new Stack.Label(end, new byte[] { type }));
                 return Next;
             }
             else
             {
                 if (end as Else != null)
                 {
-                    f.Push(new Stack.Label((end as Else).end, new byte[] { type }));
+                    f.PushLabel(new Stack.Label((end as Else).end, new byte[] { type }));
                 }
 
                 return end.Next;

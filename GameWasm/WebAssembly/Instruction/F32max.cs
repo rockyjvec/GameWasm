@@ -9,7 +9,7 @@ namespace GameWasm.Webassembly.Instruction
             var b = f.PopF32();
             var a = f.PopF32();
 
-            f.Push((float)Math.Max(a, b));
+            f.PushF32((float)Math.Max(a, b));
             return Next;
         }
 

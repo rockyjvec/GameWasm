@@ -7,7 +7,7 @@ namespace GameWasm.Webassembly.Instruction
         protected override Instruction Run(Stack.Frame f)
         {
             var b = f.PopI32();
-            f.Push((UInt64)(Int64)((Int32)b));
+            f.PushI64((UInt64)(Int64)((Int32)b));
 
             return Next;
         }

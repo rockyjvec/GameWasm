@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
 
             try
             {
-                f.Push((UInt64)((Int64)a / (Int64)b));
+                f.PushI64((UInt64)((Int64)a / (Int64)b));
             }
             catch (System.OverflowException e)
             {

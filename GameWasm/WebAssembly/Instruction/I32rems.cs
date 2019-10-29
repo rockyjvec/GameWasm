@@ -15,11 +15,11 @@ namespace GameWasm.Webassembly.Instruction
             {
                 if((UInt32)a == 0x80000000 && (UInt32)b == 0xFFFFFFFF)
                 {
-                    f.Push((UInt32)0);
+                    f.PushI32((UInt32)0);
                 }
                 else
                 {
-                    f.Push((UInt32)(a % b));
+                    f.PushI32((UInt32)(a % b));
                 }
             }
             catch (System.OverflowException e)

@@ -5,7 +5,7 @@
         protected override Instruction Run(Stack.Frame f)
         {
             var a = f.PopF32();
-            f.Push(-a);
+            f.PushF32(-a);
             return Next;
         }
 

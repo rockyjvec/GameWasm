@@ -9,7 +9,7 @@ namespace GameWasm.Webassembly.Instruction
             var b = f.PopF64();
             var a = f.PopF64();
 
-            f.Push((double)Math.Min(a, b));
+            f.PushF64((double)Math.Min(a, b));
             return Next;
         }
 
