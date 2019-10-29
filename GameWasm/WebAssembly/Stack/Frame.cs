@@ -24,6 +24,11 @@ namespace GameWasm.Webassembly.Stack
             _stack = new object[_stackMax];
             Locals = locals;
         }
+
+        public bool Empty()
+        {
+            return _stackPtr == 0;
+        }
         
         public void Push(object v)
         {

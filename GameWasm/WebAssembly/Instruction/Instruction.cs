@@ -7,6 +7,8 @@ namespace GameWasm.Webassembly.Instruction
 {
     public class Instruction
     {
+        private static bool Debug = false;
+        
         public Function Function;
         public UInt32 Pointer;
         public Instruction Next = null;
@@ -29,8 +31,42 @@ namespace GameWasm.Webassembly.Instruction
                     f.Push(v);
                 }
             }
+            
+            if (Debug)
+            {
+                int num = 0;
+                foreach (var v in f.Locals)
+                {
+                    Console.WriteLine("$var" + num + ": " + Type.Pretify(v));
+                    num++;
+                }
+                num = 0;
+                foreach (var v in f.Function.Module.Globals)
+                {
+                    Console.WriteLine("$global" + num + ": " + Type.Pretify(v.GetValue()));
+                    num++;
+                }
 
+                int numLabels = 0;
+
+                Console.Write(f.Instruction.Pointer.ToString("X").PadLeft(8, '0') + ": " + f.Function.Module.Name + "@" + f.Function.GetName() + " => " + new string(' ', numLabels * 2) + f.Instruction.ToString().Replace("WebAssembly.Instruction.", ""));
+            }
+            
             var next = Run(f);
+
+            if (Debug)
+            {
+                if (f.Empty())
+                {
+                }
+                else
+                {
+                    Console.Write(" $ret: " + Type.Pretify(f.Peek()));
+                }
+                Console.Write("\n");
+                Console.ReadKey();
+            }
+            
             if (optimizer && next != null && steps > 0 && !isCallInstruction )
             {
                 return next.Execute(f, steps - 1);
