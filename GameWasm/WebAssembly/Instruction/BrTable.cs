@@ -4,8 +4,8 @@ namespace GameWasm.Webassembly.Instruction
 {
     class BrTable : Instruction
     {
-        UInt32 defaultLabelidx;
-        UInt32[] table;
+        public UInt32 defaultLabelidx;
+        public UInt32[] table;
 
         protected override Instruction Run(Stack.Frame f)
         {

@@ -9,37 +9,38 @@ namespace GameWasm.Webassembly.Stack
         public Instruction.Instruction Instruction;
         public Value[] Locals;
 
-        private Stack<Value> _stack;
+        public int _stackPtr = 0;
+        public Value[] _stack;
         private Stack<Label> _labels;
         
-        public Frame(Function function, Instruction.Instruction instruction, Value[] locals)
+        public Frame(Function function, Instruction.Instruction instruction, Value[] locals, Value[] stack, Stack<Label> labels)
         {
             Function = function;
             Instruction = instruction;
             Locals = locals;
 
-            _stack = new Stack<Value>();
-            _labels = new Stack<Label>();
+            _stack = stack;
+            _labels = labels;
         }
 
         public bool Empty()
         {
-            return _stack.Count == 0;
+            return _stackPtr == 0;
         }
         
         public void Push(Value v)
         {
-            _stack.Push(v);
+            _stack[_stackPtr++] = v;
         }
 
         public Value Pop()
         {
-            return _stack.Pop();
+            return _stack[--_stackPtr];
         }
 
         public Value Peek()
         {            
-            return _stack.Peek();
+            return _stack[_stackPtr - 1];
         }
 
         public Value PopValue()
@@ -137,7 +138,7 @@ namespace GameWasm.Webassembly.Stack
         
         public void PushLabel(Label v)
         {
-            v.Stack = _stack.Count;
+            v.Stack = _stackPtr;
             _labels.Push(v);
         }
 
@@ -151,7 +152,7 @@ namespace GameWasm.Webassembly.Stack
 
             if (end)
             {
-                for(; _stack.Count > l.Stack; _stack.Pop()) {}
+                _stackPtr = l.Stack;
             }
 
             return l;

@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I32load8u : Instruction
     {
-        UInt32 align, offset;
+        public UInt32 align, offset;
 
         protected override Instruction Run(Stack.Frame f)
         {

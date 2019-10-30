@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class BrIf : Instruction
     {
-        UInt32 labelidx;
+        public UInt32 labelidx;
 
         protected override Instruction Run(Stack.Frame f)
         {

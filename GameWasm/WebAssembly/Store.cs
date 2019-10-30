@@ -11,12 +11,22 @@ namespace GameWasm.Webassembly
         public Dictionary<string, Module.Module> Modules = new Dictionary<string, Module.Module>();
         
         private int _stackMax = 1000;
+        private Value[][] _valueStack;
+        private Stack<Label>[] _labelStack;
         private readonly Stack<Frame> _stack;
 
         public Store()
         {
             _stack = new Stack<Frame>();
-            Push(new Frame( null, null, new Value[] { }));
+            _valueStack = new Value[_stackMax][];
+            _labelStack = new Stack<Label>[_stackMax]; 
+            for (int i = 0; i < _stackMax; i++)
+            {
+                _valueStack[i] = new Value[100];
+                _labelStack[i] = new Stack<Label>();
+            }
+            
+            Push(new Frame( null, null, new Value[] { }, _valueStack[_stack.Count], _labelStack[_stack.Count]));
             LoadModule(new Module.Wasi(this));
         }
 
@@ -74,7 +84,7 @@ namespace GameWasm.Webassembly
         
         public void CallFunction(Function f)
         {
-            var frame = new Frame(f, f.Start, new Value[f.Type.Parameters.Length + f.LocalTypes.Count]);
+            var frame = new Frame(f, f.Start, new Value[f.Type.Parameters.Length + f.LocalTypes.Count], _valueStack[_stack.Count], _labelStack[_stack.Count]);
             
             frame.PushLabel(new Label(new Instruction.End(null, null) ));
 
@@ -199,7 +209,7 @@ namespace GameWasm.Webassembly
                 if (exception)
                 {
                     Clear();
-                    Push(new Frame(null, null, new Value[] { }));
+                    Push(new Frame(null, null, new Value[] { }, _valueStack[_stack.Count], _labelStack[_stack.Count]));
                 }
             }
 

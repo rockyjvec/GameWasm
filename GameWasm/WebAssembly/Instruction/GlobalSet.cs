@@ -6,6 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     class GlobalSet : Instruction
     {
         Global global;
+        public int index;
 
         protected override Instruction Run(Stack.Frame f)
         {
@@ -16,7 +17,7 @@ namespace GameWasm.Webassembly.Instruction
 
         public GlobalSet(Parser parser, Function f) : base(parser, f, true)
         {
-            var index = (int)parser.GetUInt32();
+            index = (int)parser.GetUInt32();
             if (index >= parser.Module.Globals.Count())
                 throw new Exception("Invalid global variable");
             global = parser.Module.Globals[index];

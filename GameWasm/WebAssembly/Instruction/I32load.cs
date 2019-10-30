@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I32load : Instruction
     {
-        UInt64 align, offset;
+        public UInt32 align, offset;
 
         protected override Instruction Run(Stack.Frame f)
         {
@@ -14,8 +14,8 @@ namespace GameWasm.Webassembly.Instruction
 
         public I32load(Parser parser, Function f) : base(parser, f, true)
         {
-            align = (UInt64)parser.GetUInt32();
-            offset = (UInt64)parser.GetUInt32();
+            align = parser.GetUInt32();
+            offset = parser.GetUInt32();
         }
 
         public override string ToString()

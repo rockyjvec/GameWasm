@@ -3,11 +3,13 @@
     class Block : Instruction
     {
         Instruction label = null;
+        public  int labelPos;
         byte type;
 
-        public override void End(Instruction end)
+        public override void End(Instruction end, int pos)
         {
             label = end;
+            labelPos -= pos;
         }
 
         protected override Instruction Run(Stack.Frame f)
@@ -16,9 +18,10 @@
             return Next;
         }
 
-        public Block(Parser parser, Function f) : base(parser, f, true)
+        public Block(Parser parser, Function f, int pos) : base(parser, f, true)
         {
             type = parser.GetBlockType();
+            labelPos = pos;
         }
 
         public override string ToString()

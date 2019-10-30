@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     class CallIndirect : Instruction
     {
         int typeidx;
-        int tableidx;
+        public int tableidx;
 
         protected override Instruction Run(Stack.Frame f)
         {

@@ -3,12 +3,14 @@
     class If : Instruction
     {
         Instruction end;
+        public int endPos = 0;
 
         byte type;
 
-        public override void End(Instruction end)
+        public override void End(Instruction end, int pos)
         {
             this.end = end;
+            this.endPos = pos;
         }
 
         protected override Instruction Run(Stack.Frame f)

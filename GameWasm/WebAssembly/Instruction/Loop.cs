@@ -4,10 +4,6 @@
     {
         byte type;
 
-        public override void End(Instruction end)
-        {
-        }
-
         protected override Instruction Run(Stack.Frame f)
         {
             f.PushLabel(new Stack.Label(this ));

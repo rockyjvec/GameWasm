@@ -5,7 +5,7 @@ namespace GameWasm.Webassembly
 {
     public class Type
     {
-        public const byte i32 = 0x7F, i64 = 0x7E, f32 = 0x7D, f64 = 0x7C, label = 0xFF;
+        public const byte i32 = 0x7F, i64 = 0x7E, f32 = 0x7D, f64 = 0x7C, localGet = 0xFF, localSet = 0xFE, globalGet = 0xFD, globalSet = 0xFC, load32 = 0xFB, store32 = 0xFA, and32 = 0xF9, add32 = 0xF8;
 
         public byte[] Parameters;
         public byte[] Results;
@@ -23,15 +23,20 @@ namespace GameWasm.Webassembly
             return Parameters.SequenceEqual(item.Parameters) && Results.SequenceEqual(item.Results);
         }
 
-        public static string Pretify(object v)
+        public static string Pretify(Value v)
         {
-            if(v is UInt32 || v is UInt64 || v is Single || v is Double)
+            switch (v.type)
             {
-                return v.ToString();
-            }
-            else
-            {
-                return "unknown";
+                case Type.i32:
+                    return v.i32.ToString();
+                case Type.i64:
+                    return v.i64.ToString();
+                case Type.f32:
+                    return v.f32.ToString();
+                case Type.f64:
+                    return v.f64.ToString();
+                default:
+                    return "unknown (" + v.type + ")";
             }
         }
 

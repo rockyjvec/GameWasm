@@ -2,7 +2,7 @@
 {
     class LocalSet : Instruction
     {
-        int index;
+        public int index;
 
         protected override Instruction Run(Stack.Frame f)
         {
