@@ -4,13 +4,7 @@
     {
         public float value;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            f.PushF32(value);
-            return Next;
-        }
-
-        public F32const(Parser parser, Function f) : base(parser, f, true)
+        public F32const(Parser parser) : base(parser, true)
         {
             value = parser.GetF32();
         }

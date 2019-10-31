@@ -1,4 +1,5 @@
 ﻿using System;
+using GameWasm.Webassembly.New;
 
 namespace GameWasm.Webassembly
 {
@@ -47,9 +48,9 @@ namespace GameWasm.Webassembly
             return bytes[index];
         }
 
-        public Instruction.Instruction GetExpr(Function f, bool debug = false)
+        public Inst[] GetExpr(bool debug = false)
         {
-            return Instruction.Instruction.Consume(this, f, debug);
+            return Instruction.Instruction.Consume(this, debug);
         }
 
         public UInt32 GetIndex()

@@ -1,19 +1,17 @@
-﻿using GameWasm.Webassembly.Stack;
-
-namespace GameWasm.Webassembly.Instruction
+﻿namespace GameWasm.Webassembly.Instruction
 {
     class Call : Instruction
     {
         public int funcidx;
-        protected override Instruction Run(Frame f)
-        {
-            f.Function.Module.Store.CallFunction(f.Function.Module.Functions[funcidx]);
-            return Next;
-        }
 
-        public Call(Parser parser, Function f) : base(parser, f, true)
+        public Call(Parser parser) : base(parser, true)
         {
             funcidx = (int)parser.GetIndex();
+        }
+
+        public override string ToString()
+        {
+            return "call $f" + funcidx;
         }
     }
 }

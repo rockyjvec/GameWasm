@@ -7,26 +7,7 @@ namespace GameWasm.Webassembly.Instruction
         public UInt32 defaultLabelidx;
         public UInt32[] table;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            UInt32 index = f.PopI32();
-
-            if(index >= table.Length)
-            {
-                index = defaultLabelidx;
-            }
-            else
-            {
-                index = table[(int)index];
-            }
-
-            Stack.Label l = f.PopLabel(index + 1);
-
-            if (l.Instruction as Loop != null) return l.Instruction;
-            return l.Instruction.Next;
-        }
-
-        public BrTable(Parser parser, Function f) : base(parser, f, true)
+        public BrTable(Parser parser) : base(parser, true)
         {
             UInt32 vectorSize = parser.GetUInt32();
             table = new UInt32[vectorSize];
@@ -36,6 +17,11 @@ namespace GameWasm.Webassembly.Instruction
             }
 
             defaultLabelidx = (UInt32)parser.GetIndex();
+        }
+
+        public override string ToString()
+        {
+            return "br_table";
         }
     }
 }

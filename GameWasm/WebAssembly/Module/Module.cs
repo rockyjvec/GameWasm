@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GameWasm.Webassembly.Stack;
 
 namespace GameWasm.Webassembly.Module
 {
@@ -18,11 +17,11 @@ namespace GameWasm.Webassembly.Module
         public List<Table> Tables = new List<Table>();
         public List<Webassembly.Global> Globals = new List<Webassembly.Global>();
 
-        Function startFunction = null;
-
-        int functionIndex = 0;
-
         public Dictionary<string, object> Exports = new Dictionary<string, object>();
+
+        private int functionIndex = 0;
+
+        private Function startFunction = null;
 
         public Module(string name, Store store)
         {
@@ -36,14 +35,15 @@ namespace GameWasm.Webassembly.Module
             Store = store;
             parser = new Parser(bytes, this);
 
-            if (parser.GetByte() != 0x00 || parser.GetByte() != 0x61 || parser.GetByte() != 0x73 || parser.GetByte() != 0x6D)
+            if (parser.GetByte() != 0x00 || parser.GetByte() != 0x61 || parser.GetByte() != 0x73 ||
+                parser.GetByte() != 0x6D)
             {
                 throw new Exception("Invalid magic number.");
             }
 
             UInt32 version = parser.GetVersion();
 
-            while(!parser.Done())
+            while (!parser.Done())
             {
                 byte section = parser.GetByte();
                 switch (section)
@@ -90,10 +90,13 @@ namespace GameWasm.Webassembly.Module
                 }
             }
 
-            if(startFunction != null)
+
+            if (startFunction != null)
             {
-                Store.CallFunction(startFunction);
-                while (Store.Step(1000)) { }
+                Store.runtime.Call(startFunction.GlobalIndex);
+                while (Store.Step(1000))
+                {
+                }
             }
         }
 
@@ -104,7 +107,7 @@ namespace GameWasm.Webassembly.Module
 
             for (uint fType = 0; fType < vectorSize; fType++)
             {
-                if(parser.GetByte() != 0x60)
+                if (parser.GetByte() != 0x60)
                 {
                     throw new Exception("Invalid function type.");
                 }
@@ -151,13 +154,17 @@ namespace GameWasm.Webassembly.Module
                     switch (type)
                     {
                         case 0x00:
-                            typeString = "function"; break;
+                            typeString = "function";
+                            break;
                         case 0x01:
-                            typeString = "table"; break;
+                            typeString = "table";
+                            break;
                         case 0x02:
-                            typeString = "memory"; break;
+                            typeString = "memory";
+                            break;
                         case 0x03:
-                            typeString = "global"; break;
+                            typeString = "global";
+                            break;
                         default:
                             break;
                     }
@@ -169,49 +176,57 @@ namespace GameWasm.Webassembly.Module
                     switch (type)
                     {
                         case 0x00: // x:typeidx => func x
-                            int funcTypeIdx = (int)parser.GetIndex();
+                            int funcTypeIdx = (int) parser.GetIndex();
                             if (funcTypeIdx >= types.Count())
                             {
-                                throw new Exception("Import function type does not exist: " + mod + "@" + nm + " " + types[funcTypeIdx]);
+                                throw new Exception("Import function type does not exist: " + mod + "@" + nm + " " +
+                                                    types[funcTypeIdx]);
                             }
-                            else if (!types[funcTypeIdx].SameAs(((Function)Store.Modules[mod].Exports[nm]).Type))
+                            else if (!types[funcTypeIdx].SameAs(((Function) Store.Modules[mod].Exports[nm]).Type))
                             {
-                                throw new Exception("Import function type mismatch: " + mod + "@" + nm + " - " + types[funcTypeIdx] + " != " + ((Function)Store.Modules[mod].Exports[nm]).Type);
+                                throw new Exception("Import function type mismatch: " + mod + "@" + nm + " - " +
+                                                    types[funcTypeIdx] + " != " +
+                                                    ((Function) Store.Modules[mod].Exports[nm]).Type);
                             }
                             else
                             {
-                                Functions.Add((Function)Store.Modules[mod].Exports[nm]);
+                                Functions.Add((Function) Store.Modules[mod].Exports[nm]);
                                 functionIndex++;
                             }
+
                             break;
                         case 0x01: // tt:tabletype => table tt
                             Table t = parser.GetTableType();
-                            if (!t.CompatibleWith((Table)Store.Modules[mod].Exports[nm]))
+                            if (!t.CompatibleWith((Table) Store.Modules[mod].Exports[nm]))
                             {
-                                throw new Exception("Import table type mismatch: " + mod + "@" + nm + " " + t + " != " + (Table)Store.Modules[mod].Exports[nm]);
+                                throw new Exception("Import table type mismatch: " + mod + "@" + nm + " " + t + " != " +
+                                                    (Table) Store.Modules[mod].Exports[nm]);
                             }
-                            Tables.Add((Table)Store.Modules[mod].Exports[nm]);
+
+                            Tables.Add((Table) Store.Modules[mod].Exports[nm]);
                             break;
                         case 0x02: // mt:memtype => mem mt
                             Memory m = parser.GetMemType();
-                            if (!m.CompatibleWith((Memory)Store.Modules[mod].Exports[nm]))
+                            if (!m.CompatibleWith((Memory) Store.Modules[mod].Exports[nm]))
                             {
-                                throw new Exception("Import memory type mismatch: " + mod + "@" + nm + " " + m + " != " + (Memory)Store.Modules[mod].Exports[nm]);
+                                throw new Exception("Import memory type mismatch: " + mod + "@" + nm + " " + m +
+                                                    " != " + (Memory) Store.Modules[mod].Exports[nm]);
                             }
+
                             Console.WriteLine("Memory import found.");
-                            Memory.Add((Memory)Store.Modules[mod].Exports[nm]);
+                            Memory.Add((Memory) Store.Modules[mod].Exports[nm]);
                             break;
                         case 0x03: // gt:globaltype => global gt
                             byte gType;
                             bool mutable;
                             parser.GetGlobalType(out gType, out mutable);
 
-                            if(((Webassembly.Global)Store.Modules[mod].Exports[nm]).Type != gType)
+                            if (((Webassembly.Global) Store.Modules[mod].Exports[nm]).Type != gType)
                             {
                                 throw new Exception("Import global type mismatch: " + mod + "@" + nm);
                             }
 
-                            var global = (Webassembly.Global)Store.Modules[mod].Exports[nm];
+                            var global = (Webassembly.Global) Store.Modules[mod].Exports[nm];
                             global.SetName(mod + "." + nm);
                             Globals.Add(global);
                             break;
@@ -229,10 +244,10 @@ namespace GameWasm.Webassembly.Module
 
             for (uint function = 0; function < vectorSize; function++)
             {
-                int index = (int)parser.GetIndex();
-                if(index < types.Count())
+                int index = (int) parser.GetIndex();
+                if (index < types.Count())
                 {
-                    Functions.Add(new Function(this, "$f" + (uint)(Functions.Count()), types[index]));
+                    Functions.Add(new Function(this, "$f" + (uint) (Functions.Count()), types[index]));
                 }
                 else
                 {
@@ -275,12 +290,14 @@ namespace GameWasm.Webassembly.Module
                 bool mutable;
                 parser.GetGlobalType(out type, out mutable);
 
-                var f = new Function(this, "loadGlobal[" + import + "]", new Type(null, new byte[] { type }));
-                f.Start = parser.GetExpr(f, false);
-                Store.CallFunction(f);
-                do { } while (Store.Step(1000));
+                var f = new Function(this, "loadGlobal[" + import + "]", new Type(null, new byte[] {type}));
+                f.program = parser.GetExpr(false);
+                Store.runtime.Call(f.GlobalIndex);
+                do
+                {
+                } while (Store.Step(1000));
 
-                Globals.Add(new Webassembly.Global(type, mutable, Store.CurrentFrame.PopValue(), (UInt32)Globals.Count()));
+                Globals.Add(new Webassembly.Global(type, mutable, Store.runtime.ReturnValue(), (UInt32) Globals.Count()));
             }
         }
 
@@ -294,7 +311,7 @@ namespace GameWasm.Webassembly.Module
                 var nm = parser.GetName();
 
                 var type = parser.GetByte();
-                int index = (int)parser.GetIndex();
+                int index = (int) parser.GetIndex();
                 switch (type)
                 {
                     case 0x00: // x:typeidx => func x
@@ -305,8 +322,10 @@ namespace GameWasm.Webassembly.Module
                         }
                         else
                         {
-                            throw new Exception("Function export \"" + nm + "\" index " + index + "/" + Functions.Count() + " does not exist.");
+                            throw new Exception("Function export \"" + nm + "\" index " + index + "/" +
+                                                Functions.Count() + " does not exist.");
                         }
+
                         break;
                     case 0x01: // tt:tabletype => table tt
                         if (index < Tables.Count())
@@ -315,18 +334,22 @@ namespace GameWasm.Webassembly.Module
                         }
                         else
                         {
-                            throw new Exception("Table export \"" + nm + "\" index " + index + "/" + Tables.Count() + " does not exist.");
+                            throw new Exception("Table export \"" + nm + "\" index " + index + "/" + Tables.Count() +
+                                                " does not exist.");
                         }
+
                         break;
                     case 0x02: // mt:memtype => mem mt
-                        if(index < Memory.Count())
+                        if (index < Memory.Count())
                         {
                             Exports.Add(nm, Memory[index]);
                         }
                         else
                         {
-                            throw new Exception("Memory export \" + nm + \" index " + index + "/" + Memory.Count() + " does not exist.");
+                            throw new Exception("Memory export \" + nm + \" index " + index + "/" + Memory.Count() +
+                                                " does not exist.");
                         }
+
                         break;
                     case 0x03: // gt:globaltype => global gt
                         if (index < Globals.Count())
@@ -336,8 +359,10 @@ namespace GameWasm.Webassembly.Module
                         }
                         else
                         {
-                            throw new Exception("Global export \"" + nm + "\" index " + index + "/" + Globals.Count() + " does not exist.");
+                            throw new Exception("Global export \"" + nm + "\" index " + index + "/" + Globals.Count() +
+                                                " does not exist.");
                         }
+
                         break;
                     default:
                         throw new Exception("Invalid export type: 0x" + type.ToString("X"));
@@ -348,7 +373,7 @@ namespace GameWasm.Webassembly.Module
         private void loadStart()
         {
             UInt32 sectionSize = parser.GetUInt32();
-            int index = (int)parser.GetIndex();
+            int index = (int) parser.GetIndex();
 
             if (index < Functions.Count())
             {
@@ -367,18 +392,20 @@ namespace GameWasm.Webassembly.Module
 
             for (uint element = 0; element < vectorSize; element++)
             {
-                int tableidx = (int)parser.GetUInt32();
-                if(tableidx >= Tables.Count())
+                int tableidx = (int) parser.GetUInt32();
+                if (tableidx >= Tables.Count())
                 {
                     throw new Exception("Element table index does not exist");
                 }
 
-                var f = new Function(this, "loadElement[" + element + "]", new Type(null, new byte[] { Type.i32 }));
-                f.Start = parser.GetExpr(f, false);
-                Store.CallFunction(f);
-                do { } while (Store.Step(1000));
+                var f = new Function(this, "loadElement[" + element + "]", new Type(null, new byte[] {Type.i32}));
+                f.program = parser.GetExpr(false);
+                Store.runtime.Call(f.GlobalIndex);
+                do
+                {
+                } while (Store.Step(1000));
 
-                UInt32 offset = Store.CurrentFrame.PopI32();
+                UInt32 offset = Store.runtime.ReturnValue().i32;
 
                 UInt32 funcVecSize = parser.GetUInt32();
                 for (uint func = 0; func < funcVecSize; func++)
@@ -397,7 +424,7 @@ namespace GameWasm.Webassembly.Module
 
             for (uint funcidx = 0; funcidx < vectorSize; funcidx++)
             {
-                if(funcidx >= Functions.Count())
+                if (funcidx >= Functions.Count())
                 {
                     throw new Exception("Missing function in code segment.");
                 }
@@ -405,20 +432,22 @@ namespace GameWasm.Webassembly.Module
                 UInt32 size = parser.GetUInt32();
                 UInt32 end = parser.GetPointer() + size;
                 UInt32 numLocals = parser.GetUInt32();
-                for(uint local = 0; local < numLocals; local++)
+                for (uint local = 0; local < numLocals; local++)
                 {
                     UInt32 count = parser.GetUInt32();
                     byte type = parser.GetValType();
-                    for(uint n = 0; n < count; n++)
-                        Functions[(int)functionIndex].LocalTypes.Add(type);
+                    for (uint n = 0; n < count; n++)
+                        Functions[(int) functionIndex].LocalTypes.Add(type);
                 }
 
-                Functions[(int)functionIndex].Start = parser.GetExpr(Functions[(int)functionIndex]);
+                Functions[(int) functionIndex].program = parser.GetExpr();
                 functionIndex++;
 
-                if(parser.GetPointer() != end)
+                if (parser.GetPointer() != end)
                 {
-                    throw new Exception("Invalid position: 0x" + parser.GetPointer().ToString("X") + " after loading code.  Should be: 0x" + end.ToString("X") + " at 0x" + parser.PeekByte());
+                    throw new Exception("Invalid position: 0x" + parser.GetPointer().ToString("X") +
+                                        " after loading code.  Should be: 0x" + end.ToString("X") + " at 0x" +
+                                        parser.PeekByte());
                 }
             }
         }
@@ -430,26 +459,30 @@ namespace GameWasm.Webassembly.Module
 
             for (uint data = 0; data < vectorSize; data++)
             {
-                int memidx = (int)parser.GetUInt32();
+                int memidx = (int) parser.GetUInt32();
                 if (memidx >= Memory.Count())
                 {
                     throw new Exception("Data memory index does not exist");
                 }
 
-                var f = new Function(this, "loadData[" + data + "]", new Type(null, new byte[] { Type.i32 }));
-                f.Start = parser.GetExpr(f, false);
-                Store.CallFunction(f);
-                do { } while (Store.Step(1000));
+                var f = new Function(this, "loadData[" + data + "]", new Type(null, new byte[] {Type.i32}));
+                f.program = parser.GetExpr(false);
+                Store.runtime.Call(f.GlobalIndex);
+                do
+                {
+                } while (Store.Step(1000));
 
-                UInt64 offset = Store.CurrentFrame.PopI32();
+                UInt64 offset = Store.runtime.ReturnValue().i32;
                 UInt32 memVecSize = parser.GetUInt32();
-                Buffer.BlockCopy(parser.GetBytes((int)parser.GetPointer(), (int) memVecSize), 0, Memory[memidx].Buffer, (int)offset, (int)memVecSize);
+                Buffer.BlockCopy(parser.GetBytes((int) parser.GetPointer(), (int) memVecSize), 0, Memory[memidx].Buffer,
+                    (int) offset, (int) memVecSize);
                 parser.SetPointer(parser.GetPointer() + memVecSize);
             }
         }
 
 
-        public void AddExportFunc(string name, byte[] parameters = null, byte[] results = null, Func<Value[], Value[]> action = null)
+        public void AddExportFunc(string name, byte[] parameters = null, byte[] results = null,
+            Func<Value[], Value[]> action = null)
         {
             if (parameters == null)
                 parameters = new byte[] { };
@@ -460,7 +493,7 @@ namespace GameWasm.Webassembly.Module
 
             if (action == null)
                 func = new Function(this, Name + "@" + name, new Type(parameters, results));
-            else 
+            else
                 func = new Function(this, Name + "@" + name, action, new Type(parameters, results));
 
             Exports.Add(name, func);
@@ -475,7 +508,7 @@ namespace GameWasm.Webassembly.Module
 
         public Webassembly.Global AddExportGlob(string name, byte type, bool mutable, Value v)
         {
-            var global = new Webassembly.Global(type, mutable, v, (UInt32)Exports.Count());
+            var global = new Webassembly.Global(type, mutable, v, (UInt32) Exports.Count());
             Exports.Add(name, global);
             return global;
         }
@@ -493,7 +526,7 @@ namespace GameWasm.Webassembly.Module
         public void DumpExports()
         {
             Console.WriteLine(Name + " exports:");
-            foreach(var export in Exports)
+            foreach (var export in Exports)
             {
                 var f = export.Value as Function;
                 var t = export.Value as Table;
@@ -518,58 +551,26 @@ namespace GameWasm.Webassembly.Module
             }
         }
 
-        public void Execute(string function, params Value[] parameters)
+        public Value Call(string function, params object[] parameters)
+        {
+            
+            CallVoid(function, parameters);
+
+            return Store.runtime.ReturnValue();
+        }
+
+        public void CallVoid(string function, params object[] parameters)
         {
             if(!Exports.ContainsKey(function) || (Exports[function] as Function) == null)
             {
                 throw new Exception("Function \"" + function + "\" does not exist in " + Name + ".");
             }
 
-            foreach(var p in parameters)
-            {
-                Store.CurrentFrame.Push(p);
-            }
-
             Function f = Exports[function] as Function;
-            Store.CallFunction(f);
-        }
 
-        public Value Call(string function, params object[] parameters)
-        {
-            CallVoid(function, parameters);
-
-            return Store.CurrentFrame.Pop();
-        }
-
-        public void CallVoid(string function, params object[] parameters)
-        {
-            Value[] parms = new Value[parameters.Length];
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                if (parameters[i] is UInt32)
-                {
-                    parms[i].type = Type.i32;
-                    parms[i].i32 = (UInt32)parameters[i];
-                }
-                else if (parameters[i] is UInt64)
-                {
-                    parms[i].type = Type.i64;
-                    parms[i].i64 = (UInt64)parameters[i];
-                }
-                if (parameters[i] is float)
-                {
-                    parms[i].type = Type.f32;
-                    parms[i].f32 = (float)parameters[i];
-                }
-                if (parameters[i] is double)
-                {
-                    parms[i].type = Type.f64;
-                    parms[i].f64 = (double)parameters[i];
-                }
-            }
-            Execute(function, parms);
-
-            while (Store.Step(1000))
+            Store.runtime.Call(f.GlobalIndex, parameters);
+        
+            while (Store.runtime.Step(1000))
             {
 
             }

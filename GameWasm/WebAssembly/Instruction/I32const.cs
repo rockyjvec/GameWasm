@@ -6,13 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         public UInt32 value;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            f.PushI32(value);
-            return Next;
-        }
-
-        public I32const(Parser parser, Function f) : base(parser, f, true)
+        public I32const(Parser parser) : base(parser, true)
         {
             value = (UInt32)parser.GetInt32();
         }

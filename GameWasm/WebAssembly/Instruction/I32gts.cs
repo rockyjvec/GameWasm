@@ -1,27 +1,8 @@
-﻿using System;
-
-namespace GameWasm.Webassembly.Instruction
+﻿namespace GameWasm.Webassembly.Instruction
 {
     class I32gts : Instruction
     {
-        protected override Instruction Run(Stack.Frame f)
-        {
-            var b = (Int32)f.PopI32();
-            var a = (Int32)f.PopI32();
-
-            if (a > b)
-            {
-                f.PushI32((UInt32)1);
-            }
-            else
-            {
-                f.PushI32((UInt32)0);
-            }
-
-            return Next;
-        }
-
-        public I32gts(Parser parser, Function f) : base(parser, f, true)
+        public I32gts(Parser parser) : base(parser, true)
         {
         }
     }

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameWasm.Webassembly.New;
 
 namespace GameWasm.Webassembly
 {
@@ -10,7 +11,9 @@ namespace GameWasm.Webassembly
         public string Name = "";
         public Type Type;
         public UInt32 Index = 0;
-        public Instruction.Instruction Start;
+        public int GlobalIndex = 0;
+        public Inst[] program = null;
+        public Func<Value[], Value[]> native = null;
 
         public List<byte> LocalTypes = new List<byte>();
 
@@ -20,17 +23,13 @@ namespace GameWasm.Webassembly
             Module = module;
             Name = name;
             Index = index;
-            
+            GlobalIndex = Module.Store.runtime.functions.Count;
+            Module.Store.runtime.functions.Add(this);
+
             Type = new Type(new byte[] { }, new byte[] { });
             if (type != null)
             {
                 Type = type;
-            }
-            
-            Start = new Instruction.Custom(NotImplemented);
-            if (start != null)
-            {
-                Start = start;
             }
         }
         
@@ -40,7 +39,9 @@ namespace GameWasm.Webassembly
             this.Module = module;
             Name = name;
             Type = type;
-            Start = new Instruction.Custom(delegate
+            GlobalIndex = Module.Store.runtime.functions.Count;
+            Module.Store.runtime.functions.Add(this);
+/*            Start = new Instruction.Custom(delegate
             {
                 Value[] ret = action(module.Store.CurrentFrame.Locals.ToArray());
 
@@ -48,7 +49,7 @@ namespace GameWasm.Webassembly
                 {
                     module.Store.CurrentFrame.Push(v);
                 }
-            });
+            });*/
         }
 
         protected void NotImplemented()

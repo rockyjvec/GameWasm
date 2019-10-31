@@ -4,17 +4,13 @@ namespace GameWasm.Webassembly.Instruction
 {
     internal class I64sub : Instruction
     {
-        protected override Instruction Run(Stack.Frame f)
+        public I64sub(Parser parser) : base(parser, true)
         {
-            var b = f.PopI64();
-            var a = f.PopI64();
-            
-            f.PushI64(a - b);
-            return Next;
         }
 
-        public I64sub(Parser parser, Function f) : base(parser, f, true)
+        public override string ToString()
         {
+            return "i64.sub";
         }
     }
 }

@@ -4,13 +4,7 @@
     {
         public double value;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            f.PushF64(value);
-            return Next;
-        }
-
-        public F64const(Parser parser, Function f) : base(parser, f, true)
+        public F64const(Parser parser) : base(parser, true)
         {
             value = parser.GetF64();
         }

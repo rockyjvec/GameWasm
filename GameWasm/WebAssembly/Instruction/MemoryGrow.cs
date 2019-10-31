@@ -4,16 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class MemoryGrow : Instruction
     {
-        protected override Instruction Run(Stack.Frame f)
-        {
-            var size = f.PopI32();
-
-            f.PushI32((UInt32)f.Function.Module.Memory[0].Grow(size));
-
-            return Next;
-        }
-
-        public MemoryGrow(Parser parser, Function f) : base(parser, f, true)
+        public MemoryGrow(Parser parser) : base(parser, true)
         {
             UInt32 zero = parser.GetUInt32(); // May be used in future version of WebAssembly to address additional memories
 

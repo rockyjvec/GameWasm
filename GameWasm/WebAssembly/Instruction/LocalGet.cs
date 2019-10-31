@@ -4,13 +4,7 @@
     {
         public int index;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            f.Push(f.Locals[index]);
-            return Next;
-        }
-
-        public LocalGet(Parser parser, Function f) : base(parser, f, true)
+        public LocalGet(Parser parser) : base(parser, true)
         {
             /*
             if (index >= f.Locals.Count())
@@ -20,7 +14,7 @@
 
         public override string ToString()
         {
-            return "get_local $var" + index;
+            return "local.get $local" + index;
         }
     }
 }

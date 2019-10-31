@@ -8,14 +8,7 @@ namespace GameWasm.Webassembly.Instruction
         Global global;
         public int index;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            global.Set(f.Pop());
-
-            return Next;
-        }
-
-        public GlobalSet(Parser parser, Function f) : base(parser, f, true)
+        public GlobalSet(Parser parser) : base(parser, true)
         {
             index = (int)parser.GetUInt32();
             if (index >= parser.Module.Globals.Count())

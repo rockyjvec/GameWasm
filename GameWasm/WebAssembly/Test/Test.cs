@@ -15,7 +15,7 @@ namespace GameWasm.Webassembly.Test
         {
             if(a.type == Type.i32 && a.i32 != b)
             {
-                throw new Exception("Fail!");
+                throw new Exception("Fail! " + a.i32 + " != " + b);
             } 
         }
         
@@ -47,7 +47,7 @@ namespace GameWasm.Webassembly.Test
         {
             if (a.type == Type.i64 && a.i64 != b)
             {
-                throw new Exception("Fail!");
+                throw new Exception("Fail! " + a.i64 + " != " + b);
             }
         }
 
@@ -74,12 +74,12 @@ namespace GameWasm.Webassembly.Test
 
         public static bool Run(string path)
         {
+            Console.WriteLine("Start");
+            new Start(path);
+            Console.WriteLine("I32");
+            new I32(path);
             Console.WriteLine("I64");
             new I64(path);
-            Console.WriteLine("Func1");
-            new Func1(path);
-            Console.WriteLine("Func2");
-            new Func2(path);
             Console.WriteLine("LoadI32");
             new LoadI32(path);
             Console.WriteLine("LoadI64");
@@ -88,42 +88,46 @@ namespace GameWasm.Webassembly.Test
             new LoadF32(path);
             Console.WriteLine("LoadF64");
             new LoadF64(path);
-            Console.WriteLine("Align2");
-            new Align2(path);
-            Console.WriteLine("Align1");
-            new Align1(path);
-            Console.WriteLine("Memory");
-            new Memory(path);
-            Console.WriteLine("BrIf");
-            new BrIf(path);
-            Console.WriteLine("Stack");
-            new Stack(path);
-            Console.WriteLine("Return");
-            new Return(path);
-            Console.WriteLine("Block");
-            new Block(path);
-            Console.WriteLine("Br");
-            new Br(path);
-            Console.WriteLine("BrTable");
-            new BrTable(path);
-            Console.WriteLine("BreakDrop");
-            new BreakDrop(path);
-            Console.WriteLine("Call");
-            new Call(path);
-            Console.WriteLine("CallIndirect");
-            new CallIndirect(path);
-            Console.WriteLine("Conversions");
-            new Conversions(path);
+//            Console.WriteLine("Conversions");
+//            new Conversions(path);
             Console.WriteLine("Endianness");
             new Endianness(path);
+            Console.WriteLine("Func1");
+            new Func1(path);
+//            Console.WriteLine("Func2");
+//            new Func2(path);
+            Console.WriteLine("Nop");
+            new Nop(path);
+            Console.WriteLine("Align2");
+            new Align2(path);
+  //          Console.WriteLine("Align1");
+//            new Align1(path);
+            Console.WriteLine("Memory");
+            new Memory(path);
+//            Console.WriteLine("BrIf");
+//            new BrIf(path);
+            Console.WriteLine("Stack");
+            new Stack(path);
+//            Console.WriteLine("Return");
+//            new Return(path);
+//            Console.WriteLine("Block");
+//            new Block(path);
+//            Console.WriteLine("Br");
+  //          new Br(path);
+//            Console.WriteLine("BrTable");
+//            new BrTable(path);
+            Console.WriteLine("BreakDrop");
+            new BreakDrop(path);
+//            Console.WriteLine("Call");
+//            new Call(path);
+            Console.WriteLine("CallIndirect");
+            new CallIndirect(path);
             Console.WriteLine("Labels");
             new Labels(path);
             Console.WriteLine("Switch");
             new Switch(path);
             Console.WriteLine("If");
             new If(path);
-            Console.WriteLine("I32");
-            new I32(path);
             Console.WriteLine("Globals");
             new Globals(path);
             Console.WriteLine("StoreTest");
@@ -154,12 +158,8 @@ namespace GameWasm.Webassembly.Test
             new LocalSet(path);
             Console.WriteLine("MemoryGrow");
             new MemoryGrow(path);
-            Console.WriteLine("Nop");
-            new Nop(path);
             Console.WriteLine("FuncPtrs");
             new FuncPtrs(path);
-            Console.WriteLine("Start");
-            new Start(path);
             Console.WriteLine("Elem");
             new Elem(path);
             

@@ -6,16 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         public UInt32 align, offset;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            var v = f.PopF64();
-            var index = f.PopI32();
-            byte[] bytes = BitConverter.GetBytes(v);
-            f.Function.Module.Memory[0].SetBytes((UInt64)offset + (UInt64)index, bytes);
-            return Next;
-        }
-
-        public F64store(Parser parser, Function f) : base(parser, f, true)
+        public F64store(Parser parser) : base(parser, true)
         {
             align = (UInt32)parser.GetUInt32();
             offset = (UInt32)parser.GetUInt32();

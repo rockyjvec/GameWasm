@@ -2,14 +2,7 @@
 {
     internal class F64add : Instruction
     {
-        protected override Instruction Run(Stack.Frame f)
-        {
-            f.PushF64(f.PopF64() + f.PopF64());
-
-            return Next;
-        }
-
-        public F64add(Parser parser, Function f) : base(parser, f, true)
+        public F64add(Parser parser) : base(parser, true)
         {
         }
     }

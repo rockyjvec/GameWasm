@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-using GameWasm.Webassembly.Stack;
 
 namespace GameWasm.Webassembly
 {

@@ -15,7 +15,7 @@ namespace GameWasm.Webassembly.Test
 
             var store = new Store();
             var test = store.LoadModule("test", path + '/' + filename);
-
+/*
             assert(test.Call("8u_good1", (UInt32)0), (UInt32)97);
             assert(test.Call("8u_good2", (UInt32)0), (UInt32)97);
             assert(test.Call("8u_good3", (UInt32)0), (UInt32)98);
@@ -114,7 +114,7 @@ namespace GameWasm.Webassembly.Test
             assert_trap(delegate () { test.CallVoid("16u_bad", (UInt32)0); }, "out of bounds memory access");
             assert_trap(delegate () { test.CallVoid("16s_bad", (UInt32)0); }, "out of bounds memory access");
             assert_trap(delegate () { test.CallVoid("32_bad", (UInt32)0); }, "out of bounds memory access");
-
+*/
             assert_trap(delegate () { test.CallVoid("8u_bad", (UInt32)1); }, "out of bounds memory access");
             assert_trap(delegate () { test.CallVoid("8s_bad", (UInt32)1); }, "out of bounds memory access");
             assert_trap(delegate () { test.CallVoid("16u_bad", (UInt32)1); }, "out of bounds memory access");

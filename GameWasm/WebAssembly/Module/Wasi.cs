@@ -404,8 +404,8 @@ namespace GameWasm.Webassembly.Module
                     // not sure what to do for other cases
                     break;
                 case 3: // --dir
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_PREOPENTYPE_DIR}); // Type Directory?
-                    Store.CurrentFrame.Function.Module.Memory[0].SetI32(parameters[1].i32+4, (UInt32)Encoding.UTF8.GetBytes(Directory).Length); // Directory name length
+                    Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_PREOPENTYPE_DIR}); // Type Directory?
+                    Memory[0].SetI32(parameters[1].i32+4, (UInt32)Encoding.UTF8.GetBytes(Directory).Length); // Directory name length
                     break;
                 default:
                     return new Value[] { Value.GetI32(WASI_EBADF) };
@@ -428,10 +428,10 @@ namespace GameWasm.Webassembly.Module
                     // not sure what to do for other cases
                     break;
                 case 3: // --dir
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_FILETYPE_DIRECTORY}); // File Type Directory
-                    Store.CurrentFrame.Function.Module.Memory[0].SetI32(parameters[1].i32+2, WASI_FDFLAG_SYNC); // Flags
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+8, BitConverter.GetBytes(RIGHTS_DIRECTORY_BASE));
-                    Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+16, BitConverter.GetBytes(RIGHTS_DIRECTORY_INHERITING));
+                    Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_FILETYPE_DIRECTORY}); // File Type Directory
+                    Memory[0].SetI32(parameters[1].i32+2, WASI_FDFLAG_SYNC); // Flags
+                    Memory[0].SetBytes(parameters[1].i32+8, BitConverter.GetBytes(RIGHTS_DIRECTORY_BASE));
+                    Memory[0].SetBytes(parameters[1].i32+16, BitConverter.GetBytes(RIGHTS_DIRECTORY_INHERITING));
                     
                     break;
                 
@@ -439,10 +439,10 @@ namespace GameWasm.Webassembly.Module
                     if (FileDescriptors.ContainsKey(parameters[0].i32))
                     {
                         var fd = FileDescriptors[parameters[0].i32];
-                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_FILETYPE_REGULAR_FILE}); // File Type Directory
-                        Store.CurrentFrame.Function.Module.Memory[0].SetI32(parameters[1].i32+2, WASI_FDFLAG_SYNC); // Flags
-                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+8, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_BASE));
-                        Store.CurrentFrame.Function.Module.Memory[0].SetBytes(parameters[1].i32+16, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_INHERITING));
+                        Memory[0].SetBytes(parameters[1].i32, new byte[] {WASI_FILETYPE_REGULAR_FILE}); // File Type Directory
+                        Memory[0].SetI32(parameters[1].i32+2, WASI_FDFLAG_SYNC); // Flags
+                        Memory[0].SetBytes(parameters[1].i32+8, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_BASE));
+                        Memory[0].SetBytes(parameters[1].i32+16, BitConverter.GetBytes(RIGHTS_REGULAR_FILE_INHERITING));
                     }
                     break;
             }
@@ -649,7 +649,7 @@ namespace GameWasm.Webassembly.Module
             }
             
             throw new Exception("ProcExit Called");
-            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
+//            return new Value[] { Value.GetI32(WASI_ESUCCESS) };
         }
 
         public Value[] ClockTimeGet(Value[] parameters)

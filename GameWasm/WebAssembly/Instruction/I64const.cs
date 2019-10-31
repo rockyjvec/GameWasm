@@ -6,13 +6,7 @@ namespace GameWasm.Webassembly.Instruction
     {
         public UInt64 value;
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            f.PushI64(value);
-            return Next;
-        }
-
-        public I64const(Parser parser, Function f) : base(parser, f, true)
+        public I64const(Parser parser) : base(parser, true)
         {
             value = (UInt64)parser.GetInt64();
         }

@@ -2,12 +2,7 @@
 {
     class Nop : Instruction
     {
-        protected override Instruction Run(Stack.Frame f)
-        {
-            return Next;
-        }
-
-        public Nop(Parser parser, Function f) : base(parser, f, true)
+        public Nop(Parser parser) : base(parser, true)
         {
         }
     }

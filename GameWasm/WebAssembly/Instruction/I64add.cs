@@ -2,15 +2,13 @@
 {
     internal class I64add : Instruction
     {
-        protected override Instruction Run(Stack.Frame f)
+        public I64add(Parser parser) : base(parser, true)
         {
-            f.PushI64(f.PopI64() + f.PopI64());
-
-            return Next;
         }
 
-        public I64add(Parser parser, Function f) : base(parser, f, true)
+        public override string ToString()
         {
+            return "i64.add";
         }
     }
 }

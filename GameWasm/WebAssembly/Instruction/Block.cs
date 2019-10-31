@@ -9,16 +9,10 @@
         public override void End(Instruction end, int pos)
         {
             label = end;
-            labelPos -= pos;
+            labelPos = pos;
         }
 
-        protected override Instruction Run(Stack.Frame f)
-        {
-            f.PushLabel(new Stack.Label(label));
-            return Next;
-        }
-
-        public Block(Parser parser, Function f, int pos) : base(parser, f, true)
+        public Block(Parser parser, int pos) : base(parser, true)
         {
             type = parser.GetBlockType();
             labelPos = pos;

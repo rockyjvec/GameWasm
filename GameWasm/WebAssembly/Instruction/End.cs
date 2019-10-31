@@ -4,14 +4,13 @@
     {
         public byte Type = 0;
 
-        protected override Instruction Run(Stack.Frame f)
+        public End(Parser parser) : base(parser, true)
         {
-            f.PopLabel(1, true);
-            return Next;
         }
 
-        public End(Parser parser, Function f) : base(parser, f, true)
+        public override string ToString()
         {
+            return "end";
         }
     }
 }
