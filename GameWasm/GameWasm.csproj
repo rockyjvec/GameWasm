@@ -219,9 +219,11 @@
         <Compile Include="WebAssembly\Memory.cs" />
         <Compile Include="WebAssembly\Module\Module.cs" />
         <Compile Include="WebAssembly\Module\Wasi.cs" />
+        <Compile Include="WebAssembly\New\FStat.cs" />
         <Compile Include="WebAssembly\New\Inst.cs" />
         <Compile Include="WebAssembly\New\Label.cs" />
         <Compile Include="WebAssembly\New\Runtime.cs" />
+        <Compile Include="WebAssembly\New\State.cs" />
         <Compile Include="WebAssembly\Parser.cs" />
         <Compile Include="WebAssembly\Stack\Frame.cs" />
         <Compile Include="WebAssembly\Stack\Label.cs" />
