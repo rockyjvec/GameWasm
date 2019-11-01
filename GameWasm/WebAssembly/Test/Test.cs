@@ -74,21 +74,8 @@ namespace GameWasm.Webassembly.Test
 
         public static bool Run(string path)
         {
-         /*   
-            Console.WriteLine("LocalTee");
-            new LocalTee(path);
-            Console.WriteLine("Forward");
-            new Forward(path);
-            Console.WriteLine("Fac");
-            new Fac(path);
-            Console.WriteLine("LocalGet");
-            new LocalGet(path);
-            Console.WriteLine("LocalSet");
-            new LocalSet(path);
-            Console.WriteLine("MemoryGrow");
-            new MemoryGrow(path);
-            Console.WriteLine("Elem");
-            new Elem(path);
+            Console.WriteLine("StoreTest");
+            new StoreTest(path);
             Console.WriteLine("I32");
             new I32(path);
             Console.WriteLine("I64");
@@ -101,8 +88,6 @@ namespace GameWasm.Webassembly.Test
             new LoadF32(path);
             Console.WriteLine("LoadF64");
             new LoadF64(path);
-            Console.WriteLine("StoreTest");
-            new StoreTest(path);
             Console.WriteLine("Load");
             new Load(path);
             Console.WriteLine("Address");
@@ -155,25 +140,28 @@ namespace GameWasm.Webassembly.Test
             new CallIndirect(path);
             Console.WriteLine("BrTable");
             new BrTable(path);
-            */
-            
-         Console.WriteLine("Call");
-         new Call(path);
-
-         
-         Console.WriteLine("Nop");
-         new Nop(path);
-
-//         Console.WriteLine("Endianness");
-  //       new Endianness(path);
-         Console.WriteLine("Conversions");
-         new Conversions(path);
-
-
-
-            
-            
-            
+            Console.WriteLine("LocalTee");
+            new LocalTee(path);
+            Console.WriteLine("Forward");
+            new Forward(path);
+            Console.WriteLine("Fac");
+            new Fac(path);
+            Console.WriteLine("LocalGet");
+            new LocalGet(path);
+            Console.WriteLine("LocalSet");
+            new LocalSet(path);
+            Console.WriteLine("MemoryGrow");
+            new MemoryGrow(path);
+            Console.WriteLine("Elem");
+            new Elem(path);
+            Console.WriteLine("Call");
+            new Call(path);
+            Console.WriteLine("Nop");
+            new Nop(path);
+            Console.WriteLine("Endianness");
+            new Endianness(path);
+            Console.WriteLine("Conversions");
+            new Conversions(path);
 
             return true;
         }

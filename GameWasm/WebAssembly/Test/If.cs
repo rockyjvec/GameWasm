@@ -15,7 +15,7 @@ namespace GameWasm.Webassembly.Test
 
             var store = new Store();
             var test = store.LoadModule("test", path + '/' + filename);
-
+/*
             test.CallVoid("empty", (UInt32)0);
             test.CallVoid("empty", (UInt32)1);
             test.CallVoid("empty", (UInt32)100);
@@ -59,7 +59,7 @@ namespace GameWasm.Webassembly.Test
 
             assert(test.Call("as-br_if-first", (UInt32)0), (UInt32)0);
             assert(test.Call("as-br_if-first", (UInt32)1), (UInt32)1);
-            assert(test.Call("as-br_if-last", (UInt32)0), (UInt32)3);
+         */   assert(test.Call("as-br_if-last", (UInt32)0), (UInt32)3);
             assert(test.Call("as-br_if-last", (UInt32)1), (UInt32)2);
 
             assert(test.Call("as-br_table-first", (UInt32)0), (UInt32)0);

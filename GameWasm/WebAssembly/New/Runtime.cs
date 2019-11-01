@@ -6,7 +6,7 @@ namespace GameWasm.Webassembly.New
     public class Runtime
     {
         public List<Function> functions;
-        public Value[] globals;
+        //public Value[] globals;
 
         private Stack<Label> labels;
         private Value[] vStack; // Value stack
@@ -22,7 +22,7 @@ namespace GameWasm.Webassembly.New
             // TODO: these could be set differently
             cStack = new State[1000];
             vStack = new Value[1000];
-            globals = new Value[1000];
+//            globals = new Value[1000];
             locals = new Value[1000000];
             labels = new Stack<Label>();
             functions = new List<Function>();
@@ -167,7 +167,7 @@ namespace GameWasm.Webassembly.New
                                       functions[cStack[cStackPtr].functionPtr].Name + "[" + inst.pointer.ToString("X") +
                                       ", " + inst.i.Pos + "]: " + inst.i.ToString());
 
-                        Console.ReadKey();
+                        //Console.ReadKey();
                     }
 
                     switch (inst.opCode)
@@ -259,6 +259,8 @@ namespace GameWasm.Webassembly.New
                         }
                         case 0x0F: // return
 
+//                            if (cStackPtr == 1) return false;
+                            
                             // TODO: this probably isn't very efficient to create a new value array for every return
                             Value[] returnValues =
                                 new Value[functions[cStack[cStackPtr].functionPtr].Type.Results.Length];
@@ -294,17 +296,17 @@ namespace GameWasm.Webassembly.New
                             // TODO: check for matching type in FStat
                             for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0; i--)
                             {
-                                if (functions[funcIndex].Type.Parameters[i] !=
-                                    vStack[cStack[cStackPtr - 1].vStackPtr - 1].type)
+                           //     if (functions[funcIndex].Type.Parameters[i] !=
+                             //       vStack[cStack[cStackPtr - 1].vStackPtr - 1].type)
                                 {
-                                    throw new Trap("call type mismatch");
+                                  //  throw new Trap("call type mismatch");
                                 }
 
                                 // TODO: should probably validate the types, but whatevs
-                                locals[localPtr] = vStack[--cStack[cStackPtr - 1].vStackPtr];
+                                locals[localPtr] = vStack[cStack[cStackPtr - 1].vStackPtr - i - 1];
                                 localPtr++;
                             }
-
+                            cStack[cStackPtr - 1].vStackPtr -= functions[funcIndex].Type.Parameters.Length;
                             cStack[cStackPtr].vStackPtr = cStack[cStackPtr - 1].vStackPtr;
 
                             for (int i = 0; i < functions[funcIndex].LocalTypes.Count; i++)
@@ -332,19 +334,19 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].localBasePtr = localPtr;
 
                             // TODO: check for matching type in FStat
-                            for (int i = 0; i < functions[funcIndex].Type.Parameters.Length; i++)
+                            for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0 ; i--)
                             {
-                                if (functions[funcIndex].Type.Parameters[i] !=
-                                    vStack[cStack[cStackPtr - 1].vStackPtr - 1].type)
+  //                              if (functions[funcIndex].Type.Parameters[i] !=
+//                                    vStack[cStack[cStackPtr - 1].vStackPtr - 1].type)
                                 {
-                                    throw new Trap("indirect call type mismatch");
+                                   // throw new Trap("indirect call type mismatch");
                                 }
 
                                 // TODO: should probably validate the types, but whatevs
-                                locals[localPtr] = vStack[--cStack[cStackPtr - 1].vStackPtr];
+                                locals[localPtr] = vStack[cStack[cStackPtr - 1].vStackPtr - i - 1];
                                 localPtr++;
                             }
-
+                            cStack[cStackPtr - 1].vStackPtr -= functions[funcIndex].Type.Parameters.Length;
                             cStack[cStackPtr].vStackPtr = cStack[cStackPtr - 1].vStackPtr;
 
                             for (int i = 0; i < functions[funcIndex].LocalTypes.Count; i++)
@@ -386,10 +388,14 @@ namespace GameWasm.Webassembly.New
                             locals[cStack[cStackPtr].localBasePtr + inst.i32] = vStack[cStack[cStackPtr].vStackPtr - 1];
                             break;
                         case 0x23: // global.get
-                            vStack[cStack[cStackPtr].vStackPtr++] = globals[inst.i32];
+                            vStack[cStack[cStackPtr].vStackPtr++] = functions[cStack[cStackPtr].functionPtr]
+                                                                        .Module.Globals[(int)inst.i32].GetValue();
+
                             break;
                         case 0x24: // global.set
-                            globals[inst.i32] = vStack[--cStack[cStackPtr].vStackPtr];
+                            functions[cStack[cStackPtr].functionPtr]
+                                .Module.Globals[(int)inst.i32].Set(vStack[--cStack[cStackPtr].vStackPtr]);
+//                            globals[inst.i32] = vStack[--cStack[cStackPtr].vStackPtr];
                             break;
 
                         /* Memory Instructions */
@@ -1474,10 +1480,10 @@ namespace GameWasm.Webassembly.New
 
                     steps--;
 
+                    cStack[cStackPtr].ip++;
+
                     if (cStackPtr == 0)
                         return false;
-
-                    cStack[cStackPtr].ip++;
                 }
             }
             catch (DivideByZeroException e)

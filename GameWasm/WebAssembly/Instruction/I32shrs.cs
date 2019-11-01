@@ -5,5 +5,10 @@
         public I32shrs(Parser parser) : base(parser, true)
         {
         }
+ 
+        public override string ToString()
+        {
+            return "i32.shr_s";
+        }
     }
 }

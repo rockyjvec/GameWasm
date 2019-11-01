@@ -14,7 +14,7 @@ namespace GameWasm.Webassembly.Instruction
 
         public override string ToString()
         {
-            return base.ToString() + "(offset = " + offset + ")";
+            return "i64.store " + offset;
         }
     }
 }

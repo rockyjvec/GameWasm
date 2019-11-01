@@ -18,7 +18,7 @@ namespace GameWasm.Webassembly.Instruction
 
         public override string ToString()
         {
-            return "get_global " + global.Name + " (" + Type.Pretify(global.GetValue()) + ")";
+            return "global.get " + global.Name + " (" + Type.Pretify(global.GetValue()) + ")";
         }
     }
 }

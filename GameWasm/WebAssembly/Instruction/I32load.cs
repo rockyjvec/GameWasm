@@ -14,7 +14,7 @@ namespace GameWasm.Webassembly.Instruction
 
         public override string ToString()
         {
-            return "i32.load (offset = " + offset + ")";
+            return "i32.load " + offset;
         }
     }
 }
