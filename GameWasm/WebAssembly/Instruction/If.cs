@@ -2,15 +2,13 @@
 {
     class If : Instruction
     {
-        Instruction end;
-        public int endPos = 0;
+        public Instruction label;
 
         byte type;
 
-        public override void End(Instruction end, int pos)
+        public override void End(Instruction end)
         {
-            this.end = end;
-            this.endPos = pos;
+            label = end;
         }
 
         public If(Parser parser) : base(parser, true)

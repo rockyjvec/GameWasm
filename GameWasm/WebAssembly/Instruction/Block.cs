@@ -2,20 +2,17 @@
 {
     class Block : Instruction
     {
-        Instruction label = null;
-        public  int labelPos;
+        public Instruction label;
         byte type;
 
-        public override void End(Instruction end, int pos)
+        public override void End(Instruction end)
         {
             label = end;
-            labelPos = pos;
         }
 
-        public Block(Parser parser, int pos) : base(parser, true)
+        public Block(Parser parser) : base(parser, true)
         {
             type = parser.GetBlockType();
-            labelPos = pos;
         }
 
         public override string ToString()

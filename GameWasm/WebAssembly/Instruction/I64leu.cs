@@ -5,5 +5,10 @@
         public I64leu(Parser parser) : base(parser, true)
         {
         }
+
+        public override string ToString()
+        {
+            return "i64.le_u";
+        }
     }
 }

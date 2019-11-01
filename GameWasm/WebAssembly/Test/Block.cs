@@ -65,6 +65,7 @@ namespace GameWasm.Webassembly.Test
             assert(test.Call("break-bare"), (UInt32) 19);
             assert(test.Call("break-value"), (UInt32) 18);
             assert(test.Call("break-repeated"), (UInt32) 18);
+
             assert(test.Call("break-inner"), (UInt32) 0xf);
 
             assert(test.Call("effects"), (UInt32) 1);

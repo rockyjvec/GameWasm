@@ -15,7 +15,7 @@ namespace GameWasm.Webassembly.New
         private Value[] locals;
         private int localPtr = 0;
 
-        public bool Debug = false;
+        public bool Debug = true;
 
         public Runtime()
         {
@@ -35,41 +35,46 @@ namespace GameWasm.Webassembly.New
         }
 
         // Native call function
-        public void Call(int funcionIndex, object[] parameters = null)
+        public void Call(int functionIndex, object[] parameters = null)
         {
             if(Debug)
                 Console.WriteLine("\n\nNATIVE CALL");
             if (parameters == null)
                 parameters = new object[] { };
-            cStackPtr = 0;
+//            localPtr = 0;
             cStack[0].ip = 0;
-            cStack[0].functionPtr = funcionIndex;
+            cStack[0].functionPtr = -1;
             cStack[0].labelPtr = 0;
-            cStack[0].localBasePtr = localPtr;
+            cStack[0].localBasePtr = 0;
             cStack[0].vStackPtr = 0;
+            cStackPtr = 1;
+            cStack[1].ip = 0;
+            cStack[1].functionPtr = functionIndex;
+            cStack[1].labelPtr = 0;
+            cStack[1].localBasePtr = localPtr;
+            cStack[1].vStackPtr = 0;
 
             labels.Push(new Label(-1, cStack[cStackPtr].vStackPtr)); // What is this for?
 
-            int i;
             // TODO: check for matching type in FStat
-            for(i = 0; i < parameters.Length ; i++)
+            for(int i = 0; i < parameters.Length ; i++)
             {
-                if (parameters[i] is UInt32 && functions[funcionIndex].Type.Parameters[i] == Type.i32)
+                if (parameters[i] is UInt32 && functions[functionIndex].Type.Parameters[i] == Type.i32)
                 {
                     locals[localPtr].type = Type.i32;
                     locals[localPtr].i32 = (UInt32)parameters[i];
                 }
-                else if (parameters[i] is UInt64 && functions[funcionIndex].Type.Parameters[i] == Type.i64)
+                else if (parameters[i] is UInt64 && functions[functionIndex].Type.Parameters[i] == Type.i64)
                 {
                     locals[localPtr].type = Type.i64;
                     locals[localPtr].i64 = (UInt64)parameters[i];
                 }
-                else if (parameters[i] is float && functions[funcionIndex].Type.Parameters[i] == Type.f32)
+                else if (parameters[i] is float && functions[functionIndex].Type.Parameters[i] == Type.f32)
                 {
                     locals[localPtr].type = Type.f32;
                     locals[localPtr].f32 = (float)parameters[i];
                 }
-                else if (parameters[i] is double && functions[funcionIndex].Type.Parameters[i] == Type.f64)
+                else if (parameters[i] is double && functions[functionIndex].Type.Parameters[i] == Type.f64)
                 {
                     locals[localPtr].type = Type.f64;
                     locals[localPtr].f64 = (double)parameters[i];
@@ -82,9 +87,9 @@ namespace GameWasm.Webassembly.New
                 localPtr++;
             }
 
-            for (i = 0; i < functions[funcionIndex].LocalTypes.Count; i++)
+            for (int i = 0; i < functions[functionIndex].LocalTypes.Count; i++)
             {
-                locals[localPtr].type = functions[funcionIndex].LocalTypes[i];
+                locals[localPtr].type = functions[functionIndex].LocalTypes[i];
                 locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
                 localPtr++;
             }
@@ -94,14 +99,20 @@ namespace GameWasm.Webassembly.New
 
         private Label PopLabel(int number, bool end = false)
         {
-            Label l = labels.Pop();
+            Label old;
+            Label l = old = labels.Pop();
             for (; number > 1; number--)
             {
                 l = labels.Pop();
             }
 
-            if (end)
+            if (!end)
             {
+                for (int i = 0; i < cStack[cStackPtr].vStackPtr - old.vStackPtr; i++)
+                {
+                    vStack[l.vStackPtr++] = vStack[--cStack[cStackPtr].vStackPtr];
+                }
+                
                 cStack[cStackPtr].vStackPtr = l.vStackPtr;
             }
 
@@ -113,25 +124,52 @@ namespace GameWasm.Webassembly.New
         {
             try
             {
-                for (;
-                    cStack[cStackPtr].ip < functions[cStack[cStackPtr].functionPtr].program.Length && steps >= 0;)
+                while (steps >= 0)
                 {
+                    if (cStack[cStackPtr].ip >= functions[cStack[cStackPtr].functionPtr].program.Length)
+                    {
+                        if (cStackPtr == 1)
+                            return false;
+
+                        // TODO: this probably isn't very efficient to create a new value array for every return
+                        Value[] returnValues = new Value[functions[cStack[cStackPtr].functionPtr].Type.Results.Length];
+                        for (int i = 0; i < functions[cStack[cStackPtr].functionPtr].Type.Results.Length; i++)
+                        {
+                            returnValues[i] = vStack[cStack[cStackPtr].vStackPtr - 1 - i];
+                        }
+
+                        for (int i = 0; i < functions[cStack[cStackPtr].functionPtr].Type.Results.Length; i++)
+                        {
+                            vStack[cStack[cStackPtr - 1].vStackPtr++] = returnValues[i];
+                        }
+
+                        localPtr = cStack[cStackPtr].localBasePtr;
+                        cStackPtr--;
+                        steps--;
+                        cStack[cStackPtr].ip++;
+                        continue;
+                    }
+
                     var inst = functions[cStack[cStackPtr].functionPtr].program[cStack[cStackPtr].ip];
 
                     if (Debug)
                     {
                         for (int i = 0; i < cStack[cStackPtr].localLength; i++)
                         {
-                            if(i > 0)
+                            if (i > 0)
                                 Console.Write(",");
                             Console.Write(" $" + i + " = " + Type.Pretify(locals[cStack[cStackPtr].localBasePtr + i]));
                         }
-                        if(cStack[cStackPtr].vStackPtr > 0)
+
+                        if (cStack[cStackPtr].vStackPtr > 0)
                             Console.Write(" => " + Type.Pretify(vStack[cStack[cStackPtr].vStackPtr - 1]));
-                        Console.Write("\n" + functions[cStack[cStackPtr].functionPtr].Module.Name + "@" + functions[cStack[cStackPtr].functionPtr].Name + "[" + inst.pointer.ToString("X") + "]: " + inst.i.ToString());
-                                      
+                        Console.Write("\n" + functions[cStack[cStackPtr].functionPtr].Module.Name + "@" +
+                                      functions[cStack[cStackPtr].functionPtr].Name + "[" + inst.pointer.ToString("X") +
+                                      ", " + inst.i.Pos + "]: " + inst.i.ToString());
+
                         Console.ReadKey();
                     }
+
                     switch (inst.opCode)
                     {
                         case 0x00: // unreachable
@@ -142,12 +180,13 @@ namespace GameWasm.Webassembly.New
                             labels.Push(new Label((int) inst.i32, cStack[cStackPtr].vStackPtr));
                             break;
                         case 0x03: // loop
-                            labels.Push(new Label(cStack[cStackPtr].ip, cStack[cStackPtr].vStackPtr));
+                            labels.Push(new Label(cStack[cStackPtr].ip - 1, cStack[cStackPtr].vStackPtr));
                             break;
                         case 0x04: // if
                             if (vStack[--cStack[cStackPtr].vStackPtr].i32 > 0)
                             {
-                                if ((int) inst.i32 > 0)
+                                if (functions[cStack[cStackPtr].functionPtr].program[(int) inst.i32].opCode == 0x05
+                                ) // if it's an else
                                     labels.Push(new Label(
                                         (int) functions[cStack[cStackPtr].functionPtr].program[(int) inst.i32].i32,
                                         cStack[cStackPtr].vStackPtr));
@@ -156,7 +195,8 @@ namespace GameWasm.Webassembly.New
                             }
                             else
                             {
-                                if ((int) inst.i32 > 0)
+                                if (functions[cStack[cStackPtr].functionPtr].program[(int) inst.i32].opCode == 0x05
+                                ) // if it's an else
                                     labels.Push(new Label(
                                         (int) functions[cStack[cStackPtr].functionPtr].program[(int) inst.i32].i32,
                                         cStack[cStackPtr].vStackPtr));
@@ -169,17 +209,17 @@ namespace GameWasm.Webassembly.New
                             break;
                         case 0x0B: // end
                             // If special case of end of a function, just get out of here.
-                            if (cStack[cStackPtr].ip + 1 == functions[cStack[cStackPtr].functionPtr].program.Length) break;
+                            if (cStack[cStackPtr].ip + 1 ==
+                                functions[cStack[cStackPtr].functionPtr].program.Length) break;
                             PopLabel(1, true);
                             break;
                         case 0x0C: // br
                         {
                             Label l = PopLabel((int) inst.i32 + 1);
 
-                            if (functions[cStack[cStackPtr].functionPtr].program[l.ip].opCode == 0x03 /*loop*/)
-                                cStack[cStackPtr].ip = l.ip - 1;
-                            else
-                                cStack[cStackPtr].ip = l.ip;
+                            if (l.ip == -1) return false; // Why is this necessary?
+
+                            cStack[cStackPtr].ip = l.ip;
 
                             break;
                         }
@@ -189,10 +229,9 @@ namespace GameWasm.Webassembly.New
                             {
                                 Label l = PopLabel((int) inst.i32 + 1);
 
-                                if (functions[cStack[cStackPtr].functionPtr].program[l.ip].opCode == 0x03 /*loop*/)
-                                    cStack[cStackPtr].ip = l.ip - 1;
-                                else
-                                    cStack[cStackPtr].ip = l.ip;
+                                if (l.ip == -1) return false; // Why is this necessary?
+
+                                cStack[cStackPtr].ip = l.ip;
                             }
 
                             break;
@@ -212,22 +251,24 @@ namespace GameWasm.Webassembly.New
 
                             Label l = PopLabel((int) index + 1);
 
-                            if (functions[cStack[cStackPtr].functionPtr].program[l.ip].opCode == 0x03 /*loop*/)
-                                cStack[cStackPtr].ip = l.ip - 1;
-                            else
-                                cStack[cStackPtr].ip = l.ip;
+                            if (l.ip == -1) return false; // Why is this necessary?
+
+                            cStack[cStackPtr].ip = l.ip;
 
                             break;
                         }
                         case 0x0F: // return
 
-                            if (cStackPtr == 0)
-                                return false;
                             // TODO: this probably isn't very efficient to create a new value array for every return
                             Value[] returnValues =
                                 new Value[functions[cStack[cStackPtr].functionPtr].Type.Results.Length];
                             for (int i = 0; i < functions[cStack[cStackPtr].functionPtr].Type.Results.Length; i++)
                             {
+                                if (vStack[cStack[cStackPtr].vStackPtr - 1 - i].type !=
+                                    functions[cStack[cStackPtr].functionPtr].Type.Results[i])
+                                {
+                                    throw new Exception("return type mismatch");
+                                }
                                 returnValues[i] = vStack[cStack[cStackPtr].vStackPtr - 1 - i];
                             }
 
@@ -253,6 +294,12 @@ namespace GameWasm.Webassembly.New
                             // TODO: check for matching type in FStat
                             for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0; i--)
                             {
+                                if (functions[funcIndex].Type.Parameters[i] !=
+                                    vStack[cStack[cStackPtr - 1].vStackPtr - 1].type)
+                                {
+                                    throw new Trap("call type mismatch");
+                                }
+
                                 // TODO: should probably validate the types, but whatevs
                                 locals[localPtr] = vStack[--cStack[cStackPtr - 1].vStackPtr];
                                 localPtr++;
@@ -285,10 +332,17 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].localBasePtr = localPtr;
 
                             // TODO: check for matching type in FStat
-                            for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0; i--)
+                            for (int i = 0; i < functions[funcIndex].Type.Parameters.Length; i++)
                             {
+                                if (functions[funcIndex].Type.Parameters[i] !=
+                                    vStack[cStack[cStackPtr - 1].vStackPtr - 1].type)
+                                {
+                                    throw new Trap("indirect call type mismatch");
+                                }
+
                                 // TODO: should probably validate the types, but whatevs
                                 locals[localPtr] = vStack[--cStack[cStackPtr - 1].vStackPtr];
+                                localPtr++;
                             }
 
                             cStack[cStackPtr].vStackPtr = cStack[cStackPtr - 1].vStackPtr;
@@ -298,10 +352,10 @@ namespace GameWasm.Webassembly.New
                                 // TODO:  should I record the actual function local types here?
                                 locals[localPtr].type = functions[funcIndex].LocalTypes[i];
                                 locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
+                                localPtr++;
                             }
-                            
-                            cStack[cStackPtr].numLocals = localPtr - cStack[cStackPtr].localBasePtr;
 
+                            cStack[cStackPtr].numLocals = localPtr - cStack[cStackPtr].localBasePtr;
 
                             break;
                         }
@@ -600,10 +654,12 @@ namespace GameWasm.Webassembly.New
                             break;
 
                         case 0x50: // i64.eqz
+                            vStack[cStack[cStackPtr].vStackPtr - 1].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 1].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 1].i64 == 0) ? 1 : (UInt32) 0;
                             break;
                         case 0x51: // i64.eq
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].i64 ==
                                  vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -612,6 +668,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x52: // i64.ne
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].i64 !=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -620,6 +677,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x53: // i64.lt_s
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 ((Int64) vStack[cStack[cStackPtr].vStackPtr - 2].i64 <
                                  (Int64) vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -628,6 +686,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x54: // i64.lt_u
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].i64 <
                                  vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -636,6 +695,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x55: // i64.gt_s
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 ((Int64) vStack[cStack[cStackPtr].vStackPtr - 2].i64 >
                                  (Int64) vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -644,6 +704,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x56: // i64.gt_u
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].i64 >
                                  vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -652,6 +713,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x57: // i64.le_s
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 ((Int64) vStack[cStack[cStackPtr].vStackPtr - 2].i64 <=
                                  (Int64) vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -660,6 +722,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x58: // i64.le_u
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].i64 <=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -668,6 +731,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x59: // i64.ge_s
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 ((Int64) vStack[cStack[cStackPtr].vStackPtr - 2].i64 >=
                                  (Int64) vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -676,6 +740,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x5A: // i64.ge_u
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].i64 >=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].i64)
@@ -685,6 +750,7 @@ namespace GameWasm.Webassembly.New
                             break;
 
                         case 0x5B: // f32.eq
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f32 ==
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f32)
@@ -693,6 +759,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x5C: // f32.ne
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f32 !=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f32)
@@ -701,6 +768,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x5D: // f32.lt
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f32 <
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f32)
@@ -709,6 +777,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x5E: // f32.gt
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f32 >
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f32)
@@ -717,6 +786,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x5F: // f32.le
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f32 <=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f32)
@@ -725,6 +795,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x60: // f32.ge
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f32 >=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f32)
@@ -734,6 +805,7 @@ namespace GameWasm.Webassembly.New
                             break;
 
                         case 0x61: // f64.eq
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f64 ==
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f64)
@@ -742,6 +814,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x62: // f64.ne
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f64 !=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f64)
@@ -750,6 +823,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x63: // f64.lt
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f64 <
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f64)
@@ -758,6 +832,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x64: // f64.gt
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f64 >
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f64)
@@ -766,6 +841,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x65: // f64.le
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f64 <=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f64)
@@ -774,6 +850,7 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].vStackPtr--;
                             break;
                         case 0x66: // f64.ge
+                            vStack[cStack[cStackPtr].vStackPtr - 2].type = Type.i32;
                             vStack[cStack[cStackPtr].vStackPtr - 2].i32 =
                                 (vStack[cStack[cStackPtr].vStackPtr - 2].f64 >=
                                  vStack[cStack[cStackPtr].vStackPtr - 1].f64)
@@ -1397,26 +1474,8 @@ namespace GameWasm.Webassembly.New
 
                     steps--;
 
-                    if (cStack[cStackPtr].ip + 1 >= functions[cStack[cStackPtr].functionPtr].program.Length)
-                    {
-                        if (cStackPtr == 0)
-                            return false;
-
-                        // TODO: this probably isn't very efficient to create a new value array for every return
-                        Value[] returnValues = new Value[functions[cStack[cStackPtr].functionPtr].Type.Results.Length];
-                        for (int i = 0; i < functions[cStack[cStackPtr].functionPtr].Type.Results.Length; i++)
-                        {
-                            returnValues[i] = vStack[cStack[cStackPtr].vStackPtr - 1 - i];
-                        }
-
-                        for (int i = 0; i < functions[cStack[cStackPtr].functionPtr].Type.Results.Length; i++)
-                        {
-                            vStack[cStack[cStackPtr - 1].vStackPtr++] = returnValues[i];
-                        }
-
-                        localPtr = cStack[cStackPtr].localBasePtr;
-                        cStackPtr--;
-                    }
+                    if (cStackPtr == 0)
+                        return false;
 
                     cStack[cStackPtr].ip++;
                 }
@@ -1428,6 +1487,10 @@ namespace GameWasm.Webassembly.New
             catch (OverflowException e)
             {
                 throw new Trap("integer overflow");
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                throw new Trap("call stack exhausted");
             }
 
             if (cStackPtr == 0 && cStack[cStackPtr].ip >= functions[cStack[cStackPtr].functionPtr].program.Length)

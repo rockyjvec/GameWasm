@@ -11,6 +11,7 @@ namespace GameWasm.Webassembly.Instruction
         public byte opCode = 0x00;
         public Instruction Next = null;
         public UInt32 Pointer = 0;
+        public int Pos = 0;
         
         public Instruction(Parser parser, bool implemented = false)
         {
@@ -20,7 +21,7 @@ namespace GameWasm.Webassembly.Instruction
             }
         }
 
-        public virtual void End(Instruction end, int pos = 0)
+        public virtual void End(Instruction end)
         {
            // throw new Exception("End not implementedin " + this);
         }
@@ -51,7 +52,7 @@ namespace GameWasm.Webassembly.Instruction
                         current = new Nop(parser);
                         break;
                     case 0x02: // block
-                        current = new Block(parser, pos);
+                        current = new Block(parser);
                         controlFlowStack.Push(current);
                         break;
                     case 0x03: // loop
@@ -71,7 +72,7 @@ namespace GameWasm.Webassembly.Instruction
                         {
                             current = new Else(parser);
                             var match = controlFlowStack.Pop();
-                            match.End(current, pos); // notify of else
+                            match.End(current); // notify of else
                             controlFlowStack.Push(current); // add back to find end
                             break;
                         }
@@ -87,7 +88,7 @@ namespace GameWasm.Webassembly.Instruction
                             current = new End(parser);
                             var match = controlFlowStack.Pop();
 
-                            match.End(current, pos); // notify of end
+                            match.End(current); // notify of end
                             break;
                         }
                     case 0x0C: // br
@@ -446,6 +447,7 @@ namespace GameWasm.Webassembly.Instruction
                 }
 
                 current.opCode = code;
+                current.Pos = pos;
                 pos++;
                 if (start == null) start = current;
                 if (current != null)
@@ -482,18 +484,18 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(i);
                         break;
                     case 0x02: // block
-                        i.i32 = (UInt32)(inst as Block).labelPos;
+                        i.i32 = (UInt32)(inst as Block).label.Pos;
                         program.Add(i);
                         break;
                     case 0x03: // loop
                         program.Add(i);
                         break;
                     case 0x04: // if
-                        i.i32 = (UInt32) (inst as If).endPos;
+                        i.i32 = (UInt32) (inst as If).label.Pos;
                         program.Add(i);
                         break;
                     case 0x05: // else
-                        i.i32 = (UInt32) (inst as Else).endPos;
+                        i.i32 = (UInt32) (inst as Else).label.Pos;
                         program.Add(i);
                         break;
                     case 0x0B: // end

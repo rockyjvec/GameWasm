@@ -39,7 +39,7 @@ namespace GameWasm.Webassembly.Test
                 {
                     return;
                 }
-                throw new Exception("Fail!");
+                throw new Exception("Fail! " + a.f64 + " != " + b);
             }
         }
 
@@ -74,7 +74,7 @@ namespace GameWasm.Webassembly.Test
 
         public static bool Run(string path)
         {
-            /*
+         /*   
             Console.WriteLine("LocalTee");
             new LocalTee(path);
             Console.WriteLine("Forward");
@@ -125,46 +125,55 @@ namespace GameWasm.Webassembly.Test
             new Func2(path);
             Console.WriteLine("Globals");
             new Globals(path);
-*/
-
             Console.WriteLine("Block");
             new Block(path);
             Console.WriteLine("If");
             new If(path);
-            Console.WriteLine("Unwind");
-            new Unwind(path);
-            Console.WriteLine("LeftToRight");
-            new LeftToRight(path);
-            Console.WriteLine("Labels"); // inf loop
+            Console.WriteLine("Loop");
+            new Loop(path);
+            Console.WriteLine("Labels");
             new Labels(path);
             Console.WriteLine("Func1");
             new Func1(path);
-            Console.WriteLine("Return");
-            new Return(path);
             Console.WriteLine("Switch");
             new Switch(path);
-            Console.WriteLine("Loop");
-            new Loop(path);
-            Console.WriteLine("Endianness");
-            new Endianness(path);
-            Console.WriteLine("Nop");
-            new Nop(path);
-            Console.WriteLine("Conversions");
-            new Conversions(path);
-            Console.WriteLine("Align1"); // inf loop?
+            Console.WriteLine("Align1");
             new Align1(path);
             Console.WriteLine("Br");
             new Br(path);
-            Console.WriteLine("BrIf");
-            new BrIf(path);
-            Console.WriteLine("BrTable");
-            new BrTable(path);
-            Console.WriteLine("Call");
-            new Call(path);
-            Console.WriteLine("CallIndirect");
-            new CallIndirect(path);
             Console.WriteLine("MemoryRedundancy");
             new MemoryRedundancy(path);
+            Console.WriteLine("LeftToRight");
+            new LeftToRight(path);
+            Console.WriteLine("Return");
+            new Return(path);
+            Console.WriteLine("Unwind");
+            new Unwind(path);
+            Console.WriteLine("BrIf");
+            new BrIf(path);
+            Console.WriteLine("CallIndirect"); //TODO: implement traps
+            new CallIndirect(path);
+            Console.WriteLine("BrTable");
+            new BrTable(path);
+            */
+            
+         Console.WriteLine("Call");
+         new Call(path);
+
+         
+         Console.WriteLine("Nop");
+         new Nop(path);
+
+//         Console.WriteLine("Endianness");
+  //       new Endianness(path);
+         Console.WriteLine("Conversions");
+         new Conversions(path);
+
+
+
+            
+            
+            
 
             return true;
         }

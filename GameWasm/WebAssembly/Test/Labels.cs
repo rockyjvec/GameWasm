@@ -16,7 +16,7 @@ namespace GameWasm.Webassembly.Test
             var store = new Store();
             var test = store.LoadModule("test", path + '/' + filename);
 
-         //   assert(test.Call("block"), (UInt32) 1);
+            assert(test.Call("block"), (UInt32) 1);
             assert(test.Call("loop1"), (UInt32) 5);
             assert(test.Call("loop2"), (UInt32) 8);
             assert(test.Call("loop3"), (UInt32) 1);

@@ -2,13 +2,11 @@
 {
     internal class Else : Instruction
     {
-        public Instruction end;
-        public int endPos = 0;
+        public Instruction label;
 
-        public override void End(Instruction end, int pos = 0)
+        public override void End(Instruction end)
         {
-            this.end = end;
-            this.endPos = pos;
+            label = end;
         }
 
         public Else(Parser parser) : base(parser, true)

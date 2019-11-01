@@ -13,5 +13,10 @@ namespace GameWasm.Webassembly.Instruction
                 Console.WriteLine("The future has come!");
             }
         }
+
+        public override string ToString()
+        {
+            return "memory.size";
+        }
     }
 }

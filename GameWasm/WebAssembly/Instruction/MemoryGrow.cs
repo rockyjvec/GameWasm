@@ -13,5 +13,10 @@ namespace GameWasm.Webassembly.Instruction
                 Console.WriteLine("WARNING: memory.grow called with non-zero: 0x" + zero.ToString("X"));
             }
         }
+
+        public override string ToString()
+        {
+            return "memory.grow";
+        }
     }
 }

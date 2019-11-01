@@ -15,7 +15,7 @@ namespace GameWasm.Webassembly.Test
 
             var store = new Store();
             var test = store.LoadModule("test", path + '/' + filename);
-
+/*
             assert(test.Call("type-i32"), (UInt32) 0x132);
             assert64(test.Call("type-i64"), (UInt64) 0x164);
             assertF32(test.Call("type-f32"), (float) 0xf32);
@@ -69,8 +69,8 @@ namespace GameWasm.Webassembly.Test
 
             assert(test.Call("as-br_table-first"), (UInt32) 0x132);
             assert(test.Call("as-br_table-last"), (UInt32) 2);
-
-            assert(test.Call("as-call_indirect-first"), (UInt32) 0x132);
+*/
+//            assert(test.Call("as-call_indirect-first"), (UInt32) 0x132);
             assert(test.Call("as-call_indirect-mid"), (UInt32) 2);
             assert_trap(delegate { test.CallVoid("as-call_indirect-last"); }, "undefined element");
 

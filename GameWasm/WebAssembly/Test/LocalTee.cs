@@ -15,7 +15,7 @@ namespace GameWasm.Webassembly.Test
 
             var store = new Store();
             var test = store.LoadModule("test", path + '/' + filename);
-/*
+
             assert(test.Call("type-local-i32"), (UInt32) 0);
             assert64(test.Call("type-local-i64"), (UInt64) 0);
             assertF32(test.Call("type-local-f32"), (float) 0);
@@ -25,8 +25,8 @@ namespace GameWasm.Webassembly.Test
             assert64(test.Call("type-param-i64", (UInt64) 3), (UInt64) 11);
             assertF32(test.Call("type-param-f32", (float) 4.4), (float) 11.1);
             assertF64(test.Call("type-param-f64", (double) 5.5), (double) 12.2);
-*/
-            //assert(test.Call("as-block-first", (UInt32) 0), (UInt32) 1);
+
+            assert(test.Call("as-block-first", (UInt32) 0), (UInt32) 1);
             assert(test.Call("as-block-mid", (UInt32) 0), (UInt32) 1);
             assert(test.Call("as-block-last", (UInt32) 0), (UInt32) 1);
 

@@ -21,10 +21,10 @@ namespace GameWasm.Webassembly.Test
             test.CallVoid("type-f32");
             test.CallVoid("type-f64");
 
-            test.CallVoid("type-i32-value", (UInt32) 1);
-            test.CallVoid("type-i64-value", (UInt64) 2);
-            test.CallVoid("type-f32-value", (float) 3);
-            test.CallVoid("type-f64-value", (double) 4);
+            assert(test.Call("type-i32-value"), (UInt32) 1);
+            assert64(test.Call("type-i64-value"), (UInt64) 2);
+            assertF32(test.Call("type-f32-value"), (float) 3);
+            assertF64(test.Call("type-f64-value"), (double) 4);
 
             assert(test.Call("empty", (UInt32) 0), (UInt32) 22);
             assert(test.Call("empty", (UInt32) 1), (UInt32) 22);
@@ -88,25 +88,20 @@ namespace GameWasm.Webassembly.Test
             test.CallVoid("as-block-first");
             test.CallVoid("as-block-mid");
             test.CallVoid("as-block-last");
-            test.CallVoid("as-block-value", (UInt32) 2);
-
-            test.CallVoid("as-loop-first", (UInt32) 3);
-            test.CallVoid("as-loop-mid", (UInt32) 4);
-            test.CallVoid("as-loop-last", (UInt32) 5);
-
-            test.CallVoid("as-br-value", (UInt32) 9);
-
+            assert(test.Call("as-block-value"), (UInt32) 2);
+            assert(test.Call("as-loop-first"), (UInt32) 3);
+            assert(test.Call("as-loop-mid"), (UInt32) 4);
+            assert(test.Call("as-loop-last"), (UInt32) 5);
+            assert(test.Call("as-br-value"), (UInt32) 9);
+            assert(test.Call("as-br_if-value"), (UInt32) 8);
+            assert(test.Call("as-br_if-value-cond"), (UInt32) 9);
+            assert(test.Call("as-br_table-value"), (UInt32) 10);
+            assert(test.Call("as-br_table-value-index"), (UInt32) 11);
+            assert64(test.Call("as-return-value"), (UInt64) 7);
+            assert(test.Call("as-if-cond"), (UInt32) 2);
+            
             test.CallVoid("as-br_if-cond");
-            test.CallVoid("as-br_if-value", (UInt32) 8);
-            test.CallVoid("as-br_if-value-cond", (UInt32) 9);
-
             test.CallVoid("as-br_table-index");
-            test.CallVoid("as-br_table-value", (UInt32) 10);
-            test.CallVoid("as-br_table-value-index", (UInt32) 11);
-
-            test.CallVoid("as-return-value", (UInt64) 7);
-
-            test.CallVoid("as-if-cond", (UInt32) 2);
             assert(test.Call("as-if-then", (UInt32) 1, (UInt32) 6), (UInt32) 3);
             assert(test.Call("as-if-then", (UInt32) 0, (UInt32) 6), (UInt32) 6);
             assert(test.Call("as-if-else", (UInt32) 0, (UInt32) 6), (UInt32) 4);
@@ -116,42 +111,32 @@ namespace GameWasm.Webassembly.Test
             assert(test.Call("as-select-first", (UInt32) 1, (UInt32) 6), (UInt32) 5);
             assert(test.Call("as-select-second", (UInt32) 0, (UInt32) 6), (UInt32) 6);
             assert(test.Call("as-select-second", (UInt32) 1, (UInt32) 6), (UInt32) 6);
-            test.CallVoid("as-select-cond", (UInt32) 7);
 
-            test.CallVoid("as-call-first", (UInt32) 12);
-            test.CallVoid("as-call-mid", (UInt32) 13);
-            test.CallVoid("as-call-last", (UInt32) 14);
-
-            test.CallVoid("as-call_indirect-first", (UInt32) 20);
-            test.CallVoid("as-call_indirect-mid", (UInt32) 21);
-            test.CallVoid("as-call_indirect-last", (UInt32) 22);
-            test.CallVoid("as-call_indirect-func", (UInt32) 23);
-
-            test.CallVoid("as-local.set-value", (UInt32) 17);
-            test.CallVoid("as-local.tee-value", (UInt32) 1);
-            test.CallVoid("as-global.set-value", (UInt32) 1);
-
-            test.CallVoid("as-load-address", (float) 1.7);
-            test.CallVoid("as-loadN-address", (UInt64) 30);
-
-            test.CallVoid("as-store-address", (UInt32) 30);
-            test.CallVoid("as-store-value", (UInt32) 31);
-            test.CallVoid("as-storeN-address", (UInt32) 32);
-            test.CallVoid("as-storeN-value", (UInt32) 33);
-
-            test.CallVoid("as-unary-operand", (float) 3.4);
-
-            test.CallVoid("as-binary-left", (UInt32) 3);
-            test.CallVoid("as-binary-right", (UInt64) 45);
-
-            test.CallVoid("as-test-operand", (UInt32) 44);
-
-            test.CallVoid("as-compare-left", (UInt32) 43);
-            test.CallVoid("as-compare-right", (UInt32) 42);
-
-            test.CallVoid("as-convert-operand", (UInt32) 41);
-
-            test.CallVoid("as-memory.grow-size", (UInt32) 40);
+            assert(test.Call("as-select-cond"), (UInt32) 7);
+            assert(test.Call("as-call-first"), (UInt32) 12);
+            assert(test.Call("as-call-mid"), (UInt32) 13);
+            assert(test.Call("as-call-last"), (UInt32) 14);
+            assert(test.Call("as-call_indirect-first"), (UInt32) 20);
+            assert(test.Call("as-call_indirect-mid"), (UInt32) 21);
+            assert(test.Call("as-call_indirect-last"), (UInt32) 22);
+            assert(test.Call("as-call_indirect-func"), (UInt32) 23);
+            assert(test.Call("as-local.set-value"), (UInt32) 17);
+            assert(test.Call("as-local.tee-value"), (UInt32) 1);
+            assert(test.Call("as-global.set-value"), (UInt32) 1);
+            assertF32(test.Call("as-load-address"), (float) 1.7);
+            assertF64(test.Call("as-loadN-address"), (UInt64) 30);
+            assert(test.Call("as-store-address"), (UInt32) 30);
+            assert(test.Call("as-store-value"), (UInt32) 31);
+            assert(test.Call("as-storeN-address"), (UInt32) 32);
+            assert(test.Call("as-storeN-value"), (UInt32) 33);
+            assertF32(test.Call("as-unary-operand"), (float) 3.4);
+            assert(test.Call("as-binary-left"), (UInt32) 3);
+            assertF64(test.Call("as-binary-right"), (UInt64) 45);
+            assert(test.Call("as-test-operand"), (UInt32) 44);
+            assert(test.Call("as-compare-left"), (UInt32) 43);
+            assert(test.Call("as-compare-right"), (UInt32) 42);
+            assert(test.Call("as-convert-operand"), (UInt32) 41);
+            assert(test.Call("as-memory.grow-size"), (UInt32) 40);
 
             assert(test.Call("nested-block-value", (UInt32) 0), (UInt32) 19);
             assert(test.Call("nested-block-value", (UInt32) 1), (UInt32) 17);
