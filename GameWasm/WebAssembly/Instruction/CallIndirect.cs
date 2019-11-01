@@ -19,5 +19,10 @@ namespace GameWasm.Webassembly.Instruction
                 Console.WriteLine("WARNING: call_indirect called with non-zero: 0x" + tableidx.ToString("X"));
             }
         }
+           
+        public override string ToString()
+        {
+            return "call_indirect";
+        }
     }
 }

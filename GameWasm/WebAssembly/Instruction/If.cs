@@ -17,5 +17,10 @@
         {
             type = parser.GetBlockType();
         }
+        
+        public override string ToString()
+        {
+            return "if";
+        }
     }
 }

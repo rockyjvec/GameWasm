@@ -13,6 +13,9 @@ namespace GameWasm.Webassembly.New
         private State[] cStack; // Call stack
         private int cStackPtr = 0;
         private Value[] locals;
+        private int localPtr = 0;
+
+        public bool Debug = false;
 
         public Runtime()
         {
@@ -34,57 +37,59 @@ namespace GameWasm.Webassembly.New
         // Native call function
         public void Call(int funcionIndex, object[] parameters = null)
         {
+            if(Debug)
+                Console.WriteLine("\n\nNATIVE CALL");
             if (parameters == null)
                 parameters = new object[] { };
             cStackPtr = 0;
             cStack[0].ip = 0;
             cStack[0].functionPtr = funcionIndex;
             cStack[0].labelPtr = 0;
-            cStack[0].localBasePtr = 0;
+            cStack[0].localBasePtr = localPtr;
             cStack[0].vStackPtr = 0;
 
             labels.Push(new Label(-1, cStack[cStackPtr].vStackPtr)); // What is this for?
 
             int i;
-            int l = 0;
             // TODO: check for matching type in FStat
             for(i = 0; i < parameters.Length ; i++)
             {
                 if (parameters[i] is UInt32 && functions[funcionIndex].Type.Parameters[i] == Type.i32)
                 {
-                    locals[l].type = Type.i32;
-                    locals[l].i32 = (UInt32)parameters[i];
+                    locals[localPtr].type = Type.i32;
+                    locals[localPtr].i32 = (UInt32)parameters[i];
                 }
                 else if (parameters[i] is UInt64 && functions[funcionIndex].Type.Parameters[i] == Type.i64)
                 {
-                    locals[l].type = Type.i64;
-                    locals[l].i64 = (UInt64)parameters[i];
+                    locals[localPtr].type = Type.i64;
+                    locals[localPtr].i64 = (UInt64)parameters[i];
                 }
                 else if (parameters[i] is float && functions[funcionIndex].Type.Parameters[i] == Type.f32)
                 {
-                    locals[l].type = Type.f32;
-                    locals[l].f32 = (float)parameters[i];
+                    locals[localPtr].type = Type.f32;
+                    locals[localPtr].f32 = (float)parameters[i];
                 }
                 else if (parameters[i] is double && functions[funcionIndex].Type.Parameters[i] == Type.f64)
                 {
-                    locals[l].type = Type.f64;
-                    locals[l].f64 = (double)parameters[i];
+                    locals[localPtr].type = Type.f64;
+                    locals[localPtr].f64 = (double)parameters[i];
                 }
                 else
                 {
                     throw new Trap("argument type mismatch");
                 }
 
-                l++;
+                localPtr++;
             }
 
             for (i = 0; i < functions[funcionIndex].LocalTypes.Count; i++)
             {
-                locals[l].type = functions[funcionIndex].LocalTypes[i];
-                locals[l].i64 = 0; // shared offsets means this updates all, yay
-                l++;
+                locals[localPtr].type = functions[funcionIndex].LocalTypes[i];
+                locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
+                localPtr++;
             }
-
+            
+            cStack[cStackPtr].numLocals = localPtr - cStack[cStackPtr].localBasePtr;
         }
 
         private Label PopLabel(int number, bool end = false)
@@ -109,11 +114,24 @@ namespace GameWasm.Webassembly.New
             try
             {
                 for (;
-                    cStack[cStackPtr].ip < functions[cStack[cStackPtr].functionPtr].program.Length && steps >= 0;
-                    cStack[cStackPtr].ip++)
+                    cStack[cStackPtr].ip < functions[cStack[cStackPtr].functionPtr].program.Length && steps >= 0;)
                 {
                     var inst = functions[cStack[cStackPtr].functionPtr].program[cStack[cStackPtr].ip];
-//                    Console.WriteLine(inst.i.ToString());
+
+                    if (Debug)
+                    {
+                        for (int i = 0; i < cStack[cStackPtr].localLength; i++)
+                        {
+                            if(i > 0)
+                                Console.Write(",");
+                            Console.Write(" $" + i + " = " + Type.Pretify(locals[cStack[cStackPtr].localBasePtr + i]));
+                        }
+                        if(cStack[cStackPtr].vStackPtr > 0)
+                            Console.Write(" => " + Type.Pretify(vStack[cStack[cStackPtr].vStackPtr - 1]));
+                        Console.Write("\n" + functions[cStack[cStackPtr].functionPtr].Module.Name + "@" + functions[cStack[cStackPtr].functionPtr].Name + "[" + inst.pointer.ToString("X") + "]: " + inst.i.ToString());
+                                      
+                        Console.ReadKey();
+                    }
                     switch (inst.opCode)
                     {
                         case 0x00: // unreachable
@@ -150,13 +168,13 @@ namespace GameWasm.Webassembly.New
                             cStack[cStackPtr].ip = (int) inst.i32 - 1;
                             break;
                         case 0x0B: // end
+                            // If special case of end of a function, just get out of here.
+                            if (cStack[cStackPtr].ip + 1 == functions[cStack[cStackPtr].functionPtr].program.Length) break;
                             PopLabel(1, true);
                             break;
                         case 0x0C: // br
                         {
                             Label l = PopLabel((int) inst.i32 + 1);
-
-                            if (l.ip == -1) return false;
 
                             if (functions[cStack[cStackPtr].functionPtr].program[l.ip].opCode == 0x03 /*loop*/)
                                 cStack[cStackPtr].ip = l.ip - 1;
@@ -170,8 +188,6 @@ namespace GameWasm.Webassembly.New
                             if (vStack[--cStack[cStackPtr].vStackPtr].i32 > 0)
                             {
                                 Label l = PopLabel((int) inst.i32 + 1);
-
-                                if (l.ip == -1) return false;
 
                                 if (functions[cStack[cStackPtr].functionPtr].program[l.ip].opCode == 0x03 /*loop*/)
                                     cStack[cStackPtr].ip = l.ip - 1;
@@ -195,8 +211,6 @@ namespace GameWasm.Webassembly.New
                             }
 
                             Label l = PopLabel((int) index + 1);
-
-                            if (l.ip == -1) return false;
 
                             if (functions[cStack[cStackPtr].functionPtr].program[l.ip].opCode == 0x03 /*loop*/)
                                 cStack[cStackPtr].ip = l.ip - 1;
@@ -222,6 +236,7 @@ namespace GameWasm.Webassembly.New
                                 vStack[cStack[cStackPtr - 1].vStackPtr++] = returnValues[i];
                             }
 
+                            localPtr = cStack[cStackPtr].localBasePtr;
                             cStackPtr--;
                             break;
                         case 0x10: // call
@@ -229,21 +244,18 @@ namespace GameWasm.Webassembly.New
                             var funcIndex = functions[cStack[cStackPtr].functionPtr].Module.Functions[(int) inst.i32]
                                 .GlobalIndex; // TODO: this may need to be optimized
 
-                            cStack[cStackPtr].ip++; // continue after the call
                             cStackPtr++;
                             cStack[cStackPtr].ip = -1;
                             cStack[cStackPtr].functionPtr = funcIndex;
                             cStack[cStackPtr].labelPtr = cStack[cStackPtr - 1].labelPtr;
-                            cStack[cStackPtr].localBasePtr = cStack[cStackPtr - 1].localBasePtr;
-
-                            int l = 0;
+                            cStack[cStackPtr].localBasePtr = localPtr;
 
                             // TODO: check for matching type in FStat
                             for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0; i--)
                             {
                                 // TODO: should probably validate the types, but whatevs
-                                locals[l] = vStack[--cStack[cStackPtr - 1].vStackPtr];
-                                l++;
+                                locals[localPtr] = vStack[--cStack[cStackPtr - 1].vStackPtr];
+                                localPtr++;
                             }
 
                             cStack[cStackPtr].vStackPtr = cStack[cStackPtr - 1].vStackPtr;
@@ -251,10 +263,12 @@ namespace GameWasm.Webassembly.New
                             for (int i = 0; i < functions[funcIndex].LocalTypes.Count; i++)
                             {
                                 // TODO:  should I record the actual function local types here?
-                                locals[l].type = functions[funcIndex].Type.Parameters[i];
-                                locals[l].i64 = 0; // shared offsets means this updates all, yay
-                                l++;
+                                locals[localPtr].type = functions[funcIndex].LocalTypes[i];
+                                locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
+                                localPtr++;
                             }
+
+                            cStack[cStackPtr].numLocals = localPtr - cStack[cStackPtr].localBasePtr;
 
                             break;
                         }
@@ -264,21 +278,17 @@ namespace GameWasm.Webassembly.New
                             var ii = (int) m.Tables[(int) inst.i32].Get(vStack[--cStack[cStackPtr].vStackPtr].i32);
                             var funcIndex = (int) m.Functions[ii].GlobalIndex;
 
-                            cStack[cStackPtr].ip++; // continue after the call
                             cStackPtr++;
                             cStack[cStackPtr].ip = -1;
                             cStack[cStackPtr].functionPtr = funcIndex;
                             cStack[cStackPtr].labelPtr = cStack[cStackPtr - 1].labelPtr;
-                            cStack[cStackPtr].localBasePtr = cStack[cStackPtr - 1].localBasePtr;
-
-                            int l = 0;
+                            cStack[cStackPtr].localBasePtr = localPtr;
 
                             // TODO: check for matching type in FStat
                             for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0; i--)
                             {
                                 // TODO: should probably validate the types, but whatevs
-                                locals[l] = vStack[--cStack[cStackPtr - 1].vStackPtr];
-                                l++;
+                                locals[localPtr] = vStack[--cStack[cStackPtr - 1].vStackPtr];
                             }
 
                             cStack[cStackPtr].vStackPtr = cStack[cStackPtr - 1].vStackPtr;
@@ -286,10 +296,12 @@ namespace GameWasm.Webassembly.New
                             for (int i = 0; i < functions[funcIndex].LocalTypes.Count; i++)
                             {
                                 // TODO:  should I record the actual function local types here?
-                                locals[l].type = functions[funcIndex].Type.Parameters[i];
-                                locals[l].i64 = 0; // shared offsets means this updates all, yay
-                                l++;
+                                locals[localPtr].type = functions[funcIndex].LocalTypes[i];
+                                locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
                             }
+                            
+                            cStack[cStackPtr].numLocals = localPtr - cStack[cStackPtr].localBasePtr;
+
 
                             break;
                         }
@@ -1388,9 +1400,7 @@ namespace GameWasm.Webassembly.New
                     if (cStack[cStackPtr].ip + 1 >= functions[cStack[cStackPtr].functionPtr].program.Length)
                     {
                         if (cStackPtr == 0)
-                        {
                             return false;
-                        }
 
                         // TODO: this probably isn't very efficient to create a new value array for every return
                         Value[] returnValues = new Value[functions[cStack[cStackPtr].functionPtr].Type.Results.Length];
@@ -1404,8 +1414,11 @@ namespace GameWasm.Webassembly.New
                             vStack[cStack[cStackPtr - 1].vStackPtr++] = returnValues[i];
                         }
 
+                        localPtr = cStack[cStackPtr].localBasePtr;
                         cStackPtr--;
                     }
+
+                    cStack[cStackPtr].ip++;
                 }
             }
             catch (DivideByZeroException e)

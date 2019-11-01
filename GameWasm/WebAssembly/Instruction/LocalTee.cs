@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
 
         public override string ToString()
         {
-            return "tee_local $var" + index;
+            return "local.tee $" + index;
         }
     }
 }

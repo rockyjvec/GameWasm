@@ -5,5 +5,10 @@
         public I32ne(Parser parser) : base(parser, true)
         {
         }
+        
+        public override string ToString()
+        {
+            return "i32.ne";
+        }
     }
 }

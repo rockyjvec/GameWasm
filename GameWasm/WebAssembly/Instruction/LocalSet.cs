@@ -13,7 +13,7 @@
 
         public override string ToString()
         {
-            return "local.set $local" + index;
+            return "local.set $" + index;
         }
     }
 }

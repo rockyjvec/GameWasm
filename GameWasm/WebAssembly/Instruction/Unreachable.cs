@@ -5,5 +5,10 @@
         public Unreachable(Parser parser) : base(parser, true)
         {
         }
+        
+        public override string ToString()
+        {
+            return "unreachable";
+        }
     }
 }

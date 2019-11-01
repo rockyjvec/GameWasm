@@ -14,5 +14,10 @@
         public Else(Parser parser) : base(parser, true)
         {
         }
+        
+        public override string ToString()
+        {
+            return "else";
+        }
     }
 }

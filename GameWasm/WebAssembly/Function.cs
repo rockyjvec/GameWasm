@@ -59,7 +59,7 @@ namespace GameWasm.Webassembly
         
         public void SetName(string name)
         {
-            name =  name + "(" + name + ")";
+            Name =  name;
         }
 
         public string GetName()

@@ -14,7 +14,7 @@
 
         public override string ToString()
         {
-            return "local.get $local" + index;
+            return "local.get $" + index;
         }
     }
 }

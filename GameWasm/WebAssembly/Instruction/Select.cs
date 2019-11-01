@@ -7,5 +7,10 @@ namespace GameWasm.Webassembly.Instruction
         public Select(Parser parser) : base(parser, true)
         {
         }
+
+        public override string ToString()
+        {
+            return "select";
+        }
     }
 }

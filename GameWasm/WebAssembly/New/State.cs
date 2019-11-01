@@ -8,5 +8,6 @@ namespace GameWasm.Webassembly.New
         public int localLength;
         public int functionPtr;
         public int labelPtr;
+        public int numLocals;
     }
 }

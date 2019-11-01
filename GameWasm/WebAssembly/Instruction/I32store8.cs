@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
 
         public override string ToString()
         {
-            return base.ToString() + "(offset = " + offset + ")";
+            return "i32.store8 " + offset;
         }
     }
 }

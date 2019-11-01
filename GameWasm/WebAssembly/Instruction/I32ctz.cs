@@ -6,5 +6,10 @@
         {
 
         }
+
+        public override string ToString()
+        {
+            return "i32.ctz";
+        }
     }
 }

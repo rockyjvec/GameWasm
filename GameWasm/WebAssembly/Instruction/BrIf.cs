@@ -13,7 +13,7 @@ namespace GameWasm.Webassembly.Instruction
 
         public override string ToString()
         {
-            return base.ToString() + "(" + labelidx + ")";
+            return "br_if";
         }
     }
 }

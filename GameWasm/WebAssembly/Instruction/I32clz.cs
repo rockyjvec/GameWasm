@@ -5,5 +5,10 @@
         public I32clz(Parser parser) : base(parser, true)
         {
         }
+
+        public override string ToString()
+        {
+            return "i32.clz";
+        }
     }
 }

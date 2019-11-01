@@ -290,7 +290,7 @@ namespace GameWasm.Webassembly.Module
                 bool mutable;
                 parser.GetGlobalType(out type, out mutable);
 
-                var f = new Function(this, "loadGlobal[" + import + "]", new Type(null, new byte[] {type}));
+                var f = new Function(this, "$loadGlobal" + import + "", new Type(null, new byte[] {type}));
                 f.program = parser.GetExpr(false);
                 Store.runtime.Call(f.GlobalIndex);
                 do
@@ -398,7 +398,7 @@ namespace GameWasm.Webassembly.Module
                     throw new Exception("Element table index does not exist");
                 }
 
-                var f = new Function(this, "loadElement[" + element + "]", new Type(null, new byte[] {Type.i32}));
+                var f = new Function(this, "$loadElement" + element, new Type(null, new byte[] {Type.i32}));
                 f.program = parser.GetExpr(false);
                 Store.runtime.Call(f.GlobalIndex);
                 do
@@ -465,7 +465,7 @@ namespace GameWasm.Webassembly.Module
                     throw new Exception("Data memory index does not exist");
                 }
 
-                var f = new Function(this, "loadData[" + data + "]", new Type(null, new byte[] {Type.i32}));
+                var f = new Function(this, "loadData" + data, new Type(null, new byte[] {Type.i32}));
                 f.program = parser.GetExpr(false);
                 Store.runtime.Call(f.GlobalIndex);
                 do
@@ -492,9 +492,9 @@ namespace GameWasm.Webassembly.Module
             Function func;
 
             if (action == null)
-                func = new Function(this, Name + "@" + name, new Type(parameters, results));
+                func = new Function(this, name, new Type(parameters, results));
             else
-                func = new Function(this, Name + "@" + name, action, new Type(parameters, results));
+                func = new Function(this, name, action, new Type(parameters, results));
 
             Exports.Add(name, func);
         }

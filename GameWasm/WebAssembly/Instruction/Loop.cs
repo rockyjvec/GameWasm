@@ -8,5 +8,10 @@
         {
             type = parser.GetBlockType();
         }
+
+        public override string ToString()
+        {
+            return "loop";
+        }
     }
 }
