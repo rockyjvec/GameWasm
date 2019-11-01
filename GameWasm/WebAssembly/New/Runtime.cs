@@ -154,15 +154,18 @@ namespace GameWasm.Webassembly.New
 
                     if (Debug)
                     {
-                        for (int i = 0; i < cStack[cStackPtr].localLength; i++)
+                        if (cStack[cStackPtr].vStackPtr > 0)
+                            Console.Write(" => " + Type.Pretify(vStack[cStack[cStackPtr].vStackPtr - 1]));
+
+                        for (int i = 0; i < localPtr - cStack[cStackPtr].localBasePtr; i++)
                         {
+                            if (i == 0)
+                                Console.Write("\n");
                             if (i > 0)
                                 Console.Write(",");
                             Console.Write(" $" + i + " = " + Type.Pretify(locals[cStack[cStackPtr].localBasePtr + i]));
                         }
 
-                        if (cStack[cStackPtr].vStackPtr > 0)
-                            Console.Write(" => " + Type.Pretify(vStack[cStack[cStackPtr].vStackPtr - 1]));
                         Console.Write("\n" + functions[cStack[cStackPtr].functionPtr].Module.Name + "@" +
                                       functions[cStack[cStackPtr].functionPtr].Name + "[" + inst.pointer.ToString("X") +
                                       ", " + inst.i.Pos + "]: " + inst.i.ToString());
