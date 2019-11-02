@@ -127,17 +127,9 @@ namespace GameWasm.Webassembly.New
         {
             Label old;
             Label l = old = lStack[s.labelBasePtr + --s.labelPtr];
-            if (l.ip == 1480)
-            {
-                Debugger.Break();
-            }
             for (; number > 1; number--)
             {
                 l = lStack[s.labelBasePtr + --s.labelPtr];
-                if (l.ip == 1480)
-                {
-                    Debugger.Break();
-                }
             }
 
             if (!end)
