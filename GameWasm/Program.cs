@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime;
 using GameWasm.Webassembly;
+using GameWasm.Webassembly.Instruction;
 
 namespace GameWasm
 {
@@ -21,6 +22,7 @@ namespace GameWasm
          //   test.Debug = true;
             store.Modules["wasi_unstable"].Memory.Add((Memory)test.Exports["memory"]);
             test.CallVoid("_start");
+//            Instruction.Analyze(test.Functions.ToArray(), 20);
         }
     }
 }

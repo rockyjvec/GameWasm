@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using GameWasm.Webassembly.New;
 
 namespace GameWasm.Webassembly.Instruction
@@ -1063,6 +1064,237 @@ namespace GameWasm.Webassembly.Instruction
 
 
             return program.ToArray();
+        }
+
+        public static string Translate(byte opCode)
+        {
+            switch (opCode)
+            {
+                case 0x00: return "unreachable";
+                case 0x01: return "nop";
+                case 0x02: return "block";
+                case 0x03: return "loop";
+                case 0x04: return "if";
+                case 0x05: return "else";
+                case 0x0B: return "end";
+                case 0x0C: return "br";
+                case 0x0D: return "br_if";
+                case 0x0E: return "br_table";
+                case 0x0F: return "return";
+                case 0x10: return "call";
+                case 0x11: return "call_indirect";
+                case 0x1A: return "drop";
+                case 0x1B: return "select";
+                case 0x20: return "local.get";
+                case 0x21: return "local.set";
+                case 0x22: return "local.tee";
+                case 0x23: return "global.get";
+                case 0x24: return "global.set";
+                case 0x28: return "i32.load";
+                case 0x29: return "i64.load";
+                case 0x2A: return "f32.load";
+                case 0x2B: return "f64.load";
+                case 0x2C: return "i32.load8_s";
+                case 0x2D: return "i32.load8_u";
+                case 0x2E: return "i32.load16_s";
+                case 0x2F: return "i32.load16_u";
+                case 0x30: return "i64.load8_s";
+                case 0x31: return "i64.load8_u";
+                case 0x32: return "i64.load16_s";
+                case 0x33: return "i64.load16_u";
+                case 0x34: return "i64.load32_s";
+                case 0x35: return "i64.load32_u";
+                case 0x36: return "i32.store";
+                case 0x37: return "i64.store";
+                case 0x38: return "f32.store";
+                case 0x39: return "f64.store";
+                case 0x3A: return "i32.store8";
+                case 0x3B: return "i32.store16";
+                case 0x3C: return "i64.store8";
+                case 0x3D: return "i64.store16";
+                case 0x3E: return "i64.store32";
+                case 0x3F: return "memory.size";
+                case 0x40: return "memory.grow";
+                case 0x41: return "i32.const";
+                case 0x42: return "i64.const";
+                case 0x43: return "f32.const";
+                case 0x44: return "f64.const";
+                case 0x45: return "i32.eqz";
+                case 0x46: return "i32.eq";
+                case 0x47: return "i32.ne";
+                case 0x48: return "i32.lt_s";
+                case 0x49: return "i32.lt_u";
+                case 0x4A: return "i32.gt_s";
+                case 0x4B: return "i32.gt_u";
+                case 0x4C: return "i32.le_s";
+                case 0x4D: return "i32.le_u";
+                case 0x4E: return "i32.ge_s";
+                case 0x4F: return "i32.ge_u";
+                case 0x50: return "i64.eqz";
+                case 0x51: return "i64.eq";
+                case 0x52: return "i64.ne";
+                case 0x53: return "i64.lt_s";
+                case 0x54: return "i64.lt_u";
+                case 0x55: return "i64.gt_s";
+                case 0x56: return "i64.gt_u";
+                case 0x57: return "i64.le_s";
+                case 0x58: return "i64.le_u";
+                case 0x59: return "i64.ge_s";
+                case 0x5A: return "i64.ge_u";
+                case 0x5B: return "f32.eq";
+                case 0x5C: return "f32.ne";
+                case 0x5D: return "f32.lt";
+                case 0x5E: return "f32.gt";
+                case 0x5F: return "f32.le";
+                case 0x60: return "f32.ge";
+                case 0x61: return "f64.eq";
+                case 0x62: return "f64.ne";
+                case 0x63: return "f64.lt";
+                case 0x64: return "f64.gt";
+                case 0x65: return "f64.le";
+                case 0x66: return "f64.ge";
+                case 0x67: return "i32.clz";
+                case 0x68: return "i32.ctz";
+                case 0x69: return "i32.popcnt";
+                case 0x6A: return "i32.add";
+                case 0x6B: return "i32.sub";
+                case 0x6C: return "i32.mul";
+                case 0x6D: return "i32.div_s";
+                case 0x6E: return "i32.div_u";
+                case 0x6F: return "i32.rem_s";
+                case 0x70: return "i32.rem_u";
+                case 0x71: return "i32.and";
+                case 0x72: return "i32.or";
+                case 0x73: return "i32.xor";
+                case 0x74: return "i32.shl";
+                case 0x75: return "i32.shr_s";
+                case 0x76: return "i32.shr_u";
+                case 0x77: return "i32.rotl";
+                case 0x78: return "i32.rotr";
+                case 0x79: return "i64.clz";
+                case 0x7A: return "i64.ctz";
+                case 0x7B: return "i64.popcnt";
+                case 0x7C: return "i64.add";
+                case 0x7D: return "i64.sub";
+                case 0x7E: return "i64.mul";
+                case 0x7F: return "i64.div_s";
+                case 0x80: return "i64.div_u";
+                case 0x81: return "i64.rem_s";
+                case 0x82: return "i64.rem_u";
+                case 0x83: return "i64.and";
+                case 0x84: return "i64.or";
+                case 0x85: return "i64.xor";
+                case 0x86: return "i64.shl";
+                case 0x87: return "i64.shr_s";
+                case 0x88: return "i64.shr_u";
+                case 0x89: return "i64.rotl";
+                case 0x8A: return "i64.rotr";
+                case 0x8B: return "f32.abs";
+                case 0x8C: return "f32.neg";
+                case 0x8D: return "f32.ceil";
+                case 0x8E: return "f32.floor";
+                case 0x8F: return "f32.trunc";
+                case 0x90: return "f32.nearest";
+                case 0x91: return "f32.sqrt";
+                case 0x92: return "f32.add";
+                case 0x93: return "f32.sub";
+                case 0x94: return "f32.mul";
+                case 0x95: return "f32.div";
+                case 0x96: return "f32.min";
+                case 0x97: return "f32.max";
+                case 0x98: return "f32.copysign";
+                case 0x99: return "f64.abs";
+                case 0x9A: return "f64.neg";
+                case 0x9B: return "f64.ceil";
+                case 0x9C: return "f64.floor";
+                case 0x9D: return "f64.trunc";
+                case 0x9E: return "f64.nearest";
+                case 0x9F: return "f64.sqrt";
+                case 0xA0: return "f64.add";
+                case 0xA1: return "f64.sub";
+                case 0xA2: return "f64.mul";
+                case 0xA3: return "f64.div";
+                case 0xA4: return "f64.min";
+                case 0xA5: return "f64.max";
+                case 0xA6: return "f64.copysign";
+                case 0xA7: return "i32.wrap_i64";
+                case 0xA8: return "i32.trunc_f32_s";
+                case 0xA9: return "i32.trunc_f32_u";
+                case 0xAA: return "i32.trunc_f64_s";
+                case 0xAB: return "i32.trunc_f64_u";
+                case 0xAC: return "i64.extend_i32_s";
+                case 0xAD: return "i64.extend_i32_u";
+                case 0xAE: return "i64.trunc_f32_s";
+                case 0xAF: return "i64.trunc_f32_u";
+                case 0xB0: return "i64.trunc_f64_s";
+                case 0xB1: return "i64.trunc_f64_u";
+                case 0xB2: return "f32.convert_i32_s";
+                case 0xB3: return "f32.convert_i32_u";
+                case 0xB4: return "f32.convert_i64_s";
+                case 0xB5: return "f32.convert_i64_u";
+                case 0xB6: return "f32.demote_f64";
+                case 0xB7: return "f64.convert_i32_s";
+                case 0xB8: return "f64.convert_i32_u";
+                case 0xB9: return "f64.convert_i64_s";
+                case 0xBA: return "f64.convert_i64.u";
+                case 0xBB: return "f64.promote_f32";
+                case 0xBC: return "i32.reinterpret_f32";
+                case 0xBD: return "i64.reinterpret_i32";
+                case 0xBE: return "f32.reinterpret_i32";
+                case 0xBF: return "f64.reinterpret_i64";
+                default: return "unknown opcode";
+            }            
+        }
+
+        // Finds common strings of instructions for the purpose of optimization
+        static public void Analyze(Function[] program, int length)
+        {
+            Dictionary<string, int> stats = new Dictionary<string, int>();
+
+            byte[] chunk = new byte[length];
+            
+            double total = 0;
+            for (int f = 0; f < program.Length; f++)
+            {
+                if (program[f].program == null) continue;
+                total += program[f].program.Length;
+            }
+
+            double complete = 0;
+            for (int f = 0; f < program.Length; f++)
+            {
+                if (program[f].program == null) continue;
+                for (int i = 0; i < program[f].program.Length - length; i++)
+                {
+                    complete++;
+                    for (int o = 0; o < length; o++)
+                    {
+                        chunk[o] = program[f].program[i].opCode;
+
+                        var s = Encoding.ASCII.GetString(chunk);
+                        if (!stats.ContainsKey(s))
+                        {
+                            stats.Add(s, 0);
+                        }
+
+                        stats[s]++;
+                    }
+                }
+                Console.WriteLine("Percent Complete: %" + (100*complete/total));
+            }
+            
+            foreach (var keyValuePair in stats.OrderBy(x => x.Value))
+            {
+                byte[] result = Encoding.ASCII.GetBytes(keyValuePair.Key);
+                for (int i = 0; i < length; i++)
+                {
+                    if(i == 0)
+                        Console.Write(Translate(result[i]));
+                    else
+                        Console.Write(", " + Translate(result[i]));
+                }
+                Console.WriteLine(": " + keyValuePair.Value);
+            }
         }
     }
 }

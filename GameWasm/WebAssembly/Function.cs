@@ -15,7 +15,7 @@ namespace GameWasm.Webassembly
         public Inst[] program = null;
         public Func<Value[], Value[]> native = null;
 
-        public List<byte> LocalTypes = new List<byte>();
+        public byte[] LocalTypes = new byte[0];
 
         // Standard constructor
         public Function(Module.Module module, String name, Type type = null, UInt32 index = 0xFFFFFFFF, Instruction.Instruction start = null)

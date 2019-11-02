@@ -74,18 +74,16 @@ namespace GameWasm.Webassembly.Test
 
         public static bool Run(string path)
         {
+            Console.WriteLine("LoadI32");
+            new LoadI32(path);
             Console.WriteLine("Unwind");
             new Unwind(path);
-
-            
             Console.WriteLine("StoreTest");
             new StoreTest(path);
             Console.WriteLine("I32");
             new I32(path);
             Console.WriteLine("I64");
             new I64(path);
-            Console.WriteLine("LoadI32");
-            new LoadI32(path);
             Console.WriteLine("LoadI64");
             new LoadI64(path);
             Console.WriteLine("LoadF32");

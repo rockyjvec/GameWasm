@@ -13,9 +13,12 @@ namespace GameWasm.Webassembly.Module
 
         List<Type> types = new List<Type>();
         public List<Function> Functions = new List<Function>();
+        public Function[] functions;
         public List<Memory> Memory = new List<Memory>();
+        public Memory[] memory;
         public List<Table> Tables = new List<Table>();
         public List<Webassembly.Global> Globals = new List<Webassembly.Global>();
+        public Global[] globals;
 
         public Dictionary<string, object> Exports = new Dictionary<string, object>();
 
@@ -90,6 +93,9 @@ namespace GameWasm.Webassembly.Module
                 }
             }
 
+            functions = Functions.ToArray();
+            memory = Memory.ToArray();
+            globals = Globals.ToArray();
 
             if (startFunction != null)
             {
@@ -435,9 +441,10 @@ namespace GameWasm.Webassembly.Module
                 for (uint local = 0; local < numLocals; local++)
                 {
                     UInt32 count = parser.GetUInt32();
+                    Functions[(int) functionIndex].LocalTypes = new byte[count];
                     byte type = parser.GetValType();
                     for (uint n = 0; n < count; n++)
-                        Functions[(int) functionIndex].LocalTypes.Add(type);
+                        Functions[(int) functionIndex].LocalTypes[n] = type;
                 }
 
                 Functions[(int) functionIndex].program = parser.GetExpr();

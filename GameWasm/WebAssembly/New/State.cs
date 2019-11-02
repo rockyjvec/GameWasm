@@ -4,9 +4,10 @@ namespace GameWasm.Webassembly.New
     {
         public int ip;
         public int vStackPtr;
-        public int localBasePtr;
         public Function function;
-        public int labelBasePtr;
+        public Label[] lStack;
         public int labelPtr;
+        public Inst[] program;
+        public Value[] locals;
     }
 }
