@@ -41,15 +41,7 @@ namespace GameWasm.Webassembly
             Type = type;
             GlobalIndex = Module.Store.runtime.functions.Count;
             Module.Store.runtime.functions.Add(this);
-/*            Start = new Instruction.Custom(delegate
-            {
-                Value[] ret = action(module.Store.CurrentFrame.Locals.ToArray());
-
-                foreach (var v in ret)
-                {
-                    module.Store.CurrentFrame.Push(v);
-                }
-            });*/
+            native = action;
         }
 
         protected void NotImplemented()

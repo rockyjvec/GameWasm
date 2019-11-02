@@ -74,6 +74,10 @@ namespace GameWasm.Webassembly.Test
 
         public static bool Run(string path)
         {
+            Console.WriteLine("Unwind");
+            new Unwind(path);
+
+            
             Console.WriteLine("StoreTest");
             new StoreTest(path);
             Console.WriteLine("I32");
@@ -118,8 +122,6 @@ namespace GameWasm.Webassembly.Test
             new Loop(path);
             Console.WriteLine("Labels");
             new Labels(path);
-            Console.WriteLine("Func1");
-            new Func1(path);
             Console.WriteLine("Switch");
             new Switch(path);
             Console.WriteLine("Align1");
@@ -132,8 +134,6 @@ namespace GameWasm.Webassembly.Test
             new LeftToRight(path);
             Console.WriteLine("Return");
             new Return(path);
-            Console.WriteLine("Unwind");
-            new Unwind(path);
             Console.WriteLine("BrIf");
             new BrIf(path);
             Console.WriteLine("CallIndirect"); //TODO: implement traps
@@ -162,6 +162,8 @@ namespace GameWasm.Webassembly.Test
             new Endianness(path);
             Console.WriteLine("Conversions");
             new Conversions(path);
+            Console.WriteLine("Func1");
+            new Func1(path);
 
             return true;
         }
