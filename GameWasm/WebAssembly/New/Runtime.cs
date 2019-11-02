@@ -78,22 +78,22 @@ namespace GameWasm.Webassembly.New
             // TODO: check for matching type in FStat
             for(int i = 0; i < parameters.Length ; i++)
             {
-                if (parameters[i] is UInt32 && functions[functionIndex].Type.Parameters[i] == Type.i32)
+                if (parameters[i] is UInt32 && s.function.Type.Parameters[i] == Type.i32)
                 {
                     s.locals[localPtr].type = Type.i32;
                     s.locals[localPtr].i32 = (UInt32)parameters[i];
                 }
-                else if (parameters[i] is UInt64 && functions[functionIndex].Type.Parameters[i] == Type.i64)
+                else if (parameters[i] is UInt64 && s.function.Type.Parameters[i] == Type.i64)
                 {
                     s.locals[localPtr].type = Type.i64;
                     s.locals[localPtr].i64 = (UInt64)parameters[i];
                 }
-                else if (parameters[i] is float && functions[functionIndex].Type.Parameters[i] == Type.f32)
+                else if (parameters[i] is float && s.function.Type.Parameters[i] == Type.f32)
                 {
                     s.locals[localPtr].type = Type.f32;
                     s.locals[localPtr].f32 = (float)parameters[i];
                 }
-                else if (parameters[i] is double && functions[functionIndex].Type.Parameters[i] == Type.f64)
+                else if (parameters[i] is double && s.function.Type.Parameters[i] == Type.f64)
                 {
                     s.locals[localPtr].type = Type.f64;
                     s.locals[localPtr].f64 = (double)parameters[i];
@@ -106,12 +106,8 @@ namespace GameWasm.Webassembly.New
                 localPtr++;
             }
 
-            for (int i = 0; i < functions[functionIndex].LocalTypes.Length; i++)
-            {
-                s.locals[localPtr].type = functions[functionIndex].LocalTypes[i];
-                s.locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
-                localPtr++;
-            }
+            if(s.function.LocalTypes.Length > 0)
+                Array.Copy(s.function.LocalTypes, 0, s.locals, localPtr, s.function.LocalTypes.Length);
         }
 
         // Returns true while there is still work to be done.
@@ -227,9 +223,11 @@ namespace GameWasm.Webassembly.New
                         break;
                     case 0x0C: // br
                     {
-                        for (int i = 0; i < s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr; i++)
+                        var l = s.lStack[s.labelPtr - (int) inst.i32 + 1];
+                        var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
+                        for (int i = 0; i < len; i++)
                         {
-                            vStack[s.lStack[s.labelPtr - (int) inst.i32 + 1].vStackPtr++] = vStack[--s.vStackPtr];
+                            vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
                         }
 
                         s.labelPtr -= (int) inst.i32 + 1;
@@ -242,9 +240,11 @@ namespace GameWasm.Webassembly.New
                     {
                         if (vStack[--s.vStackPtr].i32 > 0)
                         {
-                            for (int i = 0; i < s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr; i++)
+                            var l = s.lStack[s.labelPtr - (int) inst.i32 + 1];
+                            var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
+                            for (int i = 0; i < len; i++)
                             {
-                                vStack[s.lStack[s.labelPtr - (int) inst.i32 + 1].vStackPtr++] = vStack[--s.vStackPtr];
+                                vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
                             }
 
                             s.labelPtr -= (int) inst.i32 + 1;
@@ -268,9 +268,11 @@ namespace GameWasm.Webassembly.New
                             index = inst.table[(int) index];
                         }
 
-                        for (int i = 0; i < s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr; i++)
+                        var l = s.lStack[s.labelPtr - (int) index + 1];
+                        var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
+                        for (int i = 0; i < len; i++)
                         {
-                            vStack[s.lStack[s.labelPtr - (int) index + 1].vStackPtr++] = vStack[--s.vStackPtr];
+                            vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
                         }
 
                         s.labelPtr -= (int) index + 1;
@@ -282,15 +284,8 @@ namespace GameWasm.Webassembly.New
                     }
                     case 0x0F: // return
 
-//                            if (cStackPtr == 1) return false;
-                        
                         for (int i = 0; i < s.function.Type.Results.Length; i++)
                         {
-/*                            if (vStack[s.vStackPtr - 1 - i].type !=
-                                s.function.Type.Results[i])
-                            {
-                                throw new Exception("return type mismatch");
-                            }*/
                             vStack[cStack[cStackPtr - 1].vStackPtr++] = vStack[s.vStackPtr - 1 - i];
                         }
 
@@ -329,22 +324,16 @@ namespace GameWasm.Webassembly.New
                             s.lStack[s.labelPtr].ip = 9999999;
                             s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
-                            int localPtr = 0;
-                            for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0; i--)
+                            if (s.function.Type.Parameters.Length > 0)
                             {
-                                s.locals[localPtr] = vStack[cStack[cStackPtr - 1].vStackPtr - i - 1];
-                                localPtr++;
+                                cStack[cStackPtr - 1].vStackPtr -= s.function.Type.Parameters.Length;
+                                Array.Copy(vStack, cStack[cStackPtr - 1].vStackPtr, s.locals, 0, s.function.Type.Parameters.Length);
                             }
-                            cStack[cStackPtr - 1].vStackPtr -= functions[funcIndex].Type.Parameters.Length;
+                        
                             s.vStackPtr = cStack[cStackPtr - 1].vStackPtr;
 
-                            for (int i = 0; i < functions[funcIndex].LocalTypes.Length; i++)
-                            {
-                                // TODO:  should I record the actual function local types here?
-                                s.locals[localPtr].type = functions[funcIndex].LocalTypes[i];
-                                s.locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
-                                localPtr++;
-                            }
+                            if(s.function.LocalTypes.Length > 0)
+                                Array.Copy(functions[funcIndex].LocalTypes, 0, s.locals, s.function.Type.Parameters.Length, functions[funcIndex].LocalTypes.Length);
                         }
 
                         break;
@@ -367,22 +356,16 @@ namespace GameWasm.Webassembly.New
                         s.lStack[s.labelPtr].ip = 9999999;
                         s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
-                        int localPtr = 0;
-                        for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0 ; i--)
+                        if (s.function.Type.Parameters.Length > 0)
                         {
-                            s.locals[localPtr] = vStack[cStack[cStackPtr - 1].vStackPtr - i - 1];
-                            localPtr++;
+                            cStack[cStackPtr - 1].vStackPtr -= s.function.Type.Parameters.Length;
+                            Array.Copy(vStack, cStack[cStackPtr - 1].vStackPtr, s.locals, 0, s.function.Type.Parameters.Length);
                         }
-                        cStack[cStackPtr - 1].vStackPtr -= functions[funcIndex].Type.Parameters.Length;
+                        
                         s.vStackPtr = cStack[cStackPtr - 1].vStackPtr;
 
-                        for (int i = 0; i < functions[funcIndex].LocalTypes.Length; i++)
-                        {
-                            // TODO:  should I record the actual function local types here?
-                            s.locals[localPtr].type = functions[funcIndex].LocalTypes[i];
-                            s.locals[localPtr].i64 = 0; // shared offsets means this updates all, yay
-                            localPtr++;
-                        }
+                        if(s.function.LocalTypes.Length > 0)
+                            Array.Copy(functions[funcIndex].LocalTypes, 0, s.locals, s.function.Type.Parameters.Length, functions[funcIndex].LocalTypes.Length);
 
                         break;
                     }

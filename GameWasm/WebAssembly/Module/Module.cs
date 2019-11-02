@@ -441,10 +441,13 @@ namespace GameWasm.Webassembly.Module
                 for (uint local = 0; local < numLocals; local++)
                 {
                     UInt32 count = parser.GetUInt32();
-                    Functions[(int) functionIndex].LocalTypes = new byte[count];
+                    Functions[(int) functionIndex].LocalTypes = new Value[count];
                     byte type = parser.GetValType();
                     for (uint n = 0; n < count; n++)
-                        Functions[(int) functionIndex].LocalTypes[n] = type;
+                    {
+                        Functions[(int) functionIndex].LocalTypes[n].type = type;
+                        Functions[(int) functionIndex].LocalTypes[n].i64 = 0;
+                    }
                 }
 
                 Functions[(int) functionIndex].program = parser.GetExpr();

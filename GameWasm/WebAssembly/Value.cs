@@ -5,7 +5,7 @@ namespace GameWasm.Webassembly
 {
     
     [StructLayout(LayoutKind.Explicit)]
-    public struct Value
+    public struct  Value
     {
         [FieldOffset(8)] 
         public byte type;

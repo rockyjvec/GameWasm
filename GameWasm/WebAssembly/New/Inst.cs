@@ -23,5 +23,6 @@ namespace GameWasm.Webassembly.New
         public double f64;
 //        [FieldOffset(8)]
         public UInt32[] table;
+        public Value[] array;
     }
 }
