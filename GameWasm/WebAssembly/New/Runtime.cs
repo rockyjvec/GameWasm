@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace GameWasm.Webassembly.New
 {
@@ -22,7 +23,6 @@ namespace GameWasm.Webassembly.New
             // TODO: these could be set differently
             cStack = new State[1000];
             vStack = new Value[1000];
-//            globals = new Value[1000];
             locals = new Value[1000000];
             labels = new Stack<Label>();
             functions = new List<Function>();
@@ -101,9 +101,17 @@ namespace GameWasm.Webassembly.New
         {
             Label old;
             Label l = old = labels.Pop();
+            if (l.ip == 1480)
+            {
+                Debugger.Break();
+            }
             for (; number > 1; number--)
             {
                 l = labels.Pop();
+                if (l.ip == 1480)
+                {
+                    Debugger.Break();
+                }
             }
 
             if (!end)
@@ -157,13 +165,13 @@ namespace GameWasm.Webassembly.New
                         if (cStack[cStackPtr].vStackPtr > 0)
                             Console.Write(" => " + Type.Pretify(vStack[cStack[cStackPtr].vStackPtr - 1]));
 
-                        for (int i = 0; i < localPtr - cStack[cStackPtr].localBasePtr; i++)
+                        for (int i = 0; i < functions[cStack[cStackPtr].functionPtr].Type.Parameters.Length + functions[cStack[cStackPtr].functionPtr].LocalTypes.Count; i++)
                         {
                             if (i == 0)
                                 Console.Write("\n");
                             if (i > 0)
-                                Console.Write(",");
-                            Console.Write(" $" + i + " = " + Type.Pretify(locals[cStack[cStackPtr].localBasePtr + i]));
+                                Console.Write("\n");
+                            Console.Write(" $var" + i + " = " + Type.Pretify(locals[cStack[cStackPtr].localBasePtr + i]));
                         }
 
                         Console.Write("\n" + functions[cStack[cStackPtr].functionPtr].Module.Name + "@" +
@@ -180,6 +188,7 @@ namespace GameWasm.Webassembly.New
                         case 0x01: // nop
                             break;
                         case 0x02: // block
+                            Console.Write((int)inst.i32);
                             labels.Push(new Label((int) inst.i32, cStack[cStackPtr].vStackPtr));
                             break;
                         case 0x03: // loop
@@ -218,9 +227,13 @@ namespace GameWasm.Webassembly.New
                             break;
                         case 0x0C: // br
                         {
+                            if (inst.pointer == 0x80170)
+                            {
+                                Debugger.Break();
+                            }
                             Label l = PopLabel((int) inst.i32 + 1);
 
-                            if (l.ip == -1) return false; // Why is this necessary?
+                            //if (l.ip == -1) return false; // Why is this necessary?
 
                             cStack[cStackPtr].ip = l.ip;
 
@@ -232,7 +245,7 @@ namespace GameWasm.Webassembly.New
                             {
                                 Label l = PopLabel((int) inst.i32 + 1);
 
-                                if (l.ip == -1) return false; // Why is this necessary?
+                              //  if (l.ip == -1) return false; // Why is this necessary?
 
                                 cStack[cStackPtr].ip = l.ip;
                             }
@@ -254,7 +267,7 @@ namespace GameWasm.Webassembly.New
 
                             Label l = PopLabel((int) index + 1);
 
-                            if (l.ip == -1) return false; // Why is this necessary?
+                            //if (l.ip == -1) return false; // Why is this necessary?
 
                             cStack[cStackPtr].ip = l.ip;
 
@@ -1469,9 +1482,8 @@ namespace GameWasm.Webassembly.New
                         case 0xBC: // i32.reinterpret_f32
                             vStack[cStack[cStackPtr].vStackPtr - 1].type = Type.i32;
                             break;
-                        case 0xBD: // i64.reinterpret_i32
+                        case 0xBD: // i64.reinterpret_f64
                             vStack[cStack[cStackPtr].vStackPtr - 1].type = Type.i64;
-                            vStack[cStack[cStackPtr].vStackPtr - 1].i64 &= 0x00000000FFFFFFFF;
                             break;
                         case 0xBE: // f32.reinterpret_i32
                             vStack[cStack[cStackPtr].vStackPtr - 1].type = Type.f32;

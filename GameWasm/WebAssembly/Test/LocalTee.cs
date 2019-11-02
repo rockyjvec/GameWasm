@@ -44,7 +44,7 @@ namespace GameWasm.Webassembly.Test
             assert(test.Call("as-br_table-value", (UInt32) 0), (UInt32) 10);
             assert(test.Call("as-br_table-value-index", (UInt32) 0), (UInt32) 6);
 
-//            assert(test.Call("as-return-value", (UInt32) 0), (UInt32) 7);
+            assert(test.Call("as-return-value", (UInt32) 0), (UInt32) 7);
 
             assert(test.Call("as-if-cond", (UInt32) 0), (UInt32) 0);
             assert(test.Call("as-if-then", (UInt32) 1), (UInt32) 3);

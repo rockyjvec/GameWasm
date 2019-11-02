@@ -441,12 +441,12 @@ namespace GameWasm.Webassembly.Test
             assert64(test.Call("i64.reinterpret_f64", (double) 0.0), (UInt64) 0);
             double negZero = 0;
             negZero = -negZero;
-//            assert64(test.Call("i64.reinterpret_f64", (double) negZero), (UInt64) 0x8000000000000000);
+            assert64(test.Call("i64.reinterpret_f64", (double) negZero), (UInt64) 0x8000000000000000);
             //assert64(test.Call("i64.reinterpret_f64", (double) 0x0.0000000000001p - 1022), (UInt64) 1);
             //assert64(test.Call("i64.reinterpret_f64", (double) -nan:0xfffffffffffff), (UInt64) 0xFFFFFFFFFFFFFFFF);
             //assert64(test.Call("i64.reinterpret_f64", (double) -0x0.0000000000001p - 1022), (UInt64) 0x8000000000000001);
-//            assert64(test.Call("i64.reinterpret_f64", (double) 1.0), (UInt64) 4607182418800017408);
-//            assert64(test.Call("i64.reinterpret_f64", (double) 3.14159265358979), (UInt64) 4614256656552045841);
+            assert64(test.Call("i64.reinterpret_f64", (double) 1.0), (UInt64) 4607182418800017408);
+            assert64(test.Call("i64.reinterpret_f64", (double) 3.14159265358979), (UInt64) 4614256656552045841);
 //            assert64(test.Call("i64.reinterpret_f64", (double) 0x1.fffffffffffffp + 1023), (UInt64) 9218868437227405311);
             //assert64(test.Call("i64.reinterpret_f64", (double) -0x1.fffffffffffffp + 1023), (UInt64) -4503599627370497);
             //assert64(test.Call("i64.reinterpret_f64", (double) inf), (UInt64) 0x7ff0000000000000);

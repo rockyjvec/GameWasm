@@ -28,9 +28,9 @@ namespace GameWasm.Webassembly
             switch (v.type)
             {
                 case Type.i32:
-                    return v.i32.ToString();
+                    return ((Int32)v.i32).ToString();
                 case Type.i64:
-                    return v.i64.ToString();
+                    return ((Int64)v.i64).ToString();
                 case Type.f32:
                     return v.f32.ToString();
                 case Type.f64:
