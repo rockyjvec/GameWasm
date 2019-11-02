@@ -162,6 +162,13 @@ namespace GameWasm.Webassembly.New
 
                 if (Profile)
                 {
+                    timer.Stop();
+                    var overhead = timer.Elapsed;
+                    if (!profile.ContainsKey(0xFF))
+                    {
+                        profile.Add(0xFF, TimeSpan.Zero);
+                    }
+                    profile[0xFF] += timer.Elapsed;
                     timer.Reset();
                     timer.Start();
                 }
@@ -1529,6 +1536,9 @@ namespace GameWasm.Webassembly.New
                             total.Milliseconds / 10);
                         Console.WriteLine("Total: " + elapsedTime2);
                     }
+
+                    timer.Restart();
+                    timer.Start();
                 }
 
                 counter++;
