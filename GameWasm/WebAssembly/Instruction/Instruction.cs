@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using GameWasm.Webassembly.New;
@@ -486,33 +484,33 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(i);
                         break;
                     case 0x02: // block
-                        i.i32 = (UInt32)(inst as Block).label.Pos;
+                        i.pos = (inst as Block).label.Pos;
                         program.Add(i);
                         break;
                     case 0x03: // loop
                         program.Add(i);
                         break;
                     case 0x04: // if
-                        i.i32 = (UInt32) (inst as If).label.Pos;
+                        i.pos = (inst as If).label.Pos;
                         program.Add(i);
                         break;
                     case 0x05: // else
-                        i.i32 = (UInt32) (inst as Else).label.Pos;
+                        i.pos = (inst as Else).label.Pos - 1;
                         program.Add(i);
                         break;
                     case 0x0B: // end
                         program.Add(i);
                         break;
                     case 0x0C: // br
-                        i.i32 = (inst as Br).labelidx;
+                        i.pos = (int)(inst as Br).labelidx + 1;
                         program.Add(i);
                         break;
                     case 0x0D: // br_if
-                        i.i32 = (inst as BrIf).labelidx;
+                        i.pos = (int)(inst as BrIf).labelidx + 1;
                         program.Add(i);
                         break;
                     case 0x0E: // br_table
-                        i.i32 = (inst as BrTable).defaultLabelidx;
+                        i.pos = (int)(inst as BrTable).defaultLabelidx;
                         i.table = (inst as BrTable).table;
                         program.Add(i);
                         break;
@@ -520,11 +518,11 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(i);
                         break;
                     case 0x10: // call
-                        i.i32 = (UInt32)(inst as Call).funcidx;
+                        i.pos = (inst as Call).funcidx;
                         program.Add(i);
                         break;
                     case 0x11: // call_indirect
-                        i.i32 = (UInt32)(inst as CallIndirect).tableidx;
+                        i.pos = (inst as CallIndirect).tableidx;
                         program.Add(i);
                         break;
 
@@ -552,22 +550,22 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(i);
                         break;
                     case 0x23: // global.get
-                        i.i32 = (UInt32)(inst as GlobalGet).index;
+                        i.pos = (inst as GlobalGet).index;
                         program.Add(i);
                         break;
                     case 0x24: // global.set
-                        i.i32 = (UInt32)(inst as GlobalSet).index;
+                        i.pos = (inst as GlobalSet).index;
                         program.Add(i);
                         break;
 
                     /* Memory Instructions */
 
                     case 0x28: // i32.load
-                        i.i32 = (inst as I32load).offset;
+                        i.pos64 = (inst as I32load).offset;
                         program.Add(i);
                         break;
                     case 0x29: // i64.load
-                        i.i32 = (inst as I64load).offset;
+                        i.pos64 = (inst as I64load).offset;
                         program.Add(i);
                         break;
                     case 0x2A: // f32.load
@@ -619,11 +617,11 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(i);
                         break;
                     case 0x36: // i32.store
-                        i.i32 = (inst as I32store).offset;
+                        i.pos64 = (inst as I32store).offset;
                         program.Add(i);
                         break;
                     case 0x37: // i64.store
-                        i.i32 = (inst as I64store).offset;
+                        i.pos64 = (inst as I64store).offset;
                         program.Add(i);
                         break;
                     case 0x38: // f32.store

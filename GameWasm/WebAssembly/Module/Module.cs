@@ -595,9 +595,9 @@ namespace GameWasm.Webassembly.Module
             {
                 throw new Trap("integer overflow");
             }
-//            catch (IndexOutOfRangeException e)
+            catch (IndexOutOfRangeException e)
             {
-  //              throw new Trap("call stack exhausted");
+                throw new Trap("call stack exhausted");
             }
         }
     }

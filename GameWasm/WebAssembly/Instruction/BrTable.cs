@@ -4,19 +4,19 @@ namespace GameWasm.Webassembly.Instruction
 {
     class BrTable : Instruction
     {
-        public UInt32 defaultLabelidx;
-        public UInt32[] table;
+        public int defaultLabelidx;
+        public int[] table;
 
         public BrTable(Parser parser) : base(parser, true)
         {
             UInt32 vectorSize = parser.GetUInt32();
-            table = new UInt32[vectorSize];
+            table = new int[vectorSize];
             for(int i = 0; i < vectorSize; i++)
             {
-                table[i] = parser.GetIndex();
+                table[i] = (int)parser.GetIndex() + 1;
             }
 
-            defaultLabelidx = (UInt32)parser.GetIndex();
+            defaultLabelidx = (int)parser.GetIndex() + 1;
         }
 
         public override string ToString()

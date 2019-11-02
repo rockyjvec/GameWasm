@@ -113,7 +113,13 @@ namespace GameWasm.Webassembly.New
         // Returns true while there is still work to be done.
         public bool Step(int steps = 1000)
         {
-            for(; steps >= 0; --steps)
+            // reusable variables for optimization:
+            Label label;
+            int length;
+            int index;
+            UInt64 offset;
+            
+            for(; steps != 0; --steps)
             {
 /*
                 if (Debug)
@@ -157,49 +163,49 @@ namespace GameWasm.Webassembly.New
                         break;
                     case 0x02: // block
                         // PushLabel
-                        s.lStack[s.labelPtr].ip = (int) s.program[s.ip].i32;
+                        s.lStack[s.labelPtr].ip = s.program[s.ip].pos;
                         s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
                         ++s.labelPtr;
                         break;
                     case 0x03: // loop
                         // PushLabel
-                        s.lStack[s.labelPtr].ip = (int) s.ip - 1;
+                        s.lStack[s.labelPtr].ip = s.ip - 1;
                         s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
                         ++s.labelPtr;
                         break;
                     case 0x04: // if
                         if (vStack[--s.vStackPtr].i32 > 0)
                         {
-                            if (s.program[(int) s.program[s.ip].i32].opCode == 0x05) // if it's an else
+                            if (s.program[s.program[s.ip].pos].opCode == 0x05) // if it's an else
                             {
                                 // PushLabel
-                                s.lStack[s.labelPtr].ip = (int) s.program[(int) s.program[s.ip].i32].i32;
+                                s.lStack[s.labelPtr].ip = s.program[s.program[s.ip].pos].pos;
                                 s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
                                 ++s.labelPtr;
                             }
                             else
                             {
                                 // PushLabel
-                                s.lStack[s.labelPtr].ip = (int) s.program[s.ip].i32;
+                                s.lStack[s.labelPtr].ip = s.program[s.ip].pos;
                                 s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
                                 ++s.labelPtr;
                             }
                         }
                         else
                         {
-                            if (s.program[(int) s.program[s.ip].i32].opCode == 0x05) // if it's an else
+                            if (s.program[s.program[s.ip].pos].opCode == 0x05) // if it's an else
                             {
                                 // PushLabel
-                                s.lStack[s.labelPtr].ip = (int) s.program[(int) s.program[s.ip].i32].i32;
+                                s.lStack[s.labelPtr].ip = s.program[s.program[s.ip].pos].pos;
                                 s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
                                 ++s.labelPtr;
                             }
-                            s.ip = (int) s.program[s.ip].i32;
+                            s.ip = s.program[s.ip].pos;
                         }
 
                         break;
                     case 0x05: // else
-                        s.ip = (int) s.program[s.ip].i32 - 1;
+                        s.ip = s.program[s.ip].pos;
                         break;
                     case 0x0B: // end
                         // If special case of end of a function, just get out of here.
@@ -207,69 +213,67 @@ namespace GameWasm.Webassembly.New
                         --s.labelPtr;
                         break;
                     case 0x0C: // br
-                    {
-                        var l = s.lStack[s.labelPtr - (int) s.program[s.ip].i32 + 1];
-                        var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
-                        for (int i = 0; i < len; i++)
+                        label = s.lStack[s.labelPtr - s.program[s.ip].pos];
+                        length = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
+                        for (int i = 0; i < length; ++i)
                         {
-                            vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
+                            vStack[label.vStackPtr] = vStack[--s.vStackPtr];
+                            label.vStackPtr++;
                         }
 
-                        s.labelPtr -= (int) s.program[s.ip].i32 + 1;
+                        s.labelPtr -= s.program[s.ip].pos;
                         s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
 
                         s.ip = s.lStack[s.labelPtr].ip;
                         break;
-                    }
                     case 0x0D: // br_if
-                    {
-                        if (vStack[--s.vStackPtr].i32 > 0)
+                        --s.vStackPtr;
+                        if (vStack[s.vStackPtr].i32 > 0)
                         {
-                            var l = s.lStack[s.labelPtr - (int) s.program[s.ip].i32 + 1];
-                            var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
-                            for (int i = 0; i < len; i++)
+                            label = s.lStack[s.labelPtr - s.program[s.ip].pos];
+                            length = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
+                            for (int i = 0; i < length; ++i)
                             {
-                                vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
+                                vStack[label.vStackPtr] = vStack[--s.vStackPtr];
+                                ++label.vStackPtr;
                             }
 
-                            s.labelPtr -= (int) s.program[s.ip].i32 + 1;
+                            s.labelPtr -= s.program[s.ip].pos;
                             s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
 
                             s.ip = s.lStack[s.labelPtr].ip;
                         }
-
                         break;
-                    }
                     case 0x0E: // br_table
-                    {
-                        UInt32 index = vStack[--s.vStackPtr].i32;
+                        --s.vStackPtr;
+                        index = (int)vStack[s.vStackPtr].i32;
 
                         if (index >= s.program[s.ip].table.Length)
                         {
-                            index = s.program[s.ip].i32;
+                            index = s.program[s.ip].pos;
                         }
                         else
                         {
-                            index = s.program[s.ip].table[(int) index];
+                            index = s.program[s.ip].table[index];
                         }
 
-                        var l = s.lStack[s.labelPtr - (int) index + 1];
-                        var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
-                        for (int i = 0; i < len; i++)
+                        label = s.lStack[s.labelPtr - (int) index];
+                        length = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
+                        for (int i = 0; i < length; ++i)
                         {
-                            vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
+                            vStack[label.vStackPtr] = vStack[--s.vStackPtr];
+                            ++label.vStackPtr;
                         }
 
-                        s.labelPtr -= (int) index + 1;
+                        s.labelPtr -= (int) index;
                         s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
 
                         s.ip = s.lStack[s.labelPtr].ip;
 
                         break;
-                    }
                     case 0x0F: // return
 
-                        for (int i = 0; i < s.function.Type.Results.Length; i++)
+                        for (int i = 0; i < s.function.Type.Results.Length; ++i)
                         {
                             vStack[cStack[cStackPtr - 1].vStackPtr++] = vStack[s.vStackPtr - 1 - i];
                         }
@@ -279,20 +283,19 @@ namespace GameWasm.Webassembly.New
                             return false;
                         break;
                     case 0x10: // call
-                    {
-                        var funcIndex = s.function.Module.functions[(int) s.program[s.ip].i32].GlobalIndex; // TODO: this may need to be optimized
+                        index = s.function.Module.functions[s.program[s.ip].pos].GlobalIndex; // TODO: this may need to be optimized
 
-                        if (functions[funcIndex].program == null) // native
+                        if (functions[index].program == null) // native
                         {
-                            Value[] parameters = new Value[functions[funcIndex].Type.Parameters.Length];
-                            for (int i = functions[funcIndex].Type.Parameters.Length - 1; i >= 0; i--)
+                            Value[] parameters = new Value[functions[index].Type.Parameters.Length];
+                            for (int i = functions[index].Type.Parameters.Length - 1; i >= 0; --i)
                             {
                                 parameters[i] = vStack[--s.vStackPtr];
                             }
 
-                            Value[] returns = functions[funcIndex].native(parameters);
+                            Value[] returns = functions[index].native(parameters);
 
-                            for (int i = 0; i < returns.Length; i++)
+                            for (int i = 0; i < returns.Length; ++i)
                             {
                                 vStack[s.vStackPtr++] = returns[i];
                             }
@@ -301,7 +304,7 @@ namespace GameWasm.Webassembly.New
                         {
                             s = cStack[++cStackPtr];
                             s.ip = -1;
-                            s.function = functions[funcIndex];
+                            s.function = functions[index];
                             s.program = s.function.program;
                             s.labelPtr = cStack[cStackPtr - 1].labelPtr;
 
@@ -318,22 +321,17 @@ namespace GameWasm.Webassembly.New
                             s.vStackPtr = cStack[cStackPtr - 1].vStackPtr;
 
                             if(s.function.LocalTypes.Length > 0)
-                                Array.Copy(functions[funcIndex].LocalTypes, 0, s.locals, s.function.Type.Parameters.Length, functions[funcIndex].LocalTypes.Length);
+                                Array.Copy(functions[index].LocalTypes, 0, s.locals, s.function.Type.Parameters.Length, functions[index].LocalTypes.Length);
                         }
 
                         break;
-                    }
                     case 0x11: // call_indirect
-                    {
-                        var m = s.function.Module;
-                        var ii = (int) m.Tables[(int) s.program[s.ip].i32].Get(vStack[--s.vStackPtr].i32);
-                        var funcIndex = (int) m.functions[ii].GlobalIndex;
+                        index = s.function.Module.functions[s.function.Module.Tables[s.program[s.ip].pos].Get(vStack[--s.vStackPtr].i32)].GlobalIndex;
 
-                        
                         s = cStack[++cStackPtr];
 
                         s.ip = -1;
-                        s.function = functions[funcIndex];
+                        s.function = functions[index];
                         s.program = s.function.program;
                         s.labelPtr = cStack[cStackPtr - 1].labelPtr;
 
@@ -350,10 +348,9 @@ namespace GameWasm.Webassembly.New
                         s.vStackPtr = cStack[cStackPtr - 1].vStackPtr;
 
                         if(s.function.LocalTypes.Length > 0)
-                            Array.Copy(functions[funcIndex].LocalTypes, 0, s.locals, s.function.Type.Parameters.Length, functions[funcIndex].LocalTypes.Length);
+                            Array.Copy(functions[index].LocalTypes, 0, s.locals, s.function.Type.Parameters.Length, functions[index].LocalTypes.Length);
 
                         break;
-                    }
 
                     /* Parametric Instructions */
 
@@ -361,13 +358,16 @@ namespace GameWasm.Webassembly.New
                         --s.vStackPtr;
                         break;
                     case 0x1B: // select
-                        if (vStack[s.vStackPtr - 1].i32 == 0)
+                        --s.vStackPtr;
+                        if (vStack[s.vStackPtr].i32 == 0)
                         {
-                            vStack[s.vStackPtr - 3] = vStack[s.vStackPtr - 2];
+                            --s.vStackPtr;
+                            vStack[s.vStackPtr - 1] = vStack[s.vStackPtr];
                         }
-
-                        --s.vStackPtr;
-                        --s.vStackPtr;
+                        else
+                        {
+                            --s.vStackPtr;
+                        }
                         break;
 
                     /* Variable Instructions */
@@ -381,43 +381,54 @@ namespace GameWasm.Webassembly.New
                         s.locals[s.program[s.ip].i32] = vStack[s.vStackPtr];
                         break;
                     case 0x22: // local.tee
-                        s.locals[s.program[s.ip].i32] = vStack[s.vStackPtr - 1];
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].i32] = vStack[s.vStackPtr];
+                        ++s.vStackPtr;
                         break;
                     case 0x23: // global.get
-                        vStack[s.vStackPtr++] = s.function.Module.globals[(int)s.program[s.ip].i32].GetValue();
-
+                        vStack[s.vStackPtr] = s.function.Module.globals[s.program[s.ip].pos].GetValue();
+                        ++s.vStackPtr;
                         break;
                     case 0x24: // global.set
-                        s.function.Module.globals[(int)s.program[s.ip].i32].Set(vStack[--s.vStackPtr]);
+                        --s.vStackPtr;
+                        s.function.Module.globals[s.program[s.ip].pos].Set(vStack[s.vStackPtr]);
 //                            globals[s.program[s.ip].i32] = vStack[--s.vStackPtr];
                         break;
 
                     /* Memory Instructions */
 
                     case 0x28: // i32.load
-                    {
-                        var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) s.program[s.ip].i32 + vStack[pos].i32;
-                        vStack[pos].b0 = s.function.Module.memory[0].Buffer[offset + 0];
-                        vStack[pos].b1 = s.function.Module.memory[0].Buffer[offset + 1];
-                        vStack[pos].b2 = s.function.Module.memory[0].Buffer[offset + 2];
-                        vStack[pos].b3 = s.function.Module.memory[0].Buffer[offset + 3];
+                        --s.vStackPtr;
+                        offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
+                        vStack[s.vStackPtr].b0 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b1 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b2 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b3 = s.function.Module.memory[0].Buffer[offset];
+                        ++s.vStackPtr;
                         break;
-                    }
                     case 0x29: // i64.load
-                    {
-                        var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) s.program[s.ip].i32 + vStack[pos].i32;
-                        vStack[pos].b0 = s.function.Module.memory[0].Buffer[offset + 0];
-                        vStack[pos].b1 = s.function.Module.memory[0].Buffer[offset + 1];
-                        vStack[pos].b2 = s.function.Module.memory[0].Buffer[offset + 2];
-                        vStack[pos].b3 = s.function.Module.memory[0].Buffer[offset + 3];
-                        vStack[pos].b4 = s.function.Module.memory[0].Buffer[offset + 4];
-                        vStack[pos].b5 = s.function.Module.memory[0].Buffer[offset + 5];
-                        vStack[pos].b6 = s.function.Module.memory[0].Buffer[offset + 6];
-                        vStack[pos].b7 = s.function.Module.memory[0].Buffer[offset + 7];
+                        --s.vStackPtr;
+                        offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
+                        vStack[s.vStackPtr].b0 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b1 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b2 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b3 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b4 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b5 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b6 = s.function.Module.memory[0].Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b7 = s.function.Module.memory[0].Buffer[offset];
+                        ++s.vStackPtr;
                         break;
-                    }
                     case 0x2A: // f32.load
                         vStack[s.vStackPtr - 1].f32 = s.function
                             .Module.memory[0]
@@ -477,31 +488,42 @@ namespace GameWasm.Webassembly.New
 
                     /* TODO:THESE NEED TO BE OPTIMIZED TO NOT USE FUNCTION CALLS */
                     case 0x36: // i32.store
-                    {
-                        var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32;
-                        s.function.Module.memory[0].Buffer[offset + 0] = vStack[pos].b0;
-                        s.function.Module.memory[0].Buffer[offset + 1] = vStack[pos].b1;
-                        s.function.Module.memory[0].Buffer[offset + 2] = vStack[pos].b2;
-                        s.function.Module.memory[0].Buffer[offset + 3] = vStack[pos].b3;
-                        s.vStackPtr -= 2;
+                        --s.vStackPtr;
+                        --s.vStackPtr;
+                        offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
+                        ++s.vStackPtr;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b0;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b1;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b2;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b3;
+                        --s.vStackPtr;
                         break;
-                    }
+
                     case 0x37: // i64.store
-                    {
-                        var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32;
-                        s.function.Module.memory[0].Buffer[offset + 0] = vStack[pos].b0;
-                        s.function.Module.memory[0].Buffer[offset + 1] = vStack[pos].b1;
-                        s.function.Module.memory[0].Buffer[offset + 2] = vStack[pos].b2;
-                        s.function.Module.memory[0].Buffer[offset + 3] = vStack[pos].b3;
-                        s.function.Module.memory[0].Buffer[offset + 4] = vStack[pos].b4;
-                        s.function.Module.memory[0].Buffer[offset + 5] = vStack[pos].b5;
-                        s.function.Module.memory[0].Buffer[offset + 6] = vStack[pos].b6;
-                        s.function.Module.memory[0].Buffer[offset + 7] = vStack[pos].b7;
-                        s.vStackPtr -= 2;
+                        --s.vStackPtr;
+                        --s.vStackPtr;
+                        offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
+                        ++s.vStackPtr;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b0;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b1;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b2;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b3;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b4;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b5;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b6;
+                        ++offset;
+                        s.function.Module.memory[0].Buffer[offset] = vStack[s.vStackPtr].b7;
+                        --s.vStackPtr;
                         break;
-                    }
                     case 0x38: // f32.store
                         s.function.Module.memory[0].SetI32(
                             (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32,
@@ -543,14 +565,15 @@ namespace GameWasm.Webassembly.New
                         s.vStackPtr -= 2;
                         break;
                     case 0x3F: // memory.size
-                        vStack[s.vStackPtr++].type = Type.i32;
-                        vStack[s.vStackPtr - 1].i32 =
-                            (UInt32) s.function.Module.memory[0].CurrentPages;
+                        vStack[s.vStackPtr].type = Type.i32;
+                        vStack[s.vStackPtr].i32 = (UInt32) s.function.Module.memory[0].CurrentPages;
+                        ++s.vStackPtr;
                         break;
                     case 0x40: // memory.grow
-                        vStack[s.vStackPtr - 1].type = Type.i32;
-                        vStack[s.vStackPtr - 1].i32 = s.function
-                            .Module.memory[0].Grow(vStack[s.vStackPtr - 1].i32);
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].type = Type.i32;
+                        vStack[s.vStackPtr].i32 = s.function.Module.memory[0].Grow(vStack[s.vStackPtr].i32);
+                        ++s.vStackPtr;
                         break;
 
                     /* Numeric Instructions */
@@ -558,22 +581,26 @@ namespace GameWasm.Webassembly.New
                     // These could be optimized by passing the const values as already created Value types
                     case 0x41: // i32.const
                         vStack[s.vStackPtr].type = Type.i32;
-                        vStack[s.vStackPtr++].i32 = s.program[s.ip].i32; 
+                        vStack[s.vStackPtr].i32 = s.program[s.ip].i32;
+                        ++s.vStackPtr;
                         break;
                     case 0x42: // i64.const
                         vStack[s.vStackPtr].type = Type.i64;
-                        vStack[s.vStackPtr++].i64 = s.program[s.ip].i64; 
+                        vStack[s.vStackPtr].i64 = s.program[s.ip].i64; 
+                        ++s.vStackPtr;
                         break;
                     case 0x43: // f32.const
                     {
                         vStack[s.vStackPtr].type = Type.f32;
-                        vStack[s.vStackPtr++].f32 = s.program[s.ip].f32;
+                        vStack[s.vStackPtr].f32 = s.program[s.ip].f32;
+                        ++s.vStackPtr;
                         break;
                     }
                     case 0x44: // f64.const
                     {
                         vStack[s.vStackPtr].type = Type.f64;
-                        vStack[s.vStackPtr++].f64 = s.program[s.ip].f64;
+                        vStack[s.vStackPtr].f64 = s.program[s.ip].f64;
+                        ++s.vStackPtr;
                         break;
                     }
                     case 0x45: // i32.eqz
@@ -586,7 +613,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x47: // i32.ne
                         vStack[s.vStackPtr - 2].i32 =
@@ -594,7 +621,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x48: // i32.lt_s
                         vStack[s.vStackPtr - 2].i32 =
@@ -602,7 +629,7 @@ namespace GameWasm.Webassembly.New
                              (Int32) vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x49: // i32.lt_u
                         vStack[s.vStackPtr - 2].i32 =
@@ -610,7 +637,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x4A: // i32.gt_s
                         vStack[s.vStackPtr - 2].i32 =
@@ -618,7 +645,7 @@ namespace GameWasm.Webassembly.New
                              (Int32) vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x4B: // i32.gt_u
                         vStack[s.vStackPtr - 2].i32 =
@@ -626,7 +653,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x4C: // i32.le_s
                         vStack[s.vStackPtr - 2].i32 =
@@ -634,7 +661,7 @@ namespace GameWasm.Webassembly.New
                              (Int32) vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x4D: // i32.le_u
                         vStack[s.vStackPtr - 2].i32 =
@@ -642,7 +669,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x4E: // i32.ge_s
                         vStack[s.vStackPtr - 2].i32 =
@@ -650,7 +677,7 @@ namespace GameWasm.Webassembly.New
                              (Int32) vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x4F: // i32.ge_u
                         vStack[s.vStackPtr - 2].i32 =
@@ -658,7 +685,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
 
                     case 0x50: // i64.eqz
@@ -673,7 +700,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x52: // i64.ne
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -682,7 +709,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x53: // i64.lt_s
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -691,7 +718,7 @@ namespace GameWasm.Webassembly.New
                              (Int64) vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x54: // i64.lt_u
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -700,7 +727,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x55: // i64.gt_s
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -709,7 +736,7 @@ namespace GameWasm.Webassembly.New
                              (Int64) vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x56: // i64.gt_u
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -718,7 +745,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x57: // i64.le_s
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -727,7 +754,7 @@ namespace GameWasm.Webassembly.New
                              (Int64) vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x58: // i64.le_u
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -736,7 +763,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x59: // i64.ge_s
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -745,7 +772,7 @@ namespace GameWasm.Webassembly.New
                              (Int64) vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x5A: // i64.ge_u
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -754,7 +781,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].i64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
 
                     case 0x5B: // f32.eq
@@ -764,7 +791,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x5C: // f32.ne
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -773,7 +800,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x5D: // f32.lt
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -782,7 +809,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x5E: // f32.gt
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -791,7 +818,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x5F: // f32.le
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -800,7 +827,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x60: // f32.ge
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -809,7 +836,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f32)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
 
                     case 0x61: // f64.eq
@@ -819,7 +846,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x62: // f64.ne
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -828,7 +855,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x63: // f64.lt
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -837,7 +864,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x64: // f64.gt
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -846,7 +873,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x65: // f64.le
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -855,7 +882,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x66: // f64.ge
                         vStack[s.vStackPtr - 2].type = Type.i32;
@@ -864,7 +891,7 @@ namespace GameWasm.Webassembly.New
                              vStack[s.vStackPtr - 1].f64)
                                 ? 1
                                 : (UInt32) 0;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
 
                     case 0x67: // i32.clz
@@ -940,31 +967,31 @@ namespace GameWasm.Webassembly.New
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 +
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x6B: // i32.sub
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 -
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x6C: // i32.mul
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 *
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x6D: // i32.div_s
                         vStack[s.vStackPtr - 2].i32 =
                             (UInt32) ((Int32) vStack[s.vStackPtr - 2].i32 /
                                       (Int32) vStack[s.vStackPtr - 1].i32);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x6E: // i32.div_u
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 /
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x6F: // i32.rem_s
                         vStack[s.vStackPtr - 2].i32 =
@@ -973,49 +1000,49 @@ namespace GameWasm.Webassembly.New
                                 ? 0
                                 : ((Int32) vStack[s.vStackPtr - 2].i32 %
                                    (Int32) vStack[s.vStackPtr - 1].i32));
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x70: // i32.rem_u
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 %
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x71: // i32.and
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 &
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x72: // i32.or
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 |
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x73: // i32.xor
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 ^
                             vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x74: // i32.shl
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 <<
                             (int) vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x75: // i32.shr_s
                         vStack[s.vStackPtr - 2].i32 =
                             (UInt32) ((Int32) vStack[s.vStackPtr - 2].i32 >>
                                       (Int32) vStack[s.vStackPtr - 1].i32);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x76: // i32.shr_u
                         vStack[s.vStackPtr - 2].i32 =
                             vStack[s.vStackPtr - 2].i32 >>
                             (int) vStack[s.vStackPtr - 1].i32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x77: // i32.rotl
                         vStack[s.vStackPtr - 2].i32 =
@@ -1023,7 +1050,7 @@ namespace GameWasm.Webassembly.New
                               (int) vStack[s.vStackPtr - 1].i32) |
                              (vStack[s.vStackPtr - 2].i32 >>
                               (32 - (int) vStack[s.vStackPtr - 1].i32)));
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x78: // i32.rotr
                         vStack[s.vStackPtr - 2].i32 =
@@ -1031,7 +1058,7 @@ namespace GameWasm.Webassembly.New
                               (int) vStack[s.vStackPtr - 1].i32) |
                              (vStack[s.vStackPtr - 2].i32 <<
                               (32 - (int) vStack[s.vStackPtr - 1].i32)));
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x79: // i64.clz
                     {
@@ -1104,31 +1131,31 @@ namespace GameWasm.Webassembly.New
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 +
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x7D: // i64.sub
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 -
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x7E: // i64.mul
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 *
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x7F: // i64.div_s
                         vStack[s.vStackPtr - 2].i64 =
                             (UInt64) ((Int64) vStack[s.vStackPtr - 2].i64 /
                                       (Int64) vStack[s.vStackPtr - 1].i64);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x80: // i64.div_u
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 /
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x81: // i64.rem_s
                         vStack[s.vStackPtr - 2].i64 =
@@ -1137,49 +1164,49 @@ namespace GameWasm.Webassembly.New
                                 ? 0
                                 : ((Int64) vStack[s.vStackPtr - 2].i64 %
                                    (Int64) vStack[s.vStackPtr - 1].i64));
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x82: // i64.rem_u
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 %
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x83: // i64.and
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 &
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x84: // i64.or
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 |
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x85: // i64.xor
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 ^
                             vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x86: // i64.shl
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 <<
                             (int) vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x87: // i64.shr_s
                         vStack[s.vStackPtr - 2].i64 =
                             (UInt64) ((Int64) vStack[s.vStackPtr - 2].i64 >>
                                       (int) vStack[s.vStackPtr - 1].i64);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x88: // i64.shr_u
                         vStack[s.vStackPtr - 2].i64 =
                             vStack[s.vStackPtr - 2].i64 >>
                             (int) vStack[s.vStackPtr - 1].i64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x89: // i64.rotl
                         vStack[s.vStackPtr - 2].i64 =
@@ -1187,7 +1214,7 @@ namespace GameWasm.Webassembly.New
                                        (int) vStack[s.vStackPtr - 1].i64) |
                                       (vStack[s.vStackPtr - 2].i64 >>
                                        (64 - (int) vStack[s.vStackPtr - 1].i64)));
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x8A: // i64.rotr
                         vStack[s.vStackPtr - 2].i64 =
@@ -1195,7 +1222,7 @@ namespace GameWasm.Webassembly.New
                                        (int) vStack[s.vStackPtr - 1].i64) |
                                       (vStack[s.vStackPtr - 2].i64 <<
                                        (64 - (int) vStack[s.vStackPtr - 1].i64)));
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
 
                     case 0x8B: // f32.abs
@@ -1229,37 +1256,37 @@ namespace GameWasm.Webassembly.New
                         vStack[s.vStackPtr - 2].f32 =
                             vStack[s.vStackPtr - 2].f32 +
                             vStack[s.vStackPtr - 1].f32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x93: // f32.sub
                         vStack[s.vStackPtr - 2].f32 =
                             vStack[s.vStackPtr - 2].f32 -
                             vStack[s.vStackPtr - 1].f32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x94: // f32.mul
                         vStack[s.vStackPtr - 2].f32 =
                             vStack[s.vStackPtr - 2].f32 *
                             vStack[s.vStackPtr - 1].f32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x95: // f32.div
                         vStack[s.vStackPtr - 2].f32 =
                             vStack[s.vStackPtr - 2].f32 /
                             vStack[s.vStackPtr - 1].f32;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x96: // f32.min
                         vStack[s.vStackPtr - 2].f32 = Math.Min(
                             vStack[s.vStackPtr - 2].f32,
                             vStack[s.vStackPtr - 1].f32);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x97: // f32.max
                         vStack[s.vStackPtr - 2].f32 = Math.Max(
                             vStack[s.vStackPtr - 2].f32,
                             vStack[s.vStackPtr - 1].f32);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x98: // f32.copysign
                         if (vStack[s.vStackPtr - 2].f32 >= 0 &&
@@ -1276,7 +1303,7 @@ namespace GameWasm.Webassembly.New
                                 -vStack[s.vStackPtr - 1].f32;
                         }
 
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
 
                     case 0x99: // f64.abs
@@ -1310,37 +1337,37 @@ namespace GameWasm.Webassembly.New
                         vStack[s.vStackPtr - 2].f64 =
                             vStack[s.vStackPtr - 2].f64 +
                             vStack[s.vStackPtr - 1].f64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0xA1: // f64.sub
                         vStack[s.vStackPtr - 2].f64 =
                             vStack[s.vStackPtr - 2].f64 -
                             vStack[s.vStackPtr - 1].f64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0xA2: // f64.mul
                         vStack[s.vStackPtr - 2].f64 =
                             vStack[s.vStackPtr - 2].f64 *
                             vStack[s.vStackPtr - 1].f64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0xA3: // f64.div
                         vStack[s.vStackPtr - 2].f64 =
                             vStack[s.vStackPtr - 2].f64 /
                             vStack[s.vStackPtr - 1].f64;
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0xA4: // f64.min
                         vStack[s.vStackPtr - 2].f64 = Math.Min(
                             vStack[s.vStackPtr - 2].f64,
                             vStack[s.vStackPtr - 1].f64);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0xA5: // f64.max
                         vStack[s.vStackPtr - 2].f64 = Math.Max(
                             vStack[s.vStackPtr - 2].f64,
                             vStack[s.vStackPtr - 1].f64);
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0xA6: // f64.copysign
                         if (vStack[s.vStackPtr - 2].f64 >= 0 &&
@@ -1357,7 +1384,7 @@ namespace GameWasm.Webassembly.New
                                 -vStack[s.vStackPtr - 1].f64;
                         }
 
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
 
                     case 0xA7: // i32.wrap_i64

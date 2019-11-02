@@ -22,7 +22,9 @@ namespace GameWasm.Webassembly.New
   //      [FieldOffset(0)]
         public double f64;
 //        [FieldOffset(8)]
-        public UInt32[] table;
+        public int pos;
+        public UInt64 pos64;
+        public int[] table;
         public Value[] array;
     }
 }
