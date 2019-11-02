@@ -580,12 +580,12 @@ namespace GameWasm.Webassembly.Module
 
             Store.runtime.Call(f.GlobalIndex, parameters);
 
+            while (Store.runtime.Step(99999999))
+            {
+
+            }
             try
             {
-                while (Store.runtime.Step(99999999))
-                {
-
-                }
             }
             catch (DivideByZeroException e)
             {

@@ -1059,7 +1059,13 @@ namespace GameWasm.Webassembly.Instruction
                         break;
                 }
             }
+
+            i.opCode = 0x0F;
+            i.pointer = (UInt32)program.Count;
+            i.i = new Return(null);
             
+            program.Add(i);
+
             /******************************/
 
 

@@ -71,7 +71,7 @@ namespace GameWasm.Webassembly.New
             s = cStack[1];
 
             // PushLabel
-            s.lStack[s.labelPtr].ip = 9999999;
+            s.lStack[s.labelPtr].ip = s.program.Length - 1;
             s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
             int localPtr = 0;
@@ -113,28 +113,9 @@ namespace GameWasm.Webassembly.New
         // Returns true while there is still work to be done.
         public bool Step(int steps = 1000)
         {
-            while (steps >= 0)
+            for(; steps >= 0; --steps)
             {
-                if (s.ip >= s.program.Length)
-                {
-                    if (cStackPtr == 1)
-                        return false;
-
-                    for (int i = 0; i < s.function.Type.Results.Length; i++)
-                    {
-                        vStack[cStack[cStackPtr - 1].vStackPtr++] = vStack[s.vStackPtr - 1 - i];
-                    }
-
-                    s = cStack[--cStackPtr];
-                    if (cStackPtr == 0)
-                        return false;
-                    steps--;
-                    s.ip++;
-                    continue;
-                }
-
-                var inst = s.program[s.ip];
-
+/*
                 if (Debug)
                 {
                     if (s.vStackPtr > 0)
@@ -150,13 +131,12 @@ namespace GameWasm.Webassembly.New
                     }
 
                     Console.Write("\n" + s.function.Module.Name + "@" +
-                                  s.function.Name + "[" + inst.pointer.ToString("X") +
-                                  ", " + inst.i.Pos + "]: " + inst.i.ToString());
+                                  s.function.Name + "[" + s.program[s.ip].pointer.ToString("X") +
+                                  ", " + s.program[s.ip].i.Pos + "]: " + s.program[s.ip].i.ToString());
 
                     Console.ReadKey();
                 }
-
-                if (Profile)
+                else if (Profile)
                 {
                     timer.Stop();
                     var overhead = timer.Elapsed;
@@ -168,8 +148,8 @@ namespace GameWasm.Webassembly.New
                     timer.Reset();
                     timer.Start();
                 }
-
-                switch (inst.opCode)
+*/
+                switch (s.program[s.ip].opCode)
                 {
                     case 0x00: // unreachable
                         throw new Trap("unreachable");
@@ -177,60 +157,65 @@ namespace GameWasm.Webassembly.New
                         break;
                     case 0x02: // block
                         // PushLabel
-                        s.lStack[s.labelPtr].ip = (int) inst.i32;
-                        s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+                        s.lStack[s.labelPtr].ip = (int) s.program[s.ip].i32;
+                        s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                        ++s.labelPtr;
                         break;
                     case 0x03: // loop
                         // PushLabel
                         s.lStack[s.labelPtr].ip = (int) s.ip - 1;
-                        s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+                        s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                        ++s.labelPtr;
                         break;
                     case 0x04: // if
                         if (vStack[--s.vStackPtr].i32 > 0)
                         {
-                            if (s.program[(int) inst.i32].opCode == 0x05) // if it's an else
+                            if (s.program[(int) s.program[s.ip].i32].opCode == 0x05) // if it's an else
                             {
                                 // PushLabel
-                                s.lStack[s.labelPtr].ip = (int) s.program[(int) inst.i32].i32;
-                                s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+                                s.lStack[s.labelPtr].ip = (int) s.program[(int) s.program[s.ip].i32].i32;
+                                s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                                ++s.labelPtr;
                             }
                             else
                             {
                                 // PushLabel
-                                s.lStack[s.labelPtr].ip = (int) inst.i32;
-                                s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+                                s.lStack[s.labelPtr].ip = (int) s.program[s.ip].i32;
+                                s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                                ++s.labelPtr;
                             }
                         }
                         else
                         {
-                            if (s.program[(int) inst.i32].opCode == 0x05) // if it's an else
+                            if (s.program[(int) s.program[s.ip].i32].opCode == 0x05) // if it's an else
                             {
                                 // PushLabel
-                                s.lStack[s.labelPtr].ip = (int) s.program[(int) inst.i32].i32;
-                                s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+                                s.lStack[s.labelPtr].ip = (int) s.program[(int) s.program[s.ip].i32].i32;
+                                s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                                ++s.labelPtr;
                             }
-                            s.ip = (int) inst.i32;
+                            s.ip = (int) s.program[s.ip].i32;
                         }
 
                         break;
                     case 0x05: // else
-                        s.ip = (int) inst.i32 - 1;
+                        s.ip = (int) s.program[s.ip].i32 - 1;
                         break;
                     case 0x0B: // end
                         // If special case of end of a function, just get out of here.
                         if (s.ip + 1 == s.program.Length) break;
-                        s.labelPtr -= 1;
+                        --s.labelPtr;
                         break;
                     case 0x0C: // br
                     {
-                        var l = s.lStack[s.labelPtr - (int) inst.i32 + 1];
+                        var l = s.lStack[s.labelPtr - (int) s.program[s.ip].i32 + 1];
                         var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
                         for (int i = 0; i < len; i++)
                         {
                             vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
                         }
 
-                        s.labelPtr -= (int) inst.i32 + 1;
+                        s.labelPtr -= (int) s.program[s.ip].i32 + 1;
                         s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
 
                         s.ip = s.lStack[s.labelPtr].ip;
@@ -240,14 +225,14 @@ namespace GameWasm.Webassembly.New
                     {
                         if (vStack[--s.vStackPtr].i32 > 0)
                         {
-                            var l = s.lStack[s.labelPtr - (int) inst.i32 + 1];
+                            var l = s.lStack[s.labelPtr - (int) s.program[s.ip].i32 + 1];
                             var len = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
                             for (int i = 0; i < len; i++)
                             {
                                 vStack[l.vStackPtr++] = vStack[--s.vStackPtr];
                             }
 
-                            s.labelPtr -= (int) inst.i32 + 1;
+                            s.labelPtr -= (int) s.program[s.ip].i32 + 1;
                             s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
 
                             s.ip = s.lStack[s.labelPtr].ip;
@@ -259,13 +244,13 @@ namespace GameWasm.Webassembly.New
                     {
                         UInt32 index = vStack[--s.vStackPtr].i32;
 
-                        if (index >= inst.table.Length)
+                        if (index >= s.program[s.ip].table.Length)
                         {
-                            index = inst.i32;
+                            index = s.program[s.ip].i32;
                         }
                         else
                         {
-                            index = inst.table[(int) index];
+                            index = s.program[s.ip].table[(int) index];
                         }
 
                         var l = s.lStack[s.labelPtr - (int) index + 1];
@@ -295,7 +280,7 @@ namespace GameWasm.Webassembly.New
                         break;
                     case 0x10: // call
                     {
-                        var funcIndex = s.function.Module.functions[(int) inst.i32].GlobalIndex; // TODO: this may need to be optimized
+                        var funcIndex = s.function.Module.functions[(int) s.program[s.ip].i32].GlobalIndex; // TODO: this may need to be optimized
 
                         if (functions[funcIndex].program == null) // native
                         {
@@ -321,7 +306,7 @@ namespace GameWasm.Webassembly.New
                             s.labelPtr = cStack[cStackPtr - 1].labelPtr;
 
                             // PushLabel
-                            s.lStack[s.labelPtr].ip = 9999999;
+                            s.lStack[s.labelPtr].ip = s.program.Length - 1;
                             s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
                             if (s.function.Type.Parameters.Length > 0)
@@ -341,7 +326,7 @@ namespace GameWasm.Webassembly.New
                     case 0x11: // call_indirect
                     {
                         var m = s.function.Module;
-                        var ii = (int) m.Tables[(int) inst.i32].Get(vStack[--s.vStackPtr].i32);
+                        var ii = (int) m.Tables[(int) s.program[s.ip].i32].Get(vStack[--s.vStackPtr].i32);
                         var funcIndex = (int) m.functions[ii].GlobalIndex;
 
                         
@@ -353,7 +338,7 @@ namespace GameWasm.Webassembly.New
                         s.labelPtr = cStack[cStackPtr - 1].labelPtr;
 
                         // PushLabel
-                        s.lStack[s.labelPtr].ip = 9999999;
+                        s.lStack[s.labelPtr].ip = s.program.Length - 1;
                         s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
                         if (s.function.Type.Parameters.Length > 0)
@@ -373,7 +358,7 @@ namespace GameWasm.Webassembly.New
                     /* Parametric Instructions */
 
                     case 0x1A: // drop
-                        s.vStackPtr--;
+                        --s.vStackPtr;
                         break;
                     case 0x1B: // select
                         if (vStack[s.vStackPtr - 1].i32 == 0)
@@ -381,27 +366,30 @@ namespace GameWasm.Webassembly.New
                             vStack[s.vStackPtr - 3] = vStack[s.vStackPtr - 2];
                         }
 
-                        s.vStackPtr -= 2;
+                        --s.vStackPtr;
+                        --s.vStackPtr;
                         break;
 
                     /* Variable Instructions */
 
                     case 0x20: // local.get
-                        vStack[s.vStackPtr++] = s.locals[inst.i32];
+                        vStack[s.vStackPtr] = s.locals[s.program[s.ip].i32];
+                        ++s.vStackPtr;
                         break;
                     case 0x21: // local.set
-                        s.locals[inst.i32] = vStack[--s.vStackPtr];
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].i32] = vStack[s.vStackPtr];
                         break;
                     case 0x22: // local.tee
-                        s.locals[inst.i32] = vStack[s.vStackPtr - 1];
+                        s.locals[s.program[s.ip].i32] = vStack[s.vStackPtr - 1];
                         break;
                     case 0x23: // global.get
-                        vStack[s.vStackPtr++] = s.function.Module.globals[(int)inst.i32].GetValue();
+                        vStack[s.vStackPtr++] = s.function.Module.globals[(int)s.program[s.ip].i32].GetValue();
 
                         break;
                     case 0x24: // global.set
-                        s.function.Module.globals[(int)inst.i32].Set(vStack[--s.vStackPtr]);
-//                            globals[inst.i32] = vStack[--s.vStackPtr];
+                        s.function.Module.globals[(int)s.program[s.ip].i32].Set(vStack[--s.vStackPtr]);
+//                            globals[s.program[s.ip].i32] = vStack[--s.vStackPtr];
                         break;
 
                     /* Memory Instructions */
@@ -409,7 +397,7 @@ namespace GameWasm.Webassembly.New
                     case 0x28: // i32.load
                     {
                         var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) inst.i32 + vStack[pos].i32;
+                        var offset = (UInt64) s.program[s.ip].i32 + vStack[pos].i32;
                         vStack[pos].b0 = s.function.Module.memory[0].Buffer[offset + 0];
                         vStack[pos].b1 = s.function.Module.memory[0].Buffer[offset + 1];
                         vStack[pos].b2 = s.function.Module.memory[0].Buffer[offset + 2];
@@ -419,7 +407,7 @@ namespace GameWasm.Webassembly.New
                     case 0x29: // i64.load
                     {
                         var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) inst.i32 + vStack[pos].i32;
+                        var offset = (UInt64) s.program[s.ip].i32 + vStack[pos].i32;
                         vStack[pos].b0 = s.function.Module.memory[0].Buffer[offset + 0];
                         vStack[pos].b1 = s.function.Module.memory[0].Buffer[offset + 1];
                         vStack[pos].b2 = s.function.Module.memory[0].Buffer[offset + 2];
@@ -433,65 +421,65 @@ namespace GameWasm.Webassembly.New
                     case 0x2A: // f32.load
                         vStack[s.vStackPtr - 1].f32 = s.function
                             .Module.memory[0]
-                            .GetF32((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetF32((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x2B: // f64.load
                         vStack[s.vStackPtr - 1].f64 = s.function
                             .Module.memory[0]
-                            .GetF64((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetF64((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x2C: // i32.load8_s
-                        vStack[s.vStackPtr - 1].i32 = (UInt32)(Int32)(sbyte)s.function.Module.memory[0].Buffer[(UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32];
+                        vStack[s.vStackPtr - 1].i32 = (UInt32)(Int32)(sbyte)s.function.Module.memory[0].Buffer[(UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32];
                         break;
                     case 0x2D: // i32.load8_u
-                        vStack[s.vStackPtr - 1].i32 = s.function.Module.memory[0].Buffer[(UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32];
+                        vStack[s.vStackPtr - 1].i32 = s.function.Module.memory[0].Buffer[(UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32];
                         break;
                     case 0x2E: // i32.load16_s
                         vStack[s.vStackPtr - 1].i32 = s.function
                             .Module.memory[0]
-                            .GetI3216s((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI3216s((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x2F: // i32.load16_u
                         vStack[s.vStackPtr - 1].i32 = s.function
                             .Module.memory[0]
-                            .GetI3216u((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI3216u((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x30: // i64.load8_s
                         vStack[s.vStackPtr - 1].i64 = s.function
                             .Module.memory[0]
-                            .GetI648s((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI648s((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x31: // i64.load8_u
                         vStack[s.vStackPtr - 1].i64 = s.function
                             .Module.memory[0]
-                            .GetI648u((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI648u((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x32: // i64.load16_s
                         vStack[s.vStackPtr - 1].i64 = s.function
                             .Module.memory[0]
-                            .GetI6416s((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI6416s((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x33: // i64.load16_u
                         vStack[s.vStackPtr - 1].i64 = s.function
                             .Module.memory[0]
-                            .GetI6416u((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI6416u((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x34: // i64.load32_s
                         vStack[s.vStackPtr - 1].i64 = s.function
                             .Module.memory[0]
-                            .GetI6432s((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI6432s((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
                     case 0x35: // i64.load32_u
                         vStack[s.vStackPtr - 1].i64 = s.function
                             .Module.memory[0]
-                            .GetI6432u((UInt64) inst.i32 + vStack[s.vStackPtr - 1].i32);
+                            .GetI6432u((UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 1].i32);
                         break;
 
                     /* TODO:THESE NEED TO BE OPTIMIZED TO NOT USE FUNCTION CALLS */
                     case 0x36: // i32.store
                     {
                         var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32;
+                        var offset = (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32;
                         s.function.Module.memory[0].Buffer[offset + 0] = vStack[pos].b0;
                         s.function.Module.memory[0].Buffer[offset + 1] = vStack[pos].b1;
                         s.function.Module.memory[0].Buffer[offset + 2] = vStack[pos].b2;
@@ -502,7 +490,7 @@ namespace GameWasm.Webassembly.New
                     case 0x37: // i64.store
                     {
                         var pos = s.vStackPtr - 1;
-                        var offset = (UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32;
+                        var offset = (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32;
                         s.function.Module.memory[0].Buffer[offset + 0] = vStack[pos].b0;
                         s.function.Module.memory[0].Buffer[offset + 1] = vStack[pos].b1;
                         s.function.Module.memory[0].Buffer[offset + 2] = vStack[pos].b2;
@@ -516,41 +504,41 @@ namespace GameWasm.Webassembly.New
                     }
                     case 0x38: // f32.store
                         s.function.Module.memory[0].SetI32(
-                            (UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32,
+                            (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32,
                             vStack[s.vStackPtr - 1]
                                 .i32); // this may not work, but they point to the same location so ?
                         s.vStackPtr -= 2;
                         break;
                     case 0x39: // f64.store
                         s.function.Module.memory[0].SetI64(
-                            (UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32,
+                            (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32,
                             vStack[s.vStackPtr - 1]
                                 .i64); // this may not work, but they point to the same location so ?
                         s.vStackPtr -= 2;
                         break;
                     case 0x3A: // i32.store8
-                        s.function.Module.memory[0].Buffer[(UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32] = vStack[s.vStackPtr - 1].b0; 
+                        s.function.Module.memory[0].Buffer[(UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32] = vStack[s.vStackPtr - 1].b0; 
                         s.vStackPtr -= 2;
                         break;
                     case 0x3B: // i32.store16
                         s.function.Module.memory[0].SetI16(
-                            (UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32,
+                            (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32,
                             (UInt16) vStack[s.vStackPtr - 1].i32);
                         s.vStackPtr -= 2;
                         break;
                     case 0x3C: // i64.store8
-                        s.function.Module.memory[0].Buffer[(UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32] = vStack[s.vStackPtr - 1].b0; 
+                        s.function.Module.memory[0].Buffer[(UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32] = vStack[s.vStackPtr - 1].b0; 
                         s.vStackPtr -= 2;
                         break;
                     case 0x3D: // i64.store16
                         s.function.Module.memory[0].SetI16(
-                            (UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32,
+                            (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32,
                             (UInt16) vStack[s.vStackPtr - 1].i64);
                         s.vStackPtr -= 2;
                         break;
                     case 0x3E: // i64.store32
                         s.function.Module.memory[0].SetI32(
-                            (UInt64) inst.i32 + vStack[s.vStackPtr - 2].i32,
+                            (UInt64) s.program[s.ip].i32 + vStack[s.vStackPtr - 2].i32,
                             (UInt32) vStack[s.vStackPtr - 1].i64);
                         s.vStackPtr -= 2;
                         break;
@@ -570,22 +558,22 @@ namespace GameWasm.Webassembly.New
                     // These could be optimized by passing the const values as already created Value types
                     case 0x41: // i32.const
                         vStack[s.vStackPtr].type = Type.i32;
-                        vStack[s.vStackPtr++].i32 = inst.i32; 
+                        vStack[s.vStackPtr++].i32 = s.program[s.ip].i32; 
                         break;
                     case 0x42: // i64.const
                         vStack[s.vStackPtr].type = Type.i64;
-                        vStack[s.vStackPtr++].i64 = inst.i64; 
+                        vStack[s.vStackPtr++].i64 = s.program[s.ip].i64; 
                         break;
                     case 0x43: // f32.const
                     {
                         vStack[s.vStackPtr].type = Type.f32;
-                        vStack[s.vStackPtr++].f32 = inst.f32;
+                        vStack[s.vStackPtr++].f32 = s.program[s.ip].f32;
                         break;
                     }
                     case 0x44: // f64.const
                     {
                         vStack[s.vStackPtr].type = Type.f64;
-                        vStack[s.vStackPtr++].f64 = inst.f64;
+                        vStack[s.vStackPtr++].f64 = s.program[s.ip].f64;
                         break;
                     }
                     case 0x45: // i32.eqz
@@ -1490,17 +1478,17 @@ namespace GameWasm.Webassembly.New
                         vStack[s.vStackPtr - 1].type = Type.f64;
                         break;
                 }
-
+/*
                 if (Profile)
                 {
                     timer.Stop();
 
-                    if (!profile.ContainsKey(inst.opCode))
+                    if (!profile.ContainsKey(s.program[s.ip].opCode))
                     {
-                        profile.Add(inst.opCode, TimeSpan.Zero);
+                        profile.Add(s.program[s.ip].opCode, TimeSpan.Zero);
                     }
 
-                    profile[inst.opCode] += timer.Elapsed;
+                    profile[s.program[s.ip].opCode] += timer.Elapsed;
                     
                     if (counter % 10000000 == 0)
                     {
@@ -1522,12 +1510,11 @@ namespace GameWasm.Webassembly.New
 
                     timer.Restart();
                     timer.Start();
+
+                    ++counter;
                 }
-
-                counter++;
-                steps--;
-
-                s.ip++;
+*/
+                ++s.ip;
             }
  
             if (cStackPtr == 0 && s.ip >= s.program.Length)
