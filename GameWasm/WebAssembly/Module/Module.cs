@@ -569,10 +569,25 @@ namespace GameWasm.Webassembly.Module
             Function f = Exports[function] as Function;
 
             Store.runtime.Call(f.GlobalIndex, parameters);
-        
-            while (Store.runtime.Step(1000))
-            {
 
+            try
+            {
+                while (Store.runtime.Step(99999999))
+                {
+
+                }
+            }
+            catch (DivideByZeroException e)
+            {
+                throw new Trap("integer divide by zero");
+            }
+            catch (OverflowException e)
+            {
+                throw new Trap("integer overflow");
+            }
+//            catch (IndexOutOfRangeException e)
+            {
+  //              throw new Trap("call stack exhausted");
             }
         }
     }

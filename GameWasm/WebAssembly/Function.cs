@@ -23,8 +23,7 @@ namespace GameWasm.Webassembly
             Module = module;
             Name = name;
             Index = index;
-            GlobalIndex = Module.Store.runtime.functions.Count;
-            Module.Store.runtime.functions.Add(this);
+            GlobalIndex = Module.Store.runtime.AddFunction(this);
 
             Type = new Type(new byte[] { }, new byte[] { });
             if (type != null)
@@ -39,8 +38,7 @@ namespace GameWasm.Webassembly
             this.Module = module;
             Name = name;
             Type = type;
-            GlobalIndex = Module.Store.runtime.functions.Count;
-            Module.Store.runtime.functions.Add(this);
+            GlobalIndex = Module.Store.runtime.AddFunction(this);
             native = action;
         }
 
