@@ -542,6 +542,24 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(unreachable);
                         inst = inst.Next.Next;
                         continue;
+                    case 0x20206A: // local.local.132.add
+                        i.opCode = three;
+                        i.a = (inst as LocalGet).index;
+                        i.b = (inst.Next as LocalGet).index;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        inst = inst.Next.Next;
+                        continue;
+                    case 0x202071: // local.local.132.and
+                        i.opCode = three;
+                        i.a = (inst as LocalGet).index;
+                        i.b = (inst.Next as LocalGet).index;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        inst = inst.Next.Next;
+                        continue;
                     case 0x202076: // local.local.i32.shr_u
                         i.opCode = three;
                         i.a = (inst as LocalGet).index;
@@ -611,6 +629,27 @@ namespace GameWasm.Webassembly.Instruction
                         i.opCode = two;
                         i.a = (inst as LocalGet).index;
                         i.pos64 = (inst.Next as I64store).offset;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x2045: // local.132.eqz
+                        i.opCode = two;
+                        i.a = (inst as LocalGet).index;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x206A: // local.132.add
+                        i.opCode = two;
+                        i.a = (inst as LocalGet).index;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x2071: // local.132.and
+                        i.opCode = two;
+                        i.a = (inst as LocalGet).index;
                         inst = inst.Next;
                         program.Add(i);
                         program.Add(unreachable);
@@ -1226,6 +1265,35 @@ namespace GameWasm.Webassembly.Instruction
 
             /******************************/
 
+            for (int o = 0; o < program.Count; o++)
+            {
+                if (program[o].opCode == 0x20)
+                {
+                    int count = 0;
+                    while (o + count < program.Count && program[o + count].opCode == 0x20)
+                    {
+                        count++;
+                    }
+
+                    if (count > 2)
+                    {
+                        Inst n = program[o];
+                        n.opCode = 0xFF000000;
+                        n.table = new int[count];
+                        for (int m = 0; m < count; m++)
+                        {
+                            n.table[m] = program[m + o].pos;
+                            if (m > 0)
+                            {
+                                Inst u = new Inst();
+                                u.opCode = 0x00;
+                                program[m + o] = u;
+                            }
+                        }
+                        program[o] = n;
+                    }
+                }
+            }
 
             return program.ToArray();
         }
@@ -1411,10 +1479,15 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x2029: return "local.i64.load";
                 case 0x2036: return "local.i32.store";
                 case 0x2037: return "local.i64.store";
+                case 0x2045: return "local.132.eqz";
+                case 0x206A: return "local.i32.add";
+                case 0x2071: return "local.132.and";
                 case 0x4121: return "i32.const.local";
                 case 0x4221: return "i64.const.local";
                 case 0x202036: return "local.local.i32.store";
                 case 0x202037: return "local.local.i64.store";
+                case 0x20206A: return "local.local.132.add";
+                case 0x202071: return "local.local.132.and";
                 case 0x202076: return "local.local.i32.shr_u";
                 case 0x202821: return "local.i32.load.local";
                 case 0x202921: return "local.i64.load.local";
@@ -1423,6 +1496,7 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x20207121: return "local.local.i32.and.local";
                 case 0x20207221: return "local.local.i32.or.local";
                 case 0x20207321: return "local.local.i32.xor.local";
+                case 0xFF000000: return "loop of local.get";
                 case 0xFF: return "Loop Overhead:";
                 default: return "unknown opcode: " + opCode.ToString("X");
             }            
