@@ -474,11 +474,164 @@ namespace GameWasm.Webassembly.Instruction
             /*** INITIALIZE NEW PROGRAM ***/
             List<Inst> program = new List<Inst>();
             Inst i = new Inst();
+            var unreachable = new Inst();
+            unreachable.opCode = 0x00;
             for (var inst = start; inst != null; inst = inst.Next)
             {
                 i.opCode = inst.opCode;
                 i.pointer = inst.Pointer;
                 i.i = inst;
+                UInt32 two = (UInt32)((inst.opCode << 8) + ((inst.Next == null) ? 0x00 : inst.Next.opCode));
+                UInt32 three = (UInt32)((two << 8) + ((inst.Next == null || inst.Next.Next == null) ? 0x00 : inst.Next.Next.opCode));
+                UInt32 four = (UInt32)((three << 8) + ((inst.Next == null || inst.Next.Next == null || inst.Next.Next.Next == null) ? 0x00 : inst.Next.Next.Next.opCode));
+
+                switch (four)
+                {
+                    case 0x02206A21: // local.local.i32.add.local
+                    case 0x02206B21: // local.local.i32.sub.local
+                    case 0x02206C21: // local.local.i32.mul.local
+                    case 0x02206D21: // local.local.i32.div_s.local
+                    case 0x02206E21: // local.local.i32.div_u.local
+                    case 0x02206F21: // local.local.i32.rem_s.local
+                    case 0x02207021: // local.local.i32.rem_u.local
+                    case 0x02207121: // local.local.i32.and.local
+                    case 0x02207221: // local.local.i32.or.local
+                    case 0x02207321: // local.local.i32.xor.local
+                    case 0x02207421: // local.local.i32.shl.local
+                    case 0x02207521: // local.local.i32.shr_s.local
+                    case 0x02207621: // local.local.i32.shr_u.local
+                    case 0x02207721: // local.local.i32.rotl.local
+                    case 0x02207821: // local.local.i32.rotr.local
+
+                    case 0x02207C21: // local.local.i64.add.local
+                    case 0x02207D21: // local.local.i64.sub.local
+                    case 0x02208321: // local.local.i64.and.local
+                    case 0x02208421: // local.local.i64.or.local
+                    case 0x02208521: // local.local.i64.xor.local
+                        i.opCode = four;
+                        i.a = (inst as LocalGet).index;
+                        i.b = (inst.Next as LocalGet).index;
+                        i.c = (inst.Next.Next.Next as LocalSet).index;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        inst = inst.Next.Next.Next;
+                        continue;
+                }
+                
+                switch (three)
+                {
+                    case 0x202036: // local.local.i32.store
+                        i.opCode = three;
+                        i.a = (inst as LocalGet).index;
+                        i.b = (inst.Next as LocalGet).index;
+                        i.pos64 = (inst.Next.Next as I32store).offset;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        inst = inst.Next.Next;
+                        continue;
+                    case 0x202037: // local.local.i64.store
+                        i.opCode = three;
+                        i.a = (inst as LocalGet).index;
+                        i.b = (inst.Next as LocalGet).index;
+                        i.pos64 = (inst.Next.Next as I64store).offset;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        inst = inst.Next.Next;
+                        continue;
+                    case 0x202076: // local.local.i32.shr_u
+                        i.opCode = three;
+                        i.a = (inst as LocalGet).index;
+                        i.b = (inst.Next as LocalGet).index;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        inst = inst.Next.Next;
+                        continue;
+                    case 0x202821: // local.i32.load.local
+                        i.opCode = three;
+                        i.a = (inst as LocalGet).index;
+                        i.pos64 = (inst.Next as I32load).offset;
+                        i.b = (inst.Next.Next as LocalSet).index;
+                        inst = inst.Next.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x202921: // local.i32.load.local
+                        i.opCode = three;
+                        i.a = (inst as LocalGet).index;
+                        i.pos64 = (inst.Next as I64load).offset;
+                        i.b = (inst.Next.Next as LocalSet).index;
+                        inst = inst.Next.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        program.Add(unreachable);
+                        continue;
+                }
+                
+                switch (two)
+                {
+                    case 0x2021: // local.copy
+                        i.opCode = 0x2021;
+                        i.a = (inst as LocalGet).index;
+                        i.b = (inst.Next as LocalSet).index;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x2028: // local.i32.load
+                        i.opCode = two;
+                        i.a = (inst as LocalGet).index;
+                        i.pos64 = (inst.Next as I32load).offset;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x2029: // local.i64.load
+                        i.opCode = two;
+                        i.a = (inst as LocalGet).index;
+                        i.pos64 = (inst.Next as I64load).offset;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x2036: // local.i32.store
+                        i.opCode = two;
+                        i.a = (inst as LocalGet).index;
+                        i.pos64 = (inst.Next as I32store).offset;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x2037: // local.i64.store
+                        i.opCode = two;
+                        i.a = (inst as LocalGet).index;
+                        i.pos64 = (inst.Next as I64store).offset;
+                        inst = inst.Next;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        continue;
+                    case 0x4121: // i32.const.local
+                        i.opCode = 0x4121;
+                        i.i32 = (inst as I32const).value;
+                        i.a = (inst.Next as LocalSet).index;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        inst = inst.Next;
+                        continue;
+                    case 0x4221: // i64.const.local
+                        i.opCode = 0x4221;
+                        i.i64 = (inst as I64const).value;
+                        i.a = (inst.Next as LocalSet).index;
+                        program.Add(i);
+                        program.Add(unreachable);
+                        inst = inst.Next;
+                        continue;
+                }
                 
                 switch (inst.opCode)
                 {
@@ -592,7 +745,7 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(i);
                         break;
                     case 0x2F: // i32.load16_u
-                        i.i32 = (inst as I32load16u).offset;
+                        i.pos64 = (inst as I32load16u).offset;
                         program.Add(i);
                         break;
                     case 0x30: // i64.load8_s
@@ -1077,7 +1230,7 @@ namespace GameWasm.Webassembly.Instruction
             return program.ToArray();
         }
 
-        public static string Translate(UInt16 opCode)
+        public static string Translate(UInt32 opCode)
         {
             switch (opCode)
             {
@@ -1253,7 +1406,25 @@ namespace GameWasm.Webassembly.Instruction
                 case 0xBD: return "i64.reinterpret_i32";
                 case 0xBE: return "f32.reinterpret_i32";
                 case 0xBF: return "f64.reinterpret_i64";
-                default: return "unknown opcode";
+                case 0x2021: return "local.copy";
+                case 0x2028: return "local.i32.load";
+                case 0x2029: return "local.i64.load";
+                case 0x2036: return "local.i32.store";
+                case 0x2037: return "local.i64.store";
+                case 0x4121: return "i32.const.local";
+                case 0x4221: return "i64.const.local";
+                case 0x202036: return "local.local.i32.store";
+                case 0x202037: return "local.local.i64.store";
+                case 0x202076: return "local.local.i32.shr_u";
+                case 0x202821: return "local.i32.load.local";
+                case 0x202921: return "local.i64.load.local";
+                case 0x20206A21: return "local.local.i32.add.local";
+                case 0x20206B21: return "local.local.i32.sub.local";
+                case 0x20207121: return "local.local.i32.and.local";
+                case 0x20207221: return "local.local.i32.or.local";
+                case 0x20207321: return "local.local.i32.xor.local";
+                case 0xFF: return "Loop Overhead:";
+                default: return "unknown opcode: " + opCode.ToString("X");
             }            
         }
     }

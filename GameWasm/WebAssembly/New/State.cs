@@ -9,5 +9,6 @@ namespace GameWasm.Webassembly.New
         public int labelPtr;
         public Inst[] program;
         public Value[] locals;
+        public Memory memory;
     }
 }

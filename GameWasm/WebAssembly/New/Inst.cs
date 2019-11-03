@@ -12,7 +12,7 @@ namespace GameWasm.Webassembly.New
        // [FieldOffset(17)] 
         public UInt32 pointer;
         //[FieldOffset(16)] 
-        public UInt16 opCode;
+        public UInt32 opCode;
         //[FieldOffset(0)]
         public UInt32 i32;
       //  [FieldOffset(0)]
@@ -27,5 +27,6 @@ namespace GameWasm.Webassembly.New
         public int[] table;
         public Value value;
         public Value[] values;
+        public int a, b, c;
     }
 }
