@@ -1537,6 +1537,18 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         s.vStackPtr++;
                         break;
+                    case 0x202D: // local.i32.load8_u
+                        offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
+                        vStack[s.vStackPtr].b0 = s.memory.Buffer[offset];
+                        ++offset;
+                        vStack[s.vStackPtr].b1 = 0;
+                        ++offset;
+                        vStack[s.vStackPtr].b2 = 0;
+                        ++offset;
+                        vStack[s.vStackPtr].b3 = 0;
+                        ++s.ip;
+                        s.vStackPtr++;
+                        break;
                     case 0x2029: // local.i64.load 
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         vStack[s.vStackPtr].b0 = s.memory.Buffer[offset];
@@ -1569,6 +1581,12 @@ namespace GameWasm.Webassembly.New
                         s.memory.Buffer[offset] = s.locals[s.program[s.ip].a].b3;
                         ++s.ip;
                         break;
+                    case 0x203A: // local.i32.store8
+                        --s.vStackPtr;
+                        offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
+                        s.memory.Buffer[offset] = s.locals[s.program[s.ip].a].b0;
+                        ++s.ip;
+                        break;
                     case 0x2037: // local.i64.store
                         --s.vStackPtr;
                         offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
@@ -1594,6 +1612,30 @@ namespace GameWasm.Webassembly.New
                         ++s.vStackPtr;
                         ++s.ip;
                         break;
+                    case 0x2046: // local.i32.eq
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].i32 = (s.locals[s.program[s.ip].a].i32 == vStack[s.vStackPtr].i32)?(UInt32)1:(UInt32)0;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x2047: // local.i32.ne
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].i32 = (s.locals[s.program[s.ip].a].i32 != vStack[s.vStackPtr].i32)?(UInt32)1:(UInt32)0;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x2048: // local.i32.lt_s
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].i32 = ((Int32)vStack[s.vStackPtr].i32 < (Int32)s.locals[s.program[s.ip].a].i32)?(UInt32)1:(UInt32)0;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x204A: // local.i32.gt_s
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].i32 = ((Int32)vStack[s.vStackPtr].i32 > (Int32)s.locals[s.program[s.ip].a].i32)?(UInt32)1:(UInt32)0;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
                     case 0x206A: // local.i32.add
                         --s.vStackPtr;
                         vStack[s.vStackPtr].i32 = s.locals[s.program[s.ip].a].i32 + vStack[s.vStackPtr].i32;
@@ -1603,6 +1645,12 @@ namespace GameWasm.Webassembly.New
                     case 0x2071: // local.i32.and
                         --s.vStackPtr;
                         vStack[s.vStackPtr].i32 = s.locals[s.program[s.ip].a].i32 & vStack[s.vStackPtr].i32;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x2074: // local.i32.shl
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].i32 = vStack[s.vStackPtr].i32 << (int)s.locals[s.program[s.ip].a].i32;
                         ++s.vStackPtr;
                         ++s.ip;
                         break;
@@ -1626,6 +1674,12 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         ++s.ip;
                         break;
+                    case 0x20203A: // local.local.i32.store8 
+                        offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
+                        s.memory.Buffer[offset] = s.locals[s.program[s.ip].b].b0;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
                     case 0x202037: // local.local.i64.store
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         s.memory.Buffer[offset] = s.locals[s.program[s.ip].b].b0;
@@ -1646,6 +1700,34 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         ++s.ip;
                         break;
+                    case 0x202046: // local.local.132.eq
+                        vStack[s.vStackPtr].type = Type.i32;
+                        vStack[s.vStackPtr].i32 = (UInt32)((s.locals[s.program[s.ip].a].i32 == s.locals[s.program[s.ip].b].i32)?1:0);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x202047: // local.local.132.ne
+                        vStack[s.vStackPtr].type = Type.i32;
+                        vStack[s.vStackPtr].i32 = (UInt32)((s.locals[s.program[s.ip].a].i32 != s.locals[s.program[s.ip].b].i32)?1:0);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x202048: // local.local.i32.lt_s
+                        vStack[s.vStackPtr].type = Type.i32;
+                        vStack[s.vStackPtr].i32 = (UInt32)(((Int32)s.locals[s.program[s.ip].a].i32 < (Int32)s.locals[s.program[s.ip].b].i32)?1:0);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20204A: // local.local.i32.gt_s
+                        vStack[s.vStackPtr].type = Type.i32;
+                        vStack[s.vStackPtr].i32 = (UInt32)(((Int32)s.locals[s.program[s.ip].a].i32 > (Int32)s.locals[s.program[s.ip].b].i32)?1:0);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
                     case 0x20206A: // local.local.132.add
                         vStack[s.vStackPtr].type = Type.i32;
                         vStack[s.vStackPtr].i32 = s.locals[s.program[s.ip].a].i32 + s.locals[s.program[s.ip].b].i32;
@@ -1653,9 +1735,16 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         ++s.ip;
                         break;
-                    case 0x202071: // local.local.132.and
+                    case 0x202071: // local.local.i32.and
                         vStack[s.vStackPtr].type = Type.i32;
                         vStack[s.vStackPtr].i32 = s.locals[s.program[s.ip].a].i32 & s.locals[s.program[s.ip].b].i32;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x202074: // local.local.i32.shl
+                        vStack[s.vStackPtr].type = Type.i32;
+                        vStack[s.vStackPtr].i32 = s.locals[s.program[s.ip].a].i32 << (int)s.locals[s.program[s.ip].b].i32;
                         ++s.vStackPtr;
                         ++s.ip;
                         ++s.ip;
