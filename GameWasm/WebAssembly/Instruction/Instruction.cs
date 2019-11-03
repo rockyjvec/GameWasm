@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using GameWasm.Webassembly.New;
 
@@ -12,6 +13,8 @@ namespace GameWasm.Webassembly.Instruction
         public Instruction Next = null;
         public UInt32 Pointer = 0;
         public int Pos = 0;
+
+        static public bool Optimizer = true; // The optimizer rewrites instructions to a more optimal form
         
         public Instruction(Parser parser, bool implemented = false)
         {
@@ -538,11 +541,11 @@ namespace GameWasm.Webassembly.Instruction
                     /* Variable Instructions */
 
                     case 0x20: // local.get
-                        i.i32 = (UInt32)(inst as LocalGet).index;
+                        i.pos = (inst as LocalGet).index;
                         program.Add(i);
                         break;
                     case 0x21: // local.set
-                        i.i32 = (UInt32)(inst as LocalSet).index;
+                        i.pos = (inst as LocalSet).index;
                         program.Add(i);
                         break;
                     case 0x22: // local.tee
@@ -662,22 +665,26 @@ namespace GameWasm.Webassembly.Instruction
                     /* Numeric Instructions */
 
                     case 0x41: // i32.const
-                        i.i32 = (inst as I32const).value;
+                        i.value.type = Type.i32;
+                        i.value.i32 = (inst as I32const).value;
                         program.Add(i);
                         break;
                     case 0x42: // i64.const
-                        i.i64 = (inst as I64const).value;
+                        i.value.type = Type.i64;
+                        i.value.i64 = (inst as I64const).value;
                         program.Add(i);
                         break;
                     case 0x43: // f32.const
-                        i.f32 = (inst as F32const).value;
+                        i.value.type = Type.f32;
+                        i.value.f32 = (inst as F32const).value;
                         program.Add(i);
                         break;
                     case 0x44: // f64.const
-                        i.f64 = (inst as F64const).value;
+                        i.value.type = Type.f64;
+                        i.value.f64 = (inst as F64const).value;
                         program.Add(i);
                         break;
-
+                    
                     case 0x45: // i32.eqz
                         program.Add(i);
                         break;
@@ -1070,7 +1077,7 @@ namespace GameWasm.Webassembly.Instruction
             return program.ToArray();
         }
 
-        public static string Translate(byte opCode)
+        public static string Translate(UInt16 opCode)
         {
             switch (opCode)
             {
@@ -1248,57 +1255,6 @@ namespace GameWasm.Webassembly.Instruction
                 case 0xBF: return "f64.reinterpret_i64";
                 default: return "unknown opcode";
             }            
-        }
-
-        // Finds common strings of instructions for the purpose of optimization
-        static public void Analyze(Function[] program, int length)
-        {
-            Dictionary<string, int> stats = new Dictionary<string, int>();
-
-            byte[] chunk = new byte[length];
-            
-            double total = 0;
-            for (int f = 0; f < program.Length; f++)
-            {
-                if (program[f].program == null) continue;
-                total += program[f].program.Length;
-            }
-
-            double complete = 0;
-            for (int f = 0; f < program.Length; f++)
-            {
-                if (program[f].program == null) continue;
-                for (int i = 0; i < program[f].program.Length - length; i++)
-                {
-                    complete++;
-                    for (int o = 0; o < length; o++)
-                    {
-                        chunk[o] = program[f].program[i].opCode;
-
-                        var s = Encoding.ASCII.GetString(chunk);
-                        if (!stats.ContainsKey(s))
-                        {
-                            stats.Add(s, 0);
-                        }
-
-                        stats[s]++;
-                    }
-                }
-                Console.WriteLine("Percent Complete: %" + (100*complete/total));
-            }
-            
-            foreach (var keyValuePair in stats.OrderBy(x => x.Value))
-            {
-                byte[] result = Encoding.ASCII.GetBytes(keyValuePair.Key);
-                for (int i = 0; i < length; i++)
-                {
-                    if(i == 0)
-                        Console.Write(Translate(result[i]));
-                    else
-                        Console.Write(", " + Translate(result[i]));
-                }
-                Console.WriteLine(": " + keyValuePair.Value);
-            }
         }
     }
 }

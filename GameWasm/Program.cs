@@ -17,7 +17,7 @@ namespace GameWasm
                 
                 return;                
             }
-            var store = new Store();
+            var store = new Store(args, new string[] {"HOME=."});
             var test = store.LoadModule("test", "/home/rocky/test.wasm");
          //   test.Debug = true;
             store.Modules["wasi_unstable"].Memory.Add((Memory)test.Exports["memory"]);

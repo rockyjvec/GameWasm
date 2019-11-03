@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+//#define DEBUG
+//#define PROFILE
+
 namespace GameWasm.Webassembly.New
 {
     public class Runtime
@@ -16,11 +19,12 @@ namespace GameWasm.Webassembly.New
 
         
         // DEBUGGING STUFF
-        Stopwatch timer = new Stopwatch();
-        Dictionary<byte, TimeSpan> profile = new Dictionary<byte, TimeSpan>();
-        public bool Debug = false;
-        public bool Profile = false;
-        private UInt64 counter = 0;
+        #if (PROFILE)
+            Stopwatch timer = new Stopwatch();
+            Dictionary<UInt16, TimeSpan> profile = new Dictionary<UInt16, TimeSpan>();
+
+            private UInt64 counter = 0;
+        #endif
 
         public int AddFunction(Function f)
         {
@@ -53,8 +57,9 @@ namespace GameWasm.Webassembly.New
         // Native call function
         public void Call(int functionIndex, object[] parameters = null)
         {
-            if(Debug)
+            #if (DEBUG)
                 Console.WriteLine("\n\nNATIVE CALL");
+            #endif
             if (parameters == null)
                 parameters = new object[] { };
 
@@ -121,9 +126,7 @@ namespace GameWasm.Webassembly.New
             
             for(; steps != 0; --steps)
             {
-/*
-                if (Debug)
-                {
+                #if (DEBUG)
                     if (s.vStackPtr > 0)
                         Console.Write(" => " + Type.Pretify(vStack[s.vStackPtr - 1]));
 
@@ -141,9 +144,8 @@ namespace GameWasm.Webassembly.New
                                   ", " + s.program[s.ip].i.Pos + "]: " + s.program[s.ip].i.ToString());
 
                     Console.ReadKey();
-                }
-                else if (Profile)
-                {
+                #endif
+                #if (PROFILE)
                     timer.Stop();
                     var overhead = timer.Elapsed;
                     if (!profile.ContainsKey(0xFF))
@@ -153,8 +155,8 @@ namespace GameWasm.Webassembly.New
                     profile[0xFF] += timer.Elapsed;
                     timer.Reset();
                     timer.Start();
-                }
-*/
+                #endif
+                
                 switch (s.program[s.ip].opCode)
                 {
                     case 0x00: // unreachable
@@ -373,12 +375,12 @@ namespace GameWasm.Webassembly.New
                     /* Variable Instructions */
 
                     case 0x20: // local.get
-                        vStack[s.vStackPtr] = s.locals[s.program[s.ip].i32];
+                        vStack[s.vStackPtr] = s.locals[s.program[s.ip].pos];
                         ++s.vStackPtr;
                         break;
                     case 0x21: // local.set
                         --s.vStackPtr;
-                        s.locals[s.program[s.ip].i32] = vStack[s.vStackPtr];
+                        s.locals[s.program[s.ip].pos] = vStack[s.vStackPtr];
                         break;
                     case 0x22: // local.tee
                         --s.vStackPtr;
@@ -580,26 +582,22 @@ namespace GameWasm.Webassembly.New
 
                     // These could be optimized by passing the const values as already created Value types
                     case 0x41: // i32.const
-                        vStack[s.vStackPtr].type = Type.i32;
-                        vStack[s.vStackPtr].i32 = s.program[s.ip].i32;
+                        vStack[s.vStackPtr] = s.program[s.ip].value;
                         ++s.vStackPtr;
                         break;
                     case 0x42: // i64.const
-                        vStack[s.vStackPtr].type = Type.i64;
-                        vStack[s.vStackPtr].i64 = s.program[s.ip].i64; 
+                        vStack[s.vStackPtr] = s.program[s.ip].value;
                         ++s.vStackPtr;
                         break;
                     case 0x43: // f32.const
                     {
-                        vStack[s.vStackPtr].type = Type.f32;
-                        vStack[s.vStackPtr].f32 = s.program[s.ip].f32;
+                        vStack[s.vStackPtr] = s.program[s.ip].value;
                         ++s.vStackPtr;
                         break;
                     }
                     case 0x44: // f64.const
                     {
-                        vStack[s.vStackPtr].type = Type.f64;
-                        vStack[s.vStackPtr].f64 = s.program[s.ip].f64;
+                        vStack[s.vStackPtr] = s.program[s.ip].value;
                         ++s.vStackPtr;
                         break;
                     }
@@ -1504,43 +1502,50 @@ namespace GameWasm.Webassembly.New
                     case 0xBF: // f64.reinterpret_i64
                         vStack[s.vStackPtr - 1].type = Type.f64;
                         break;
-                }
-/*
-                if (Profile)
-                {
-                    timer.Stop();
-
-                    if (!profile.ContainsKey(s.program[s.ip].opCode))
-                    {
-                        profile.Add(s.program[s.ip].opCode, TimeSpan.Zero);
-                    }
-
-                    profile[s.program[s.ip].opCode] += timer.Elapsed;
                     
-                    if (counter % 10000000 == 0)
-                    {
-                        TimeSpan total = TimeSpan.Zero;
-                        foreach (var keyValuePair in profile.OrderBy(x => x.Value))
-                        {
-                            var tss = keyValuePair.Value;
-                            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                                tss.Hours, tss.Minutes, tss.Seconds,
-                                tss.Milliseconds / 10);
-                            total += tss;
-                            Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + elapsedTime);
-                        }
-                        string elapsedTime2 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                            total.Hours, total.Minutes, total.Seconds,
-                            total.Milliseconds / 10);
-                        Console.WriteLine("Total: " + elapsedTime2);
-                    }
-
-                    timer.Restart();
-                    timer.Start();
-
-                    ++counter;
+                    
+                    /* OPTIMIZED OPCODES */
+                    
                 }
-*/
+
+
+                #if (PROFILE)
+                    if (s.ip >= 0)
+                    {
+                        timer.Stop();
+
+                        if (!profile.ContainsKey(s.program[s.ip].opCode))
+                        {
+                            profile.Add(s.program[s.ip].opCode, TimeSpan.Zero);
+                        }
+
+                        profile[s.program[s.ip].opCode] += timer.Elapsed;
+                        
+                        if (counter % 10000000 == 0)
+                        {
+                            TimeSpan total = TimeSpan.Zero;
+                            foreach (var keyValuePair in profile.OrderBy(x => x.Value))
+                            {
+                                var tss = keyValuePair.Value;
+                                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                                    tss.Hours, tss.Minutes, tss.Seconds,
+                                    tss.Milliseconds / 10);
+                                total += tss;
+                                Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + elapsedTime);
+                            }
+                            string elapsedTime2 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                                total.Hours, total.Minutes, total.Seconds,
+                                total.Milliseconds / 10);
+                            Console.WriteLine("Total: " + elapsedTime2);
+                        }
+
+                        timer.Restart();
+                        timer.Start();
+
+                        ++counter;
+                    }
+                #endif
+                
                 ++s.ip;
             }
  

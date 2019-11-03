@@ -220,15 +220,19 @@ namespace GameWasm.Webassembly.Module
         const byte WASI_WHENCE_END = 1;
         const byte WASI_WHENCE_SET = 2;
             
-        private string Directory = "/home/rocky";
-        private string[] EnvVars = new string[] { "HOME=/home/rocky", "DOOMWADDIR=/home/rocky" };
-        private string[] Args = new string[] { };
+        private string Directory;
+        private string[] EnvVars;
+        private string[] Args;
         private Dictionary<UInt32, Stream> FileDescriptors = new Dictionary<UInt32, Stream>();
         
         private bool Debug = false;
             
-        public Wasi(Store store) : base("wasi_unstable", store)
+        public Wasi(Store store, string[] env, string directory, string[] args) : base("wasi_unstable", store)
         {
+            Directory = directory;
+            EnvVars = env;
+            Args = args;
+            
             AddExportFunc("args_get", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, ArgsGet );
             AddExportFunc("args_sizes_get", new byte[] { Type.i32, Type.i32 }, new byte[] { Type.i32 }, ArgsSizesGet );
 

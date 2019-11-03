@@ -11,9 +11,12 @@ namespace GameWasm.Webassembly
         
         public Runtime runtime = new Runtime();
 
-        public Store()
+        public Store(string[] args = null, string[] env = null, string directory = ".")
         {
-            LoadModule(new Module.Wasi(this));
+            if (args == null) args = new string[] { };
+            if (env == null) env = new string[] { };
+            
+            LoadModule(new Module.Wasi(this, env, directory, args));
         }
 
         public Module.Module LoadModule(string name, string fileName)
