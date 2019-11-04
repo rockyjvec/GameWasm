@@ -1,8 +1,9 @@
 namespace GameWasm.Webassembly.New
 {
-    public struct Label
+    public class Label
     {
         public int ip;
         public int vStackPtr;
+        public Instruction.Instruction i;
     }
 }

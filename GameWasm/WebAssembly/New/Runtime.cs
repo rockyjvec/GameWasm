@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using GameWasm.Webassembly.Instruction;
 
 namespace GameWasm.Webassembly.New
 {
@@ -45,6 +46,10 @@ namespace GameWasm.Webassembly.New
                 cStack[i] = new State();
                 cStack[i].locals = new Value[2000];
                 cStack[i].lStack = new Label[1000];
+                for(int o = 0; o < 1000; o++)
+                {
+                    cStack[i].lStack[o] = new Label();
+                }
             }
             vStack = new Value[1000];
             functions = new Function[0];
@@ -77,11 +82,15 @@ namespace GameWasm.Webassembly.New
             cStack[1].labelPtr = 0;
             cStack[1].vStackPtr = 0;
             s = cStack[1];
-            s.memory = s.function.Module.Memory[0]; 
-
+            if (s.function.Module.Memory.Count > 0)
+                s.memory = s.function.Module.Memory[0];
+            else
+                s.memory = null;
+            
             // PushLabel
-            s.lStack[s.labelPtr].ip = s.program.Length - 1;
-            s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+//            s.lStack[s.labelPtr].ip = s.program.Length - 1;
+  //          s.lStack[s.labelPtr].type = s.program[s.ip].i.type;
+    //        s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
             int localPtr = 0;
             // TODO: check for matching type in FStat
@@ -183,12 +192,14 @@ namespace GameWasm.Webassembly.New
                         // PushLabel
                         s.lStack[s.labelPtr].ip = s.program[s.ip].pos;
                         s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                        s.lStack[s.labelPtr].i = s.program[s.ip].i;
                         ++s.labelPtr;
                         break;
                     case 0x03: // loop
                         // PushLabel
                         s.lStack[s.labelPtr].ip = s.ip - 1;
                         s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                        s.lStack[s.labelPtr].i = s.program[s.ip].i;
                         ++s.labelPtr;
                         break;
                     case 0x04: // if
@@ -199,6 +210,7 @@ namespace GameWasm.Webassembly.New
                                 // PushLabel
                                 s.lStack[s.labelPtr].ip = s.program[s.program[s.ip].pos].pos;
                                 s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                                s.lStack[s.labelPtr].i = s.program[s.ip].i;
                                 ++s.labelPtr;
                             }
                             else
@@ -206,6 +218,7 @@ namespace GameWasm.Webassembly.New
                                 // PushLabel
                                 s.lStack[s.labelPtr].ip = s.program[s.ip].pos;
                                 s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                                s.lStack[s.labelPtr].i = s.program[s.ip].i;
                                 ++s.labelPtr;
                             }
                         }
@@ -216,6 +229,7 @@ namespace GameWasm.Webassembly.New
                                 // PushLabel
                                 s.lStack[s.labelPtr].ip = s.program[s.program[s.ip].pos].pos;
                                 s.lStack[s.labelPtr].vStackPtr = s.vStackPtr;
+                                s.lStack[s.labelPtr].i = s.program[s.ip].i;
                                 ++s.labelPtr;
                             }
                             s.ip = s.program[s.ip].pos;
@@ -227,33 +241,28 @@ namespace GameWasm.Webassembly.New
                         break;
                     case 0x0B: // end
                         // If special case of end of a function, just get out of here.
-                        if (s.ip + 1 == s.program.Length) break;
-                        --s.labelPtr;
-                        break;
-                    case 0x0C: // br
-                        label = s.lStack[s.labelPtr - s.program[s.ip].pos];
-                        length = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
-                        for (i = 0; i < length; ++i)
+//                        if (s.ip + 1 == s.program.Length) break;
+                        if (s.labelPtr > 0)
                         {
-                            vStack[label.vStackPtr] = vStack[--s.vStackPtr];
-                            label.vStackPtr++;
-                        }
-
-                        s.labelPtr -= s.program[s.ip].pos;
-                        s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
-
-                        s.ip = s.lStack[s.labelPtr].ip;
-                        break;
-                    case 0x0D: // br_if
-                        --s.vStackPtr;
-                        if (vStack[s.vStackPtr].i32 > 0)
-                        {
-                            label = s.lStack[s.labelPtr - s.program[s.ip].pos];
-                            length = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
-                            for (i = 0; i < length; ++i)
+                            label = s.lStack[s.labelPtr - 1];
+                            if(label.i.type != 0x40)
                             {
                                 vStack[label.vStackPtr] = vStack[--s.vStackPtr];
-                                ++label.vStackPtr;
+                                label.vStackPtr++;
+                            }
+
+                            s.labelPtr -= 1;
+                            s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
+                        }
+                        break;
+                    case 0x0C: // br
+                        if (s.labelPtr - s.program[s.ip].pos >= 0)
+                        {
+                            label = s.lStack[s.labelPtr - s.program[s.ip].pos];
+                            if(!(label.i is Loop) && label.i.type != 0x40)
+                            {
+                                vStack[label.vStackPtr] = vStack[--s.vStackPtr];
+                                label.vStackPtr++;
                             }
 
                             s.labelPtr -= s.program[s.ip].pos;
@@ -261,12 +270,40 @@ namespace GameWasm.Webassembly.New
 
                             s.ip = s.lStack[s.labelPtr].ip;
                         }
+                        else
+                        {
+                            s.ip = s.program.Length - 2;
+                        }
+                        break;
+                    case 0x0D: // br_if
+                        --s.vStackPtr;
+                        if (vStack[s.vStackPtr].i32 > 0)
+                        {
+                            if (s.labelPtr - s.program[s.ip].pos >= 0)
+                            {
+                                label = s.lStack[s.labelPtr - s.program[s.ip].pos];
+                                if(!(label.i is Loop) && label.i.type != 0x40)
+                                {
+                                    vStack[label.vStackPtr] = vStack[--s.vStackPtr];
+                                    label.vStackPtr++;
+                                }
+
+                                s.labelPtr -= s.program[s.ip].pos;
+                                s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
+
+                                s.ip = s.lStack[s.labelPtr].ip;
+                            }
+                            else
+                            {
+                                s.ip = s.program.Length - 2;
+                            }
+                        }
                         break;
                     case 0x0E: // br_table
                         --s.vStackPtr;
                         index = (int)vStack[s.vStackPtr].i32;
 
-                        if (index >= s.program[s.ip].table.Length)
+                        if ((UInt32)index >= s.program[s.ip].table.Length)
                         {
                             index = s.program[s.ip].pos;
                         }
@@ -275,18 +312,24 @@ namespace GameWasm.Webassembly.New
                             index = s.program[s.ip].table[index];
                         }
 
-                        label = s.lStack[s.labelPtr - (int) index];
-                        length = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
-                        for (i = 0; i < length; ++i)
+                        if (s.labelPtr - index >= 0)
                         {
-                            vStack[label.vStackPtr] = vStack[--s.vStackPtr];
-                            ++label.vStackPtr;
+                            label = s.lStack[s.labelPtr - index];
+                            if(!(label.i is Loop) && label.i.type != 0x40)
+                            {
+                                vStack[label.vStackPtr] = vStack[--s.vStackPtr];
+                                label.vStackPtr++;
+                            }
+
+                            s.labelPtr -= index;
+                            s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
+
+                            s.ip = s.lStack[s.labelPtr].ip;
                         }
-
-                        s.labelPtr -= (int) index;
-                        s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
-
-                        s.ip = s.lStack[s.labelPtr].ip;
+                        else
+                        {
+                            s.ip = s.program.Length - 2;
+                        }
 
                         break;
                     case 0x0F: // return
@@ -324,12 +367,20 @@ namespace GameWasm.Webassembly.New
                             s.ip = -1;
                             s.function = functions[index];
                             s.program = s.function.program;
-                            s.labelPtr = cStack[cStackPtr - 1].labelPtr;
-                            s.memory = s.function.Module.Memory[0]; 
+                            s.labelPtr = 0;
+                            if (s.function.Module.Memory.Count > 0)
+                            {
+                                s.memory = s.function.Module.Memory[0];
+                            }
+                            else
+                            {
+                                s.memory = null;
+                            }
 
                             // PushLabel
-                            s.lStack[s.labelPtr].ip = s.program.Length - 1;
-                            s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+//                            s.lStack[s.labelPtr].ip = s.program.Length - 1;
+  //                          s.lStack[s.labelPtr].type = 0x40;
+    //                        s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
                             if (s.function.Type.Parameters.Length > 0)
                             {
@@ -352,12 +403,20 @@ namespace GameWasm.Webassembly.New
                         s.ip = -1;
                         s.function = functions[index];
                         s.program = s.function.program;
-                        s.labelPtr = cStack[cStackPtr - 1].labelPtr;
-                        s.memory = s.function.Module.Memory[0]; 
+                        s.labelPtr = 0;
+                        if (s.function.Module.Memory.Count > 0)
+                        {
+                            s.memory = s.function.Module.Memory[0];
+                        }
+                        else
+                        {
+                            s.memory = null;
+                        }
 
                         // PushLabel
-                        s.lStack[s.labelPtr].ip = s.program.Length - 1;
-                        s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
+//                        s.lStack[s.labelPtr].ip = s.program.Length - 1;
+ //                       s.lStack[s.labelPtr].type = 0x40;
+   //                     s.lStack[s.labelPtr++].vStackPtr = s.vStackPtr;
 
                         if (s.function.Type.Parameters.Length > 0)
                         {
@@ -1221,11 +1280,7 @@ namespace GameWasm.Webassembly.New
                         --s.vStackPtr;
                         break;
                     case 0x89: // i64.rotl
-                        vStack[s.vStackPtr - 2].i64 =
-                            (UInt64) ((vStack[s.vStackPtr - 2].i64 <<
-                                       (int) vStack[s.vStackPtr - 1].i64) |
-                                      (vStack[s.vStackPtr - 2].i64 >>
-                                       (64 - (int) vStack[s.vStackPtr - 1].i64)));
+                        vStack[s.vStackPtr - 2].i64 = (UInt64) ((vStack[s.vStackPtr - 2].i64 << (int) vStack[s.vStackPtr - 1].i64) | (vStack[s.vStackPtr - 2].i64 >> (64 - (int) vStack[s.vStackPtr - 1].i64)));
                         --s.vStackPtr;
                         break;
                     case 0x8A: // i64.rotr
@@ -1523,18 +1578,24 @@ namespace GameWasm.Webassembly.New
                     case 0x200D: // local.br_if
                         if (s.locals[s.program[s.ip].a].i32 > 0)
                         {
-                            label = s.lStack[s.labelPtr - s.program[s.ip].pos];
-                            length = s.vStackPtr - s.lStack[s.labelPtr - 1].vStackPtr;
-                            for (i = 0; i < length; ++i)
+                            if (s.labelPtr - s.program[s.ip].pos >= 0)
                             {
-                                vStack[label.vStackPtr] = vStack[--s.vStackPtr];
-                                ++label.vStackPtr;
+                                label = s.lStack[s.labelPtr - s.program[s.ip].pos];
+                                if(!(label.i is Loop) && label.i.type != 0x40)
+                                {
+                                    vStack[label.vStackPtr] = vStack[--s.vStackPtr];
+                                    label.vStackPtr++;
+                                }
+
+                                s.labelPtr -= s.program[s.ip].pos;
+                                s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
+
+                                s.ip = s.lStack[s.labelPtr].ip;
                             }
-
-                            s.labelPtr -= s.program[s.ip].pos;
-                            s.vStackPtr = s.lStack[s.labelPtr].vStackPtr;
-
-                            s.ip = s.lStack[s.labelPtr].ip;
+                            else
+                            {
+                                s.ip = s.program.Length - 2;
+                            }
                         }
                         else
                         {
@@ -1546,6 +1607,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         break;
                     case 0x2028: // local.i32.load 
+                    case 0x202A: // local.f32.load 
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         vStack[s.vStackPtr].b0 = s.memory.Buffer[offset];
                         ++offset;
@@ -1558,6 +1620,7 @@ namespace GameWasm.Webassembly.New
                         s.vStackPtr++;
                         break;
                     case 0x2029: // local.i64.load 
+                    case 0x202B: // local.f64.load 
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         vStack[s.vStackPtr].b0 = s.memory.Buffer[offset];
                         ++offset;
@@ -1577,6 +1640,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         s.vStackPtr++;
                         break;
+                    
                     case 0x202C: // local.i32.load8_s
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         vStack[s.vStackPtr].i32 = (UInt32)(Int32)(sbyte)s.memory.Buffer[offset];
@@ -1603,6 +1667,7 @@ namespace GameWasm.Webassembly.New
                         break;
                     
                     case 0x2036: // local.i32.store 
+                    case 0x2038: // local.f32.store 
                         --s.vStackPtr;
                         offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
                         s.memory.Buffer[offset] = s.locals[s.program[s.ip].a].b0;
@@ -1615,6 +1680,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         break;
                     case 0x2037: // local.i64.store
+                    case 0x2039: // local.f64.store
                         --s.vStackPtr;
                         offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
                         s.memory.Buffer[offset] = s.locals[s.program[s.ip].a].b0;
@@ -2181,6 +2247,41 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         ++s.ip;
                         break;
+                    case 0x20207E21: // local.local.i64.mul.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = s.locals[s.program[s.ip].a].i64 * s.locals[s.program[s.ip].b].i64;
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20207F21: // local.local.i64.div_s.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = (UInt64)((Int64)s.locals[s.program[s.ip].a].i64 / (Int64)s.locals[s.program[s.ip].b].i64);
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208021: // local.local.i64.div_u.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = s.locals[s.program[s.ip].a].i64 / s.locals[s.program[s.ip].b].i64;
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208121: // local.local.i64.rem_s.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = (UInt64)((s.locals[s.program[s.ip].a].i64 == 0x8000000000000000 && s.locals[s.program[s.ip].b].i64 == 0xFFFFFFFFFFFFFFFF)?0:((Int64)s.locals[s.program[s.ip].a].i64 % (Int64)s.locals[s.program[s.ip].b].i64));
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208221: // local.local.i64.rem_u.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = s.locals[s.program[s.ip].a].i64 % s.locals[s.program[s.ip].b].i64;
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
                     case 0x20208321: // local.local.i64.and.local
                         s.locals[s.program[s.ip].c].type = Type.i64;
                         s.locals[s.program[s.ip].c].i64 = s.locals[s.program[s.ip].a].i64 & s.locals[s.program[s.ip].b].i64;
@@ -2198,6 +2299,41 @@ namespace GameWasm.Webassembly.New
                     case 0x20208521: // local.local.i64.xor.local
                         s.locals[s.program[s.ip].c].type = Type.i64;
                         s.locals[s.program[s.ip].c].i64 = s.locals[s.program[s.ip].a].i64 ^ s.locals[s.program[s.ip].b].i64;
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208621: // local.local.i64.shl.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = s.locals[s.program[s.ip].a].i64 << (int)s.locals[s.program[s.ip].b].i64;
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208721: // local.local.i64.shr_s.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = (UInt64)((Int64)s.locals[s.program[s.ip].a].i64 >> (int)s.locals[s.program[s.ip].b].i64);
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208821: // local.local.i64.shr_u.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = s.locals[s.program[s.ip].a].i64 >> (int)s.locals[s.program[s.ip].b].i64;
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208921: // local.local.i64.rotl.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = (UInt64) ((s.locals[s.program[s.ip].a].i64 << (int) s.locals[s.program[s.ip].b].i64) | (s.locals[s.program[s.ip].a].i64 >> (64 - (int) s.locals[s.program[s.ip].b].i64)));
+                        ++s.ip;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20208A21: // local.local.i64.rotr.local
+                        s.locals[s.program[s.ip].c].type = Type.i64;
+                        s.locals[s.program[s.ip].c].i64 = (UInt64) ((s.locals[s.program[s.ip].a].i64 >> (int) s.locals[s.program[s.ip].b].i64) | (s.locals[s.program[s.ip].a].i64 << (64 - (int) s.locals[s.program[s.ip].b].i64)));
                         ++s.ip;
                         ++s.ip;
                         ++s.ip;

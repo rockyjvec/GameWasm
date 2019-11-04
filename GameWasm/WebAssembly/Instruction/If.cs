@@ -1,10 +1,10 @@
-﻿namespace GameWasm.Webassembly.Instruction
+﻿using System;
+
+namespace GameWasm.Webassembly.Instruction
 {
     class If : Instruction
     {
         public Instruction label;
-
-        byte type;
 
         public override void End(Instruction end)
         {

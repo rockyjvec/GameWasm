@@ -3,10 +3,10 @@
     class Block : Instruction
     {
         public Instruction label;
-        byte type;
 
         public override void End(Instruction end)
         {
+            
             label = end;
         }
 
