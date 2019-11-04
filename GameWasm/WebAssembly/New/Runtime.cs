@@ -1,4 +1,4 @@
-//#define PROFILE
+#define PROFILE
 //#define DEBUG
 
 using System;
@@ -168,8 +168,8 @@ namespace GameWasm.Webassembly.New
                     }
                     profile[0xFF] += timer.Elapsed;
                     timed = s.program[s.ip].opCode;
-/*
-                    if (s.program[s.ip].opCode == 0x202821 && s.ip + 1 < s.program.Length)
+
+                    if (s.program[s.ip].opCode == 0x21 && s.ip + 1 < s.program.Length)
                     {
                         if (!followers.ContainsKey(lastOpCode))
                         {
@@ -177,7 +177,7 @@ namespace GameWasm.Webassembly.New
                         }
 
                         ++followers[lastOpCode];
-                    }*/
+                    }
                     timer.Reset();
                     timer.Start();
                 #endif
@@ -1835,6 +1835,93 @@ namespace GameWasm.Webassembly.New
                         ++s.vStackPtr;
                         ++s.ip;
                         break;
+
+                    case 0x2099: // local.f64.abs
+                        vStack[s.vStackPtr].f64 = Math.Abs(s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x209A: // local.f64.neg
+                        vStack[s.vStackPtr].f64 = -s.locals[s.program[s.ip].a].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x209B: // local.f64.ceil
+                        vStack[s.vStackPtr].f64 = Math.Ceiling(s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x209C: // local.f64.floor
+                        vStack[s.vStackPtr].f64 = Math.Floor(s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x209D: // local.f64.trunc
+                        vStack[s.vStackPtr].f64 = Math.Truncate(s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x209E: // local.f64.nearest
+                        vStack[s.vStackPtr].f64 = Math.Round(s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x209F: // local.f64.sqrt
+                        vStack[s.vStackPtr].f64 = Math.Sqrt(s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20A0: // local.f64.add
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].f64 = vStack[s.vStackPtr].f64 + s.locals[s.program[s.ip].a].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20A1: // local.f64.sub
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].f64 = vStack[s.vStackPtr].f64 - s.locals[s.program[s.ip].a].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20A2: // local.f64.mul
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].f64 = vStack[s.vStackPtr].f64 * s.locals[s.program[s.ip].a].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20A3: // local.f64.div
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].f64 = vStack[s.vStackPtr].f64 / s.locals[s.program[s.ip].a].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20A4: // local.f64.min
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].f64 = Math.Min(vStack[s.vStackPtr].f64, s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20A5: // local.f64.max
+                        --s.vStackPtr;
+                        vStack[s.vStackPtr].f64 = Math.Max(vStack[s.vStackPtr].f64, s.locals[s.program[s.ip].a].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20A6: // local.f64.copysign
+                        if (vStack[s.vStackPtr].f64 >= 0 && s.locals[s.program[s.ip].a].f64 < 0)
+                        {
+                            vStack[s.vStackPtr].f64 = -s.locals[s.program[s.ip].a].f64;
+                        }
+
+                        if (vStack[s.vStackPtr].f64 < 0 && s.locals[s.program[s.ip].a].f64 >= 0)
+                        {
+                            vStack[s.vStackPtr].f64 = -s.locals[s.program[s.ip].a].f64;
+                        }
+
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                        
                     case 0x4121: // i32.const.local
                         s.locals[s.program[s.ip].a].i32 = s.program[s.ip].i32; 
                         ++s.ip;
@@ -2393,18 +2480,18 @@ namespace GameWasm.Webassembly.New
                                 tss.Hours, tss.Minutes, tss.Seconds,
                                 tss.Milliseconds / 10);
                             total += tss;
-                            Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + elapsedTime);
+  //                          Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + elapsedTime);
                         }
                         string elapsedTime2 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                             total.Hours, total.Minutes, total.Seconds,
                             total.Milliseconds / 10);
-                        Console.WriteLine("Total: " + elapsedTime2);
+//                        Console.WriteLine("Total: " + elapsedTime2);
 
-/*
+
                         foreach (var keyValuePair in followers.OrderBy(x => x.Value))
                         {
                             Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + keyValuePair.Value);
-                        }*/
+                        }
                     }
 
                     timer.Restart();

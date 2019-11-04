@@ -676,6 +676,27 @@ namespace GameWasm.Webassembly.Instruction
                             program.Add(unreachable);
                             continue;
 
+                        case 0x2099: // local.f64.abs
+                        case 0x209A: // local.f64.neg
+                        case 0x209B: // local.f64.ceil
+                        case 0x209C: // local.f64.floor
+                        case 0x209D: // local.f64.trunc
+                        case 0x209E: // local.f64.nearest
+                        case 0x209F: // local.f64.sqrt
+                        case 0x20A0: // local.f64.add
+                        case 0x20A1: // local.f64.sub
+                        case 0x20A2: // local.f64.mul
+                        case 0x20A3: // local.f64.div
+                        case 0x20A4: // local.f64.min
+                        case 0x20A5: // local.f64.max
+                        case 0x20A6: // local.f64.copysign
+                            i.opCode = two;
+                            i.a = (inst as LocalGet).index;
+                            inst = inst.Next;
+                            program.Add(i);
+                            program.Add(unreachable);
+                            continue;
+
                         // const *
 
                         case 0x4121: // i32.const.local
@@ -1256,7 +1277,22 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x2074: return "local.i32.shl";
                 case 0x2075: return "local.i32.shr_s";
                 case 0x2076: return "local.i32.shr_u";
-                
+
+                case 0x2099: return "local.f64.abs";
+                case 0x209A: return "local.f64.neg";
+                case 0x209B: return "local.f64.ceil";
+                case 0x209C: return "local.f64.floor";
+                case 0x209D: return "local.f64.trunc";
+                case 0x209E: return "local.f64.nearest";
+                case 0x209F: return "local.f64.sqrt";
+                case 0x20A0: return "local.f64.add";
+                case 0x20A1: return "local.f64.sub";
+                case 0x20A2: return "local.f64.mul";
+                case 0x20A3: return "local.f64.div";
+                case 0x20A4: return "local.f64.min";
+                case 0x20A5: return "local.f64.max";
+                case 0x20A6: return "local.f64.copysign";
+
                 case 0x4121: return "i32.const.local";
                 
                 case 0x4221: return "i64.const.local";
