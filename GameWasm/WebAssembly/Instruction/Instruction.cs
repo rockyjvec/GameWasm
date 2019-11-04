@@ -975,6 +975,36 @@ namespace GameWasm.Webassembly.Instruction
                         program[o] = n;
                     }
                 }
+
+                if (program[o].opCode == 0x4121)
+                {
+                    int count = 0;
+                    while (o + count < program.Count && program[o + count].opCode == 0x4121)
+                    {
+                        
+                        count+=2;
+                    }
+
+                    count /= 2;
+                    
+                    if (count > 1)
+                    {
+                        Inst n = program[o];
+                        n.opCode = 0xFE000000;
+                        n.optimalProgram = new Inst[count];
+                        for (int m = 0; m < count; m++)
+                        {
+                            n.optimalProgram[m] = program[(m*2) + o];
+                            if (m > 0)
+                            {
+                                Inst u = new Inst();
+                                u.opCode = 0x00;
+                                program[(m*2) + o] = u;
+                            }
+                        }
+                        program[o] = n;
+                    }
+                }
             }
 
             return program.ToArray();
@@ -1244,6 +1274,10 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x20207721: return "local.local.i32.rotl.local";
                 case 0x20207821: return "local.local.i32.rotr.local";
                 
+                case 0x20207C21: return "local.local.i64.add.local";
+                case 0x20207D21: return "local.local.i64.sub.local";
+                
+                case 0xFE000000: return "loop of i32.const.local";
                 case 0xFF000000: return "loop of local.i32.load.local";
                 case 0xFF: return "Loop Overhead:";
                 default: return "unknown opcode: " + opCode.ToString("X");

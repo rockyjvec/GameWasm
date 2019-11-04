@@ -2221,6 +2221,16 @@ namespace GameWasm.Webassembly.New
                         }
                         --s.ip;
                         break;
+                    case 0xFE000000: // loop of i32.const.local
+                        index = s.ip;
+                        for (i = 0; i < s.program[index].optimalProgram.Length; ++i)
+                        {
+                            s.locals[s.program[index].optimalProgram[i].a].i32 = s.program[index].optimalProgram[i].i32;
+                            ++s.ip;
+                            ++s.ip;
+                        }
+                        --s.ip;
+                        break;
                     default:
                         throw new Exception("Invalid opCode: " + s.program[s.ip].opCode.ToString("X"));
                 }
