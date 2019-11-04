@@ -1,4 +1,4 @@
-#define PROFILE
+//#define PROFILE
 //#define DEBUG
 
 using System;
@@ -168,7 +168,7 @@ namespace GameWasm.Webassembly.New
                     }
                     profile[0xFF] += timer.Elapsed;
                     timed = s.program[s.ip].opCode;
-
+/*
                     if (s.program[s.ip].opCode == 0x21 && s.ip + 1 < s.program.Length)
                     {
                         if (!followers.ContainsKey(lastOpCode))
@@ -177,7 +177,7 @@ namespace GameWasm.Webassembly.New
                         }
 
                         ++followers[lastOpCode];
-                    }
+                    }*/
                     timer.Reset();
                     timer.Start();
                 #endif
@@ -1908,6 +1908,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         break;
                     case 0x20A6: // local.f64.copysign
+                        --s.vStackPtr;
                         if (vStack[s.vStackPtr].f64 >= 0 && s.locals[s.program[s.ip].a].f64 < 0)
                         {
                             vStack[s.vStackPtr].f64 = -s.locals[s.program[s.ip].a].f64;
@@ -1921,7 +1922,33 @@ namespace GameWasm.Webassembly.New
                         ++s.vStackPtr;
                         ++s.ip;
                         break;
-                        
+                    
+                    case 0x20B7: // local.f64.convert_i32_s
+                        vStack[s.vStackPtr].type = Type.f64;
+                        vStack[s.vStackPtr].f64 = (double) (Int32) s.locals[s.program[s.ip].a].i32;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+                    case 0x20B8: // local.f64.convert_i32_u
+                        vStack[s.vStackPtr].type = Type.f64;
+                        vStack[s.vStackPtr].f64 = (double) (UInt32) s.locals[s.program[s.ip].a].i32;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        break;
+
+                    case 0xB721: // f64.convert_i32_s.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].a].type = Type.f64;
+                        s.locals[s.program[s.ip].a].f64 = (double) (Int32) vStack[s.vStackPtr].i32;
+                        ++s.ip;
+                        break;
+                    case 0xB821: // f64.convert_i32_u.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].a].type = Type.f64;
+                        s.locals[s.program[s.ip].a].f64 = (double) (UInt32) vStack[s.vStackPtr].i32;
+                        ++s.ip;
+                        break;
+
                     case 0x4121: // i32.const.local
                         s.locals[s.program[s.ip].a].i32 = s.program[s.ip].i32; 
                         ++s.ip;
@@ -2121,6 +2148,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         break;
                     case 0x202921: // local.i64.load.local
+                    case 0x202B21: // local.f64.load.local
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         s.locals[s.program[s.ip].b].b0 = s.memory.Buffer[offset];
                         ++offset;
@@ -2162,6 +2190,105 @@ namespace GameWasm.Webassembly.New
                     case 0x202F21: // local.i32.load16_u.local
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         s.locals[s.program[s.ip].b].i32 = (UInt32)s.memory.Buffer[offset] | (UInt32)(s.memory.Buffer[offset + 1] << 8);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+
+                    case 0x209921: // local.f64.abs.local
+                        s.locals[s.program[s.ip].b].f64 = Math.Abs(s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x209A21: // local.f64.neg.local
+                        s.locals[s.program[s.ip].b].f64 = -s.locals[s.program[s.ip].a].f64;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x209B21: // local.f64.ceil.local
+                        s.locals[s.program[s.ip].b].f64 = Math.Ceiling(s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x209C21: // local.f64.floor.local
+                        s.locals[s.program[s.ip].b].f64 = Math.Floor(s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x209D21: // local.f64.trunc.local
+                        s.locals[s.program[s.ip].b].f64 = Math.Truncate(s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x209E21: // local.f64.nearest.local
+                        s.locals[s.program[s.ip].b].f64 = Math.Round(s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x209F21: // local.f64.sqrt.local
+                        s.locals[s.program[s.ip].b].f64 = Math.Sqrt(s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20A021: // local.f64.add.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].b].f64 = vStack[s.vStackPtr].f64 + s.locals[s.program[s.ip].a].f64;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20A121: // local.f64.sub.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].b].f64 = vStack[s.vStackPtr].f64 - s.locals[s.program[s.ip].a].f64;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20A221: // local.f64.mul.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].b].f64 = vStack[s.vStackPtr].f64 * s.locals[s.program[s.ip].a].f64;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20A321: // local.f64.div.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].b].f64 = vStack[s.vStackPtr].f64 / s.locals[s.program[s.ip].a].f64;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20A421: // local.f64.min.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].b].f64 = Math.Min(vStack[s.vStackPtr].f64, s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20A521: // local.f64.max.local
+                        --s.vStackPtr;
+                        s.locals[s.program[s.ip].b].f64 = Math.Max(vStack[s.vStackPtr].f64, s.locals[s.program[s.ip].a].f64);
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20A621: // local.f64.copysign.local
+                        --s.vStackPtr;
+                        if (vStack[s.vStackPtr].f64 >= 0 && s.locals[s.program[s.ip].a].f64 < 0)
+                        {
+                            s.locals[s.program[s.ip].b].f64 = -s.locals[s.program[s.ip].a].f64;
+                        }
+
+                        if (vStack[s.vStackPtr].f64 < 0 && s.locals[s.program[s.ip].a].f64 >= 0)
+                        {
+                            s.locals[s.program[s.ip].b].f64 = -s.locals[s.program[s.ip].a].f64;
+                        }
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                                            
+                    case 0x20B721: // local.f64.convert_i32_s.local
+                        s.locals[s.program[s.ip].b].type = Type.f64;
+                        s.locals[s.program[s.ip].b].f64 = (double) (Int32) s.locals[s.program[s.ip].a].i32;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x20B821: // local.f64.convert_i32_u.local
+                        s.locals[s.program[s.ip].b].type = Type.f64;
+                        s.locals[s.program[s.ip].b].f64 = (double) (UInt32) s.locals[s.program[s.ip].a].i32;
                         ++s.ip;
                         ++s.ip;
                         break;
@@ -2480,18 +2607,18 @@ namespace GameWasm.Webassembly.New
                                 tss.Hours, tss.Minutes, tss.Seconds,
                                 tss.Milliseconds / 10);
                             total += tss;
-  //                          Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + elapsedTime);
+                            Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + elapsedTime);
                         }
                         string elapsedTime2 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                             total.Hours, total.Minutes, total.Seconds,
                             total.Milliseconds / 10);
-//                        Console.WriteLine("Total: " + elapsedTime2);
+                        Console.WriteLine("Total: " + elapsedTime2);
 
-
+/*
                         foreach (var keyValuePair in followers.OrderBy(x => x.Value))
                         {
                             Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + keyValuePair.Value);
-                        }
+                        }*/
                     }
 
                     timer.Restart();

@@ -588,6 +588,8 @@ namespace GameWasm.Webassembly.Instruction
                         case 0x202821: // local.i32.load.local
                         case 0x202921: // local.i32.load.local
 
+                        case 0x202B21: // local.f64.load.local
+
                         case 0x202C21: // local.i32.load8_s.local
                         case 0x202D21: // local.i32.load8_u.local
                         case 0x202E21: // local.i32.load16_s.local
@@ -601,6 +603,33 @@ namespace GameWasm.Webassembly.Instruction
                             program.Add(unreachable);
                             program.Add(unreachable);
                             continue;
+                        
+                        case 0x209921: // local.f64.abs
+                        case 0x209A21: // local.f64.neg
+                        case 0x209B21: // local.f64.ceil
+                        case 0x209C21: // local.f64.floor
+                        case 0x209D21: // local.f64.trunc
+                        case 0x209E21: // local.f64.nearest
+                        case 0x209F21: // local.f64.sqrt
+                        case 0x20A021: // local.f64.add
+                        case 0x20A121: // local.f64.sub
+                        case 0x20A221: // local.f64.mul
+                        case 0x20A321: // local.f64.div
+                        case 0x20A421: // local.f64.min
+                        case 0x20A521: // local.f64.max
+                        case 0x20A621: // local.f64.copysign
+
+                        case 0x20B721: // local.f64.convert_i32_s.local
+                        case 0x20B821: // local.f64.convert_i32_u.local
+                            i.opCode = three;
+                            i.a = inst.index;
+                            i.b = inst.Next.Next.index;
+                            inst = inst.Next.Next;
+                            program.Add(i);
+                            program.Add(unreachable);
+                            program.Add(unreachable);
+                            continue;
+
                     }
 
                     switch (two)
@@ -690,8 +719,20 @@ namespace GameWasm.Webassembly.Instruction
                         case 0x20A4: // local.f64.min
                         case 0x20A5: // local.f64.max
                         case 0x20A6: // local.f64.copysign
+
+                        case 0x20B7: // local.f64.convert_i32_s
+                        case 0x20B8: // local.f64.convert_i32_u
                             i.opCode = two;
                             i.a = (inst as LocalGet).index;
+                            inst = inst.Next;
+                            program.Add(i);
+                            program.Add(unreachable);
+                            continue;
+
+                        case 0xB721: // f64.convert_i32_s.local
+                        case 0xB821: // f64.convert_i32_u.local
+                            i.opCode = two;
+                            i.a = (inst.Next as LocalSet).index;
                             inst = inst.Next;
                             program.Add(i);
                             program.Add(unreachable);
@@ -1293,6 +1334,12 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x20A5: return "local.f64.max";
                 case 0x20A6: return "local.f64.copysign";
 
+                case 0x20B7: return "local.f64.convert_i32_s";
+                case 0x20B8: return "local.f64.convert_i32_u";
+
+                case 0xB721: return "f64.convert_i32_s.local";
+                case 0xB821: return "f64.convert_i32_u.local";
+
                 case 0x4121: return "i32.const.local";
                 
                 case 0x4221: return "i64.const.local";
@@ -1327,11 +1374,31 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x202821: return "local.i32.load.local";
                 case 0x202921: return "local.i64.load.local";
 
+                case 0x202B21: return "local.f64.load.local";
+                    
                 case 0x202C21: return "local.i32.load8_s.local";
                 case 0x202D21: return "local.i32.load8_u.local";
                 case 0x202E21: return "local.i32.load16_s.local";
                 case 0x202F21: return "local.i32.load16_u.local";
 
+                case 0x209921: return "local.f64.abs";
+                case 0x209A21: return "local.f64.neg";
+                case 0x209B21: return "local.f64.ceil";
+                case 0x209C21: return "local.f64.floor";
+                case 0x209D21: return "local.f64.trunc";
+                case 0x209E21: return "local.f64.nearest";
+                case 0x209F21: return "local.f64.sqrt";
+                case 0x20A021: return "local.f64.add";
+                case 0x20A121: return "local.f64.sub";
+                case 0x20A221: return "local.f64.mul";
+                case 0x20A321: return "local.f64.div";
+                case 0x20A421: return "local.f64.min";
+                case 0x20A521: return "local.f64.max";
+                case 0x20A621: return "local.f64.copysign";
+
+                case 0x20B721: return "local.f64.convert_i32_s.local";
+                case 0x20B821: return "local.f64.convert_i32_u.local";
+                
                 case 0x20204621: return "local.local.i32.eq.local";
                 case 0x20204721: return "local.local.i32.ne.local";
                 case 0x20204821: return "local.local.i32.lt_s.local";
