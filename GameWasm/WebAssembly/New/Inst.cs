@@ -28,5 +28,6 @@ namespace GameWasm.Webassembly.New
         public Value value;
         public Value[] values;
         public int a, b, c;
+        public Inst[] optimalProgram;
     }
 }

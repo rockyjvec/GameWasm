@@ -6,7 +6,6 @@ namespace GameWasm.Webassembly.Instruction
     class GlobalSet : Instruction
     {
         Global global;
-        public int index;
 
         public GlobalSet(Parser parser) : base(parser, true)
         {

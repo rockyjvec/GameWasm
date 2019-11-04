@@ -4,7 +4,7 @@ namespace GameWasm.Webassembly.Instruction
 {
     class I32load16s : Instruction
     {
-        public UInt32 align, offset;
+        public UInt32 align;
 
         public I32load16s(Parser parser) : base(parser, true)
         {

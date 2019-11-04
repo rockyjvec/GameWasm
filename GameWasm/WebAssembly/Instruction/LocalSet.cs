@@ -2,8 +2,6 @@
 {
     class LocalSet : Instruction
     {
-        public int index;
-
         public LocalSet(Parser parser) : base(parser, true)
         {
             /*if (index >= f.Locals.Count())

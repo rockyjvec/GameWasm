@@ -2,8 +2,6 @@
 {
     class LocalGet : Instruction
     {
-        public int index;
-
         public LocalGet(Parser parser) : base(parser, true)
         {
             /*

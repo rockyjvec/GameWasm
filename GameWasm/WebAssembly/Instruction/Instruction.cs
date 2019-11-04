@@ -13,6 +13,8 @@ namespace GameWasm.Webassembly.Instruction
         public Instruction Next = null;
         public UInt32 Pointer = 0;
         public int Pos = 0;
+        public UInt32 offset;
+        public int index;
 
         static public bool Optimizer = true; // The optimizer rewrites instructions to a more optimal form
         
@@ -487,27 +489,34 @@ namespace GameWasm.Webassembly.Instruction
 
                 switch (four)
                 {
-                    case 0x02206A21: // local.local.i32.add.local
-                    case 0x02206B21: // local.local.i32.sub.local
-                    case 0x02206C21: // local.local.i32.mul.local
-                    case 0x02206D21: // local.local.i32.div_s.local
-                    case 0x02206E21: // local.local.i32.div_u.local
-                    case 0x02206F21: // local.local.i32.rem_s.local
-                    case 0x02207021: // local.local.i32.rem_u.local
-                    case 0x02207121: // local.local.i32.and.local
-                    case 0x02207221: // local.local.i32.or.local
-                    case 0x02207321: // local.local.i32.xor.local
-                    case 0x02207421: // local.local.i32.shl.local
-                    case 0x02207521: // local.local.i32.shr_s.local
-                    case 0x02207621: // local.local.i32.shr_u.local
-                    case 0x02207721: // local.local.i32.rotl.local
-                    case 0x02207821: // local.local.i32.rotr.local
+                    case 0x20204621: // local.local.i32.eq.local
+                    case 0x20204721: // local.local.i32.ne.local
+                    case 0x20204821: // local.local.i32.lt_s.local
+                    case 0x20204921: // local.local.i32.lt_u.local
+                    case 0x20204A21: // local.local.i32.gt_s.local
+                    case 0x20204B21: // local.local.i32.gt_u.local
+                    case 0x20206A21: // local.local.i32.add.local
+                    case 0x20206B21: // local.local.i32.sub.local
+                    case 0x20206C21: // local.local.i32.mul.local
+                    case 0x20206D21: // local.local.i32.div_s.local
+                    case 0x20206E21: // local.local.i32.div_u.local
+                    case 0x20206F21: // local.local.i32.rem_s.local
+                    case 0x20207021: // local.local.i32.rem_u.local
+                    case 0x20207121: // local.local.i32.and.local
+                    case 0x20207221: // local.local.i32.or.local
+                    case 0x20207321: // local.local.i32.xor.local
+                    case 0x20207421: // local.local.i32.shl.local
+                    case 0x20207521: // local.local.i32.shr_s.local
+                    case 0x20207621: // local.local.i32.shr_u.local
+                    case 0x20207721: // local.local.i32.rotl.local
+                    case 0x20207821: // local.local.i32.rotr.local
 
-                    case 0x02207C21: // local.local.i64.add.local
-                    case 0x02207D21: // local.local.i64.sub.local
-                    case 0x02208321: // local.local.i64.and.local
-                    case 0x02208421: // local.local.i64.or.local
-                    case 0x02208521: // local.local.i64.xor.local
+                    case 0x20207C21: // local.local.i64.add.local
+                    case 0x20207D21: // local.local.i64.sub.local
+                        
+                    case 0x20208321: // local.local.i64.and.local
+                    case 0x20208421: // local.local.i64.or.local
+                    case 0x20208521: // local.local.i64.xor.local
                         i.opCode = four;
                         i.a = (inst as LocalGet).index;
                         i.b = (inst.Next as LocalGet).index;
@@ -523,171 +532,38 @@ namespace GameWasm.Webassembly.Instruction
                 switch (three)
                 {
                     case 0x202036: // local.local.i32.store
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        i.pos64 = (inst.Next.Next as I32store).offset;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
+                    case 0x202037: // local.local.i64.store
+                        
                     case 0x20203A: // local.local.i32.store8
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        i.pos64 = (inst.Next.Next as I32store8).offset;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x20203B: // local.local.i32.store16
                         i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        i.pos64 = (inst.Next.Next as I32store16).offset;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
-                    case 0x202037: // local.local.i64.store
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        i.pos64 = (inst.Next.Next as I64store).offset;
+                        i.a = inst.index;
+                        i.b = inst.Next.index;
+                        i.pos64 = inst.Next.Next.offset;
                         program.Add(i);
                         program.Add(unreachable);
                         program.Add(unreachable);
                         inst = inst.Next.Next;
                         continue;
                     case 0x202046: // local.local.i32.eq
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x202047: // local.local.i32.ne
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x202048: // local.local.i32.lt_s
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
+                    case 0x202049: // local.local.i32.lt_u
                     case 0x20204A: // local.local.i32.gt_s
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
+                    case 0x20204B: // local.local.i32.gt_u
+                        
                     case 0x20206A: // local.local.i32.add
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x20206B: // local.local.i32.sub
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x20206C: // local.local.i32.mul
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x20206D: // local.local.i32.div_s
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x20206E: // local.local.i32.div_u
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x20206F: // local.local.i32.rem_s
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x202070: // local.local.i32.rem_u
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x202071: // local.local.i32.and
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
+                    case 0x202072: // local.local.i32.or
+                    case 0x202073: // local.local.i32.xor
                     case 0x202074: // local.local.i32.shl
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x202075: // local.local.i32.shr_s
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.b = (inst.Next as LocalGet).index;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        inst = inst.Next.Next;
-                        continue;
                     case 0x202076: // local.local.i32.shr_u
                         i.opCode = three;
                         i.a = (inst as LocalGet).index;
@@ -698,27 +574,23 @@ namespace GameWasm.Webassembly.Instruction
                         inst = inst.Next.Next;
                         continue;
                     case 0x202821: // local.i32.load.local
-                        i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32load).offset;
-                        i.b = (inst.Next.Next as LocalSet).index;
-                        inst = inst.Next.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        program.Add(unreachable);
-                        continue;
                     case 0x202921: // local.i32.load.local
+                    
+                    case 0x202C21: // local.i32.load8_s.local
+                    case 0x202D21: // local.i32.load8_u.local
+                    case 0x202E21: // local.i32.load16_s.local
+                    case 0x202F21: // local.i32.load16_u.local
                         i.opCode = three;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I64load).offset;
-                        i.b = (inst.Next.Next as LocalSet).index;
+                        i.a = inst.index;
+                        i.pos64 = inst.Next.offset;
+                        i.b = inst.Next.Next.index;
                         inst = inst.Next.Next;
                         program.Add(i);
                         program.Add(unreachable);
                         program.Add(unreachable);
                         continue;
                 }
-                
+
                 switch (two)
                 {
                     case 0x200D: // local.br_if
@@ -738,190 +610,47 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(unreachable);
                         continue;
                     case 0x2028: // local.i32.load
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32load).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2029: // local.i64.load
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I64load).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
+                        
                     case 0x202C: // local.i32.load8_s
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32load8s).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x202D: // local.i32.load8_u
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32load8u).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x202E: // local.i32.load16_s
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32load16s).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x202F: // local.i32.load16_u
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32load16u).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
+                        
                     case 0x2036: // local.i32.store
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32store).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
+                    case 0x2037: // local.i64.store
+
                     case 0x203A: // local.i32.store8
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32store8).offset;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x203B: // local.i32.store16
                         i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I32store16).offset;
-                        inst = inst.Next;
+                        i.a = inst.index;
+                        i.pos64 = inst.Next.offset;
                         program.Add(i);
                         program.Add(unreachable);
-                        continue;
-                    case 0x2037: // local.i64.store
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        i.pos64 = (inst.Next as I64store).offset;
                         inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
                         continue;
+                    
+                    // local.get *
+                    
                     case 0x2045: // local.i32.eqz
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2046: // local.i32.eq
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2047: // local.i32.ne
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2048: // local.i32.lt_s
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
+                    case 0x2049: // local.i32.lt_u
                     case 0x204A: // local.i32.gt_s
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
+                    case 0x204B: // local.i32.gt_u
+                        
                     case 0x206A: // local.i32.add
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x206B: // local.i32.sub
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x206C: // local.i32.mul
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x206D: // local.i32.div_s
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x206E: // local.i32.div_u
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x206F: // local.i32.rem_s
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2070: // local.i32.rem_u
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2071: // local.i32.and
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
+                        
                     case 0x2074: //local.i32.shl
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2075: //local.i32.shr_s
-                        i.opCode = two;
-                        i.a = (inst as LocalGet).index;
-                        inst = inst.Next;
-                        program.Add(i);
-                        program.Add(unreachable);
-                        continue;
                     case 0x2076: //local.i32.shr_u
                         i.opCode = two;
                         i.a = (inst as LocalGet).index;
@@ -929,6 +658,9 @@ namespace GameWasm.Webassembly.Instruction
                         program.Add(i);
                         program.Add(unreachable);
                         continue;
+                    
+                    // const *
+                    
                     case 0x4121: // i32.const.local
                         i.opCode = 0x4121;
                         i.i32 = (inst as I32const).value;
@@ -946,7 +678,7 @@ namespace GameWasm.Webassembly.Instruction
                         inst = inst.Next;
                         continue;
                 }
-                
+
                 switch (inst.opCode)
                 {
                     case 0x00: // unreachable
@@ -999,8 +731,6 @@ namespace GameWasm.Webassembly.Instruction
                     /* Parametric Instructions */
 
                     case 0x1A: // drop
-                        program.Add(i);
-                        break;
                     case 0x1B: // select
                         program.Add(i);
                         break;
@@ -1008,123 +738,44 @@ namespace GameWasm.Webassembly.Instruction
                     /* Variable Instructions */
 
                     case 0x20: // local.get
-                        i.pos = (inst as LocalGet).index;
-                        program.Add(i);
-                        break;
                     case 0x21: // local.set
-                        i.pos = (inst as LocalSet).index;
-                        program.Add(i);
-                        break;
                     case 0x22: // local.tee
-                        i.i32 = (UInt32)(inst as LocalTee).index;
-                        program.Add(i);
-                        break;
                     case 0x23: // global.get
-                        i.pos = (inst as GlobalGet).index;
-                        program.Add(i);
-                        break;
                     case 0x24: // global.set
-                        i.pos = (inst as GlobalSet).index;
+                        i.a = inst.index;
                         program.Add(i);
                         break;
 
                     /* Memory Instructions */
 
                     case 0x28: // i32.load
-                        i.pos64 = (inst as I32load).offset;
-                        program.Add(i);
-                        break;
                     case 0x29: // i64.load
-                        i.pos64 = (inst as I64load).offset;
-                        program.Add(i);
-                        break;
                     case 0x2A: // f32.load
-                        i.i32 = (inst as F32load).offset;
-                        program.Add(i);
-                        break;
                     case 0x2B: // f64.load
-                        i.i32 = (inst as F64load).offset;
-                        program.Add(i);
-                        break;
                     case 0x2C: // i32.load8_s
-                        i.i32 = (inst as I32load8s).offset;
-                        program.Add(i);
-                        break;
                     case 0x2D: // i32.load8_u
-                        i.i32 = (inst as I32load8u).offset;
-                        program.Add(i);
-                        break;
                     case 0x2E: // i32.load16_s
-                        i.i32 = (inst as I32load16s).offset;
-                        program.Add(i);
-                        break;
                     case 0x2F: // i32.load16_u
-                        i.pos64 = (inst as I32load16u).offset;
-                        program.Add(i);
-                        break;
                     case 0x30: // i64.load8_s
-                        i.i32 = (inst as I64load8s).offset;
-                        program.Add(i);
-                        break;
                     case 0x31: // i64.load8_u
-                        i.i32 = (inst as I64load8u).offset;
-                        program.Add(i);
-                        break;
                     case 0x32: // i64.load16_s
-                        i.i32 = (inst as I64load16s).offset;
-                        program.Add(i);
-                        break;
                     case 0x33: // i64.load16_u
-                        i.i32 = (inst as I64load16u).offset;
-                        program.Add(i);
-                        break;
                     case 0x34: // i64.load32_s
-                        i.i32 = (inst as I64load32s).offset;
-                        program.Add(i);
-                        break;
                     case 0x35: // i64.load32_u
-                        i.i32 = (inst as I64load32u).offset;
-                        program.Add(i);
-                        break;
                     case 0x36: // i32.store
-                        i.pos64 = (inst as I32store).offset;
-                        program.Add(i);
-                        break;
                     case 0x37: // i64.store
-                        i.pos64 = (inst as I64store).offset;
-                        program.Add(i);
-                        break;
                     case 0x38: // f32.store
-                        i.i32 = (inst as F32store).offset;
-                        program.Add(i);
-                        break;
                     case 0x39: // f64.store
-                        i.i32 = (inst as F64store).offset;
-                        program.Add(i);
-                        break;
                     case 0x3A: // i32.store8
-                        i.i32 = (inst as I32store8).offset;
-                        program.Add(i);
-                        break;
                     case 0x3B: // i32.store16
-                        i.i32 = (inst as I32store16).offset;
-                        program.Add(i);
-                        break;
                     case 0x3C: // i64.store8
-                        i.i32 = (inst as I64store8).offset;
-                        program.Add(i);
-                        break;
                     case 0x3D: // i64.store16
-                        i.i32 = (inst as I64store16).offset;
-                        program.Add(i);
-                        break;
                     case 0x3E: // i64.store32
-                        i.i32 = (inst as I64store32).offset;
+                        i.pos64 = inst.offset;
                         program.Add(i);
                         break;
+
                     case 0x3F: // memory.size
-                        program.Add(i);
-                        break;
                     case 0x40: // memory.grow
                         program.Add(i);
                         break;
@@ -1153,382 +804,132 @@ namespace GameWasm.Webassembly.Instruction
                         break;
                     
                     case 0x45: // i32.eqz
-                        program.Add(i);
-                        break;
                     case 0x46: // i32.eq
-                        program.Add(i);
-                        break;
                     case 0x47: // i32.ne
-                        program.Add(i);
-                        break;
                     case 0x48: // i32.lt_s
-                        program.Add(i);
-                        break;
                     case 0x49: // i32.lt_u
-                        program.Add(i);
-                        break;
                     case 0x4A: // i32.gt_s
-                        program.Add(i);
-                        break;
                     case 0x4B: // i32.gt_u
-                        program.Add(i);
-                        break;
                     case 0x4C: // i32.le_s
-                        program.Add(i);
-                        break;
                     case 0x4D: // i32.le_u
-                        program.Add(i);
-                        break;
                     case 0x4E: // i32.ge_s
-                        program.Add(i);
-                        break;
                     case 0x4F: // i32.ge_u
-                        program.Add(i);
-                        break;
-
                     case 0x50: // i64.eqz
-                        program.Add(i);
-                        break;
                     case 0x51: // i64.eq
-                        program.Add(i);
-                        break;
                     case 0x52: // i64.ne
-                        program.Add(i);
-                        break;
                     case 0x53: // i64.lt_s
-                        program.Add(i);
-                        break;
                     case 0x54: // i64.lt_u
-                        program.Add(i);
-                        break;
                     case 0x55: // i64.gt_s
-                        program.Add(i);
-                        break;
                     case 0x56: // i64.gt_u
-                        program.Add(i);
-                        break;
                     case 0x57: // i64.le_s
-                        program.Add(i);
-                        break;
                     case 0x58: // i64.le_u
-                        program.Add(i);
-                        break;
                     case 0x59: // i64.ge_s
-                        program.Add(i);
-                        break;
                     case 0x5A: // i64.ge_u
-                        program.Add(i);
-                        break;
-
                     case 0x5B: // f32.eq
-                        program.Add(i);
-                        break;
                     case 0x5C: // f32.ne
-                        program.Add(i);
-                        break;
                     case 0x5D: // f32.lt
-                        program.Add(i);
-                        break;
                     case 0x5E: // f32.gt
-                        program.Add(i);
-                        break;
                     case 0x5F: // f32.le
-                        program.Add(i);
-                        break;
                     case 0x60: // f32.ge
-                        program.Add(i);
-                        break;
-
                     case 0x61: // f64.eq
-                        program.Add(i);
-                        break;
                     case 0x62: // f64.ne
-                        program.Add(i);
-                        break;
                     case 0x63: // f64.lt
-                        program.Add(i);
-                        break;
                     case 0x64: // f64.gt
-                        program.Add(i);
-                        break;
                     case 0x65: // f64.le
-                        program.Add(i);
-                        break;
                     case 0x66: // f64.ge
-                        program.Add(i);
-                        break;
-
                     case 0x67: // i32.clz
-                        program.Add(i);
-                        break;
                     case 0x68: // i32.ctz
-                        program.Add(i);
-                        break;
                     case 0x69: // i32.popcnt
-                        program.Add(i);
-                        break;
                     case 0x6A: // i32.add
-                        program.Add(i);
-                        break;
                     case 0x6B: // i32.sub
-                        program.Add(i);
-                        break;
                     case 0x6C: // i32.mul
-                        program.Add(i);
-                        break;
                     case 0x6D: // i32.div_s
-                        program.Add(i);
-                        break;
                     case 0x6E: // i32.div_u
-                        program.Add(i);
-                        break;
                     case 0x6F: // i32.rem_s
-                        program.Add(i);
-                        break;
                     case 0x70: // i32.rem_u
-                        program.Add(i);
-                        break;
                     case 0x71: // i32.and
-                        program.Add(i);
-                        break;
                     case 0x72: // i32.or
-                        program.Add(i);
-                        break;
                     case 0x73: // i32.xor
-                        program.Add(i);
-                        break;
                     case 0x74: // i32.shl
-                        program.Add(i);
-                        break;
                     case 0x75: // i32.shr_s
-                        program.Add(i);
-                        break;
                     case 0x76: // i32.shr_u
-                        program.Add(i);
-                        break;
                     case 0x77: // i32.rotl
-                        program.Add(i);
-                        break;
                     case 0x78: // i32.rotr
-                        program.Add(i);
-                        break;
-
                     case 0x79: // i64.clz
-                        program.Add(i);
-                        break;
                     case 0x7A: // i64.ctz
-                        program.Add(i);
-                        break;
                     case 0x7B: // i64.popcnt
-                        program.Add(i);
-                        break;
                     case 0x7C: // i64.add
-                        program.Add(i);
-                        break;
                     case 0x7D: // i64.sub
-                        program.Add(i);
-                        break;
                     case 0x7E: // i64.mul
-                        program.Add(i);
-                        break;
                     case 0x7F: // i64.div_s
-                        program.Add(i);
-                        break;
                     case 0x80: // i64.div_u
-                        program.Add(i);
-                        break;
                     case 0x81: // i64.rem_s
-                        program.Add(i);
-                        break;
                     case 0x82: // i64.rem_u
-                        program.Add(i);
-                        break;
                     case 0x83: // i64.and
-                        program.Add(i);
-                        break;
                     case 0x84: // i64.or
-                        program.Add(i);
-                        break;
                     case 0x85: // i64.xor
-                        program.Add(i);
-                        break;
                     case 0x86: // i64.shl
-                        program.Add(i);
-                        break;
                     case 0x87: // i64.shr_s
-                        program.Add(i);
-                        break;
                     case 0x88: // i64.shr_u
-                        program.Add(i);
-                        break;
                     case 0x89: // i64.rotl
-                        program.Add(i);
-                        break;
                     case 0x8A: // i64.rotr
-                        program.Add(i);
-                        break;
-
                     case 0x8B: // f32.abs
-                        program.Add(i);
-                        break;
                     case 0x8C: // f32.neg
-                        program.Add(i);
-                        break;
                     case 0x8D: // f32.ceil
-                        program.Add(i);
-                        break;
                     case 0x8E: // f32.floor
-                        program.Add(i);
-                        break;
                     case 0x8F: // f32.trunc
-                        program.Add(i);
-                        break;
                     case 0x90: // f32.nearest
-                        program.Add(i);
-                        break;
                     case 0x91: // f32.sqrt
-                        program.Add(i);
-                        break;
                     case 0x92: // f32.add
-                        program.Add(i);
-                        break;
                     case 0x93: // f32.sub
-                        program.Add(i);
-                        break;
                     case 0x94: // f32.mul
-                        program.Add(i);
-                        break;
                     case 0x95: // f32.div
-                        program.Add(i);
-                        break;
                     case 0x96: // f32.min
-                        program.Add(i);
-                        break;
                     case 0x97: // f32.max
-                        program.Add(i);
-                        break;
                     case 0x98: // f32.copysign
-                        program.Add(i);
-                        break;
-
                     case 0x99: // f64.abs
-                        program.Add(i);
-                        break;
                     case 0x9A: // f64.neg
-                        program.Add(i);
-                        break;
                     case 0x9B: // f64.ceil
-                        program.Add(i);
-                        break;
                     case 0x9C: // f64.floor
-                        program.Add(i);
-                        break;
                     case 0x9D: // f64.trunc
-                        program.Add(i);
-                        break;
                     case 0x9E: // f64.nearest
-                        program.Add(i);
-                        break;
                     case 0x9F: // f64.sqrt
-                        program.Add(i);
-                        break;
                     case 0xA0: // f64.add
-                        program.Add(i);
-                        break;
                     case 0xA1: // f64.sub
-                        program.Add(i);
-                        break;
                     case 0xA2: // f64.mul
-                        program.Add(i);
-                        break;
                     case 0xA3: // f64.div
-                        program.Add(i);
-                        break;
                     case 0xA4: // f64.min
-                        program.Add(i);
-                        break;
                     case 0xA5: // f64.max
-                        program.Add(i);
-                        break;
                     case 0xA6: // f64.copysign
-                        program.Add(i);
-                        break;
-
                     case 0xA7: // i32.wrap_i64
-                        program.Add(i);
-                        break;
                     case 0xA8: // i32.trunc_f32_s
-                        program.Add(i);
-                        break;
                     case 0xA9: // i32.trunc_f32_u
-                        program.Add(i);
-                        break;
                     case 0xAA: // i32.trunc_f64_s
-                        program.Add(i);
-                        break;
                     case 0xAB: // i32.trunc_f64_u
-                        program.Add(i);
-                        break;
                     case 0xAC: // i64.extend_i32_s
-                        program.Add(i);
-                        break;
                     case 0xAD: // i64.extend_i32_u
-                        program.Add(i);
-                        break;
                     case 0xAE: // i64.trunc_f32_s
-                        program.Add(i);
-                        break;
                     case 0xAF: // i64.trunc_f32_u
-                        program.Add(i);
-                        break;
                     case 0xB0: // i64.trunc_f64_s
-                        program.Add(i);
-                        break;
                     case 0xB1: // i64.trunc_f64_u
-                        program.Add(i);
-                        break;
                     case 0xB2: // f32.convert_i32_s
-                        program.Add(i);
-                        break;
                     case 0xB3: // f32.convert_i32_u
-                        program.Add(i);
-                        break;
                     case 0xB4: // f32.convert_i64_s
-                        program.Add(i);
-                        break;
                     case 0xB5: // f32.convert_i64_u
-                        program.Add(i);
-                        break;
                     case 0xB6: // f32.demote_f64
-                        program.Add(i);
-                        break;
                     case 0xB7: // f64.convert_i32_s
-                        program.Add(i);
-                        break;
                     case 0xB8: // f64.convert_i32_u
-                        program.Add(i);
-                        break;
                     case 0xB9: // f64.convert_i64_s
-                        program.Add(i);
-                        break;
                     case 0xBA: // f64.convert_i64.u
-                        program.Add(i);
-                        break;
                     case 0xBB: // f64.promote_f32
-                        program.Add(i);
-                        break;
                     case 0xBC: // i32.reinterpret_f32
-                        program.Add(i);
-                        break;
                     case 0xBD: // i64.reinterpret_i32
-                        program.Add(i);
-                        break;
                     case 0xBE: // f32.reinterpret_i32
-                        program.Add(i);
-                        break;
                     case 0xBF: // f64.reinterpret_i64
                         program.Add(i);
                         break;
+                    default:
+                        throw new Exception("Missing implementation fo opCode: " + i.opCode.ToString("X"));
                 }
             }
 
@@ -1542,27 +943,33 @@ namespace GameWasm.Webassembly.Instruction
 
             for (int o = 0; o < program.Count; o++)
             {
-                if (program[o].opCode == 0x20)
+                if (program[o].opCode == 0x202821)
                 {
                     int count = 0;
-                    while (o + count < program.Count && program[o + count].opCode == 0x20)
+                    while (o + count < program.Count && program[o + count].opCode == 0x202821)
                     {
-                        count++;
+                        
+                        count+=3;
                     }
 
-                    if (count > 2)
+                    count /= 3;
+                    
+                    if (count > 1)
                     {
+//                        Console.WriteLine(count);
+  //                      Console.ReadKey();
+                        
                         Inst n = program[o];
                         n.opCode = 0xFF000000;
-                        n.table = new int[count];
+                        n.optimalProgram = new Inst[count];
                         for (int m = 0; m < count; m++)
                         {
-                            n.table[m] = program[m + o].pos;
+                            n.optimalProgram[m] = program[(m*3) + o];
                             if (m > 0)
                             {
                                 Inst u = new Inst();
                                 u.opCode = 0x00;
-                                program[m + o] = u;
+                                program[(m*3) + o] = u;
                             }
                         }
                         program[o] = n;
@@ -1765,7 +1172,9 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x2046: return "local.i32.eq";
                 case 0x2047: return "local.i32.ne";
                 case 0x2048: return "local.i32.lt_s";
+                case 0x2049: return "local.i32.lt_u";
                 case 0x204A: return "local.i32.gt_s";
+                case 0x204B: return "local.i32.gt_u";
                 case 0x206A: return "local.i32.add";
                 case 0x206B: return "local.i32.sub";
                 case 0x206C: return "local.i32.mul";
@@ -1774,6 +1183,8 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x206F: return "local.i32.rem_s";
                 case 0x2070: return "local.i32.rem_u";
                 case 0x2071: return "local.i32.and";
+                case 0x2072: return "local.i32.or";
+                case 0x2073: return "local.i32.xor";
                 case 0x2074: return "local.i32.shl";
                 case 0x2075: return "local.i32.shr_s";
                 case 0x2076: return "local.i32.shr_u";
@@ -1786,7 +1197,9 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x202046: return "local.local.i32.eq";
                 case 0x202047: return "local.local.i32.ne";
                 case 0x202048: return "local.local.i32.lt_s";
+                case 0x202049: return "local.local.i32.lt_u";
                 case 0x20204A: return "local.local.i32.gt_s";
+                case 0x20204B: return "local.local.i32.gt_u";
                 case 0x20206A: return "local.local.i32.add";
                 case 0x20206B: return "local.local.i32.sub";
                 case 0x20206C: return "local.local.i32.mul";
@@ -1795,17 +1208,43 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x20206F: return "local.local.i32.rem_s";
                 case 0x202070: return "local.local.i32.rem_u";
                 case 0x202071: return "local.local.i32.and";
+                case 0x202072: return "local.local.i32.or";
+                case 0x202073: return "local.local.i32.xor";
                 case 0x202074: return "local.local.i32.shl";
                 case 0x202075: return "local.local.i32.shr_s";
                 case 0x202076: return "local.local.i32.shr_u";
                 case 0x202821: return "local.i32.load.local";
                 case 0x202921: return "local.i64.load.local";
+
+                case 0x202C21: return "local.i32.load8_s.local";
+                case 0x202D21: return "local.i32.load8_u.local";
+                case 0x202E21: return "local.i32.load16_s.local";
+                case 0x202F21: return "local.i32.load16_u.local";
+
+                case 0x20204621: return "local.local.i32.eq.local";
+                case 0x20204721: return "local.local.i32.ne.local";
+                case 0x20204821: return "local.local.i32.lt_s.local";
+                case 0x20204921: return "local.local.i32.lt_u.local";
+                case 0x20204A21: return "local.local.i32.gt_s.local";
+                case 0x20204B21: return "local.local.i32.gt_u.local";
+                
                 case 0x20206A21: return "local.local.i32.add.local";
                 case 0x20206B21: return "local.local.i32.sub.local";
+                case 0x20206C21: return "local.local.i32.mul.local";
+                case 0x20206D21: return "local.local.i32.div_s.local";
+                case 0x20206E21: return "local.local.i32.div_u.local";
+                case 0x20206F21: return "local.local.i32.rem_s.local";
+                case 0x20207021: return "local.local.i32.rem_u.local";
                 case 0x20207121: return "local.local.i32.and.local";
                 case 0x20207221: return "local.local.i32.or.local";
                 case 0x20207321: return "local.local.i32.xor.local";
-                case 0xFF000000: return "loop of local.get";
+                case 0x20207421: return "local.local.i32.shl.local";
+                case 0x20207521: return "local.local.i32.shr_s.local";
+                case 0x20207621: return "local.local.i32.shr_u.local";
+                case 0x20207721: return "local.local.i32.rotl.local";
+                case 0x20207821: return "local.local.i32.rotr.local";
+                
+                case 0xFF000000: return "loop of local.i32.load.local";
                 case 0xFF: return "Loop Overhead:";
                 default: return "unknown opcode: " + opCode.ToString("X");
             }            
