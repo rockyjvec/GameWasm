@@ -580,7 +580,7 @@ namespace GameWasm.Webassembly.Module
 
             Store.runtime.Call(f.GlobalIndex, parameters);
 
-            while (Store.runtime.Step(99999999))
+            while (Store.runtime.Step(999999999))
             {
 
             }

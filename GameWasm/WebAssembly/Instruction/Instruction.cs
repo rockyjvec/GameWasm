@@ -545,6 +545,8 @@ namespace GameWasm.Webassembly.Instruction
                     {
                         case 0x202036: // local.local.i32.store
                         case 0x202037: // local.local.i64.store
+                        case 0x202038: // local.local.f32.store
+                        case 0x202039: // local.local.f64.store
 
                         case 0x20203A: // local.local.i32.store8
                         case 0x20203B: // local.local.i32.store16
@@ -577,6 +579,14 @@ namespace GameWasm.Webassembly.Instruction
                         case 0x202074: // local.local.i32.shl
                         case 0x202075: // local.local.i32.shr_s
                         case 0x202076: // local.local.i32.shr_u
+
+                        case 0x2020A0: // local.local.f64.add
+                        case 0x2020A1: // local.local.f64.sub
+                        case 0x2020A2: // local.local.f64.mul
+                        case 0x2020A3: // local.local.f64.div
+                        case 0x2020A4: // local.local.f64.min
+                        case 0x2020A5: // local.local.f64.max
+
                             i.opCode = three;
                             i.a = (inst as LocalGet).index;
                             i.b = (inst.Next as LocalGet).index;
@@ -1346,6 +1356,8 @@ namespace GameWasm.Webassembly.Instruction
                 
                 case 0x202036: return "local.local.i32.store";
                 case 0x202037: return "local.local.i64.store";
+                case 0x202038: return "local.local.f32.store";
+                case 0x202039: return "local.local.f64.store";
                 
                 case 0x20203A: return "local.local.i32.store8";
                 case 0x20203B: return "local.local.i32.store16";
@@ -1371,6 +1383,21 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x202075: return "local.local.i32.shr_s";
                 case 0x202076: return "local.local.i32.shr_u";
                 
+                case 0x202099: return "local.local.f64.abs";
+                case 0x20209A: return "local.local.f64.neg";
+                case 0x20209B: return "local.local.f64.ceil";
+                case 0x20209C: return "local.local.f64.floor";
+                case 0x20209D: return "local.local.f64.trunc";
+                case 0x20209E: return "local.local.f64.nearest";
+                case 0x20209F: return "local.local.f64.sqrt";
+                case 0x2020A0: return "local.local.f64.add";
+                case 0x2020A1: return "local.local.f64.sub";
+                case 0x2020A2: return "local.local.f64.mul";
+                case 0x2020A3: return "local.local.f64.div";
+                case 0x2020A4: return "local.local.f64.min";
+                case 0x2020A5: return "local.local.f64.max";
+                case 0x2020A6: return "local.local.f64.copysign";
+
                 case 0x202821: return "local.i32.load.local";
                 case 0x202921: return "local.i64.load.local";
 
@@ -1381,20 +1408,12 @@ namespace GameWasm.Webassembly.Instruction
                 case 0x202E21: return "local.i32.load16_s.local";
                 case 0x202F21: return "local.i32.load16_u.local";
 
-                case 0x209921: return "local.f64.abs";
-                case 0x209A21: return "local.f64.neg";
-                case 0x209B21: return "local.f64.ceil";
-                case 0x209C21: return "local.f64.floor";
-                case 0x209D21: return "local.f64.trunc";
-                case 0x209E21: return "local.f64.nearest";
-                case 0x209F21: return "local.f64.sqrt";
                 case 0x20A021: return "local.f64.add";
                 case 0x20A121: return "local.f64.sub";
                 case 0x20A221: return "local.f64.mul";
                 case 0x20A321: return "local.f64.div";
                 case 0x20A421: return "local.f64.min";
                 case 0x20A521: return "local.f64.max";
-                case 0x20A621: return "local.f64.copysign";
 
                 case 0x20B721: return "local.f64.convert_i32_s.local";
                 case 0x20B821: return "local.f64.convert_i32_u.local";

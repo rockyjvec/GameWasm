@@ -168,16 +168,22 @@ namespace GameWasm.Webassembly.New
                     }
                     profile[0xFF] += timer.Elapsed;
                     timed = s.program[s.ip].opCode;
-/*
-                    if (s.program[s.ip].opCode == 0x21 && s.ip + 1 < s.program.Length)
+
+                    if (s.program[s.ip].opCode == 0x20 && s.ip + 1 < s.program.Length)
                     {
+                        if (!followers.ContainsKey(s.program[s.ip+1].opCode))
+                        {
+                            followers.Add(s.program[s.ip+1].opCode, 0);
+                        }
+
+                        ++followers[s.program[s.ip+1].opCode];                        /*
                         if (!followers.ContainsKey(lastOpCode))
                         {
                             followers.Add(lastOpCode, 0);
                         }
 
-                        ++followers[lastOpCode];
-                    }*/
+                        ++followers[lastOpCode];*/
+                    }
                     timer.Reset();
                     timer.Start();
                 #endif
@@ -489,22 +495,7 @@ namespace GameWasm.Webassembly.New
                         break;
                     case 0x29: // i64.load
                         --s.vStackPtr;
-                        offset = s.program[s.ip].pos64 + vStack[s.vStackPtr].i32;
-                        vStack[s.vStackPtr].b0 = s.memory.Buffer[offset];
-                        ++offset;
-                        vStack[s.vStackPtr].b1 = s.memory.Buffer[offset];
-                        ++offset;
-                        vStack[s.vStackPtr].b2 = s.memory.Buffer[offset];
-                        ++offset;
-                        vStack[s.vStackPtr].b3 = s.memory.Buffer[offset];
-                        ++offset;
-                        vStack[s.vStackPtr].b4 = s.memory.Buffer[offset];
-                        ++offset;
-                        vStack[s.vStackPtr].b5 = s.memory.Buffer[offset];
-                        ++offset;
-                        vStack[s.vStackPtr].b6 = s.memory.Buffer[offset];
-                        ++offset;
-                        vStack[s.vStackPtr].b7 = s.memory.Buffer[offset];
+                        vStack[s.vStackPtr].i64 = BitConverter.ToUInt64(s.memory.Buffer, (int)s.program[s.ip].pos64 + (int)vStack[s.vStackPtr].i32);
                         ++s.vStackPtr;
                         break;
                     case 0x2A: // f32.load
@@ -1958,6 +1949,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         break;
                     case 0x202036: // local.local.i32.store 
+                    case 0x202038: // local.local.f32.store
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         s.memory.Buffer[offset] = s.locals[s.program[s.ip].b].b0;
                         ++offset;
@@ -1970,6 +1962,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         break;
                     case 0x202037: // local.local.i64.store
+                    case 0x202039: // local.local.f64.store
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         s.memory.Buffer[offset] = s.locals[s.program[s.ip].b].b0;
                         ++offset;
@@ -1989,6 +1982,7 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         ++s.ip;
                         break;
+                    
                     case 0x20203A: // local.local.i32.store8 
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         s.memory.Buffer[offset] = s.locals[s.program[s.ip].b].b0;
@@ -2134,6 +2128,44 @@ namespace GameWasm.Webassembly.New
                         ++s.ip;
                         ++s.ip;
                         break;
+                    
+                    case 0x2020A0: // local.local.f64.add
+                        vStack[s.vStackPtr].f64 = s.locals[s.program[s.ip].a].f64 + s.locals[s.program[s.ip].b].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x2020A1: // local.local.f64.sub
+                        vStack[s.vStackPtr].f64 = s.locals[s.program[s.ip].a].f64 - s.locals[s.program[s.ip].b].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x2020A2: // local.local.f64.mul
+                        vStack[s.vStackPtr].f64 = s.locals[s.program[s.ip].a].f64 * s.locals[s.program[s.ip].b].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x2020A3: // local.local.f64.div
+                        vStack[s.vStackPtr].f64 = s.locals[s.program[s.ip].a].f64 / s.locals[s.program[s.ip].b].f64;
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x2020A4: // local.local.f64.min
+                        vStack[s.vStackPtr].f64 = Math.Min(s.locals[s.program[s.ip].a].f64, s.locals[s.program[s.ip].b].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    case 0x2020A5: // local.local.f64.max
+                        vStack[s.vStackPtr].f64 = Math.Max(s.locals[s.program[s.ip].a].f64, s.locals[s.program[s.ip].b].f64);
+                        ++s.vStackPtr;
+                        ++s.ip;
+                        ++s.ip;
+                        break;
+                    
                     case 0x202821: // local.i32.load.local
                         offset = s.program[s.ip].pos64 + s.locals[s.program[s.ip].a].i32;
                         index = s.program[s.ip].b;
@@ -2614,14 +2646,14 @@ namespace GameWasm.Webassembly.New
                             total.Milliseconds / 10);
                         Console.WriteLine("Total: " + elapsedTime2);
 
-/*
+
                         foreach (var keyValuePair in followers.OrderBy(x => x.Value))
                         {
-                            Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + keyValuePair.Value);
-                        }*/
+ //                           Console.WriteLine(Instruction.Instruction.Translate(keyValuePair.Key) + ": " + keyValuePair.Value);
+                        }
                     }
 
-                    timer.Restart();
+                    timer.Reset();
                     timer.Start();
 
                     ++counter;
